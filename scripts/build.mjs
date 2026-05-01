@@ -8,7 +8,7 @@ import autoprefixer from 'autoprefixer';
 import { fileURLToPath } from 'node:url';
 import { loadCachedEvents } from '../src/data/store.mjs';
 import { deriveFilters, sortEvents, splitFeatured } from '../src/data/site.mjs';
-import { formatDateRange, formatDateTime, parseDateLike } from '../src/data/format.mjs';
+import { DISPLAY_TIMEZONE, escapeHtml, formatDateRange, formatDateTime, parseDateLike } from '../src/data/format.mjs';
 import { syncEvents } from './sync-lib.mjs';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -68,31 +68,139 @@ async function writeFile(relPath, content) {
   await fs.writeFile(filePath, content);
 }
 
+function toAbsoluteUrl(value = '') {
+  if (!value) return publicBaseUrl;
+  if (/^https?:\/\//i.test(value)) return value;
+  return `${publicBaseUrl}${value.startsWith('/') ? value : `/${value}`}`;
+}
+
+function toRfc2822(value) {
+  if (!value) return new Date().toUTCString();
+  const date = parseDateLike(value);
+  return Number.isNaN(date.getTime()) ? new Date().toUTCString() : date.toUTCString();
+}
+
+function formatUtcIcsDate(date) {
+  const pad = (n) => String(n).padStart(2, '0');
+  return `${date.getUTCFullYear()}${pad(date.getUTCMonth() + 1)}${pad(date.getUTCDate())}T${pad(date.getUTCHours())}${pad(date.getUTCMinutes())}${pad(date.getUTCSeconds())}Z`;
+}
+
+function escapeIcs(value = '') {
+  return String(value)
+    .replaceAll('\\', '\\\\')
+    .replaceAll('\n', '\\n')
+    .replaceAll('\r', '')
+    .replaceAll(',', '\\,')
+    .replaceAll(';', '\\;');
+}
+
+function buildRssXml(events) {
+  const sortedByUpdatedDesc = [...events].sort((a, b) => {
+    const aTime = parseDateLike(a.updatedAt || a.startsAt || 0).getTime();
+    const bTime = parseDateLike(b.updatedAt || b.startsAt || 0).getTime();
+    return bTime - aTime;
+  });
+  const lastBuildDate = sortedByUpdatedDesc.length
+    ? toRfc2822(sortedByUpdatedDesc[0].updatedAt || sortedByUpdatedDesc[0].startsAt)
+    : new Date().toUTCString();
+  const items = sortedByUpdatedDesc.map((event) => {
+    const eventUrl = toAbsoluteUrl(`/e/${event.id}/${event.slug}`);
+    const title = escapeHtml(event.title || 'Evento');
+    const description = escapeHtml(event.summary || event.excerpt || '');
+    const pubDate = toRfc2822(event.updatedAt || event.startsAt);
+    return [
+      '    <item>',
+      `      <title>${title}</title>`,
+      `      <link>${eventUrl}</link>`,
+      `      <guid isPermaLink="true">${eventUrl}</guid>`,
+      `      <pubDate>${pubDate}</pubDate>`,
+      `      <description>${description}</description>`,
+      '    </item>'
+    ].join('\n');
+  }).join('\n');
+
+  return [
+    '<?xml version="1.0" encoding="UTF-8"?>',
+    '<rss version="2.0">',
+    '  <channel>',
+    '    <title>Aldea Pucela Eventos</title>',
+    '    <link>https://eventos.aldeapucela.org/</link>',
+    '    <description>Feed RSS de eventos publicados en Aldea Pucela.</description>',
+    '    <language>es-es</language>',
+    `    <lastBuildDate>${lastBuildDate}</lastBuildDate>`,
+    items,
+    '  </channel>',
+    '</rss>',
+    ''
+  ].join('\n');
+}
+
+function buildCalendarIcs(events) {
+  const now = new Date();
+  const dtstamp = formatUtcIcsDate(now);
+  const sorted = sortEvents(events);
+  const rows = [
+    'BEGIN:VCALENDAR',
+    'VERSION:2.0',
+    'PRODID:-//Aldea Pucela//Eventos//ES',
+    'CALSCALE:GREGORIAN',
+    'METHOD:PUBLISH',
+    `X-WR-CALNAME:${escapeIcs('Aldea Pucela Eventos')}`,
+    `X-WR-TIMEZONE:${DISPLAY_TIMEZONE}`
+  ];
+
+  for (const event of sorted) {
+    const startDate = event.startsAt ? parseDateLike(event.startsAt) : null;
+    if (!startDate || Number.isNaN(startDate.getTime())) continue;
+    const endDateRaw = event.endsAt ? parseDateLike(event.endsAt) : null;
+    const endDate = endDateRaw && !Number.isNaN(endDateRaw.getTime())
+      ? endDateRaw
+      : new Date(startDate.getTime() + 60 * 60 * 1000);
+    const eventUrl = toAbsoluteUrl(`/e/${event.id}/${event.slug}`);
+    const uid = `${event.id}@eventos.aldeapucela.org`;
+    rows.push(
+      'BEGIN:VEVENT',
+      `UID:${escapeIcs(uid)}`,
+      `DTSTAMP:${dtstamp}`,
+      `DTSTART:${formatUtcIcsDate(startDate)}`,
+      `DTEND:${formatUtcIcsDate(endDate)}`,
+      `SUMMARY:${escapeIcs(event.title || 'Evento')}`,
+      `DESCRIPTION:${escapeIcs(`${event.summary || event.excerpt || ''}\n\n${eventUrl}`)}`,
+      `LOCATION:${escapeIcs(event.location || '')}`,
+      `URL:${escapeIcs(eventUrl)}`,
+      'END:VEVENT'
+    );
+  }
+
+  rows.push('END:VCALENDAR', '');
+  return rows.join('\r\n');
+}
+
 function enrichEvent(event) {
   const startsAtDate = event.startsAt ? parseDateLike(event.startsAt) : null;
   const endsAtDate = event.endsAt ? parseDateLike(event.endsAt) : null;
   const isMultiDay = Boolean(startsAtDate && endsAtDate && !sameDay(startsAtDate, endsAtDate));
   const compactDateLabel = startsAtDate
-    ? new Intl.DateTimeFormat('es-ES', { weekday: 'short', day: 'numeric', month: 'short' })
+    ? formatInMadrid(startsAtDate, { weekday: 'short', day: 'numeric', month: 'short' })
         .format(startsAtDate)
         .replace(',', '')
         .replace(/\b\w/, (m) => m.toUpperCase())
     : '';
   const startsAtDateLabel = startsAtDate
-    ? new Intl.DateTimeFormat('es-ES', { day: 'numeric', month: 'short' })
+    ? formatInMadrid(startsAtDate, { day: 'numeric', month: 'short' })
         .format(startsAtDate)
         .replace(',', '')
         .replace(/\b\w/, (m) => m.toUpperCase())
     : '';
   const startsAtTimeLabel = startsAtDate
-    ? new Intl.DateTimeFormat('es-ES', { hour: '2-digit', minute: '2-digit' }).format(startsAtDate)
+    ? formatInMadrid(startsAtDate, { hour: '2-digit', minute: '2-digit' }).format(startsAtDate)
     : '';
   return {
     ...event,
     startsAtLabel: formatDateTime(event.startsAt),
     endsAtLabel: event.endsAt ? formatDateTime(event.endsAt) : '',
     endsAtDayLabel: event.endsAt
-      ? new Intl.DateTimeFormat('es-ES', { day: 'numeric', month: 'short' })
+      ? formatInMadrid(endsAtDate, { day: 'numeric', month: 'short' })
           .format(endsAtDate)
           .replace(',', '')
           .replace(/\b\w/, (m) => m.toUpperCase())
@@ -106,7 +214,7 @@ function enrichEvent(event) {
     compactDateLabel,
     startsAtDayKey: startsAtDate ? toLocalDateKey(startsAtDate) : '',
     startsAtDayLabel: startsAtDate
-      ? new Intl.DateTimeFormat('es-ES', {
+      ? formatInMadrid(startsAtDate, {
           weekday: 'short',
           day: 'numeric',
           month: 'short'
@@ -117,10 +225,14 @@ function enrichEvent(event) {
       : '',
     timeLabel: startsAtTimeLabel,
     updatedAtLabel: formatDateTime(event.updatedAt),
-    monthLabel: startsAtDate ? new Intl.DateTimeFormat('es-ES', { month: 'short' }).format(startsAtDate).toUpperCase() : '',
-    dayLabel: startsAtDate ? new Intl.DateTimeFormat('es-ES', { day: 'numeric' }).format(startsAtDate) : '',
+    monthLabel: startsAtDate ? formatInMadrid(startsAtDate, { month: 'short' }).format(startsAtDate).toUpperCase() : '',
+    dayLabel: startsAtDate ? formatInMadrid(startsAtDate, { day: 'numeric' }).format(startsAtDate) : '',
     hasEnded: endsAtDate ? endsAtDate < new Date() : startsAtDate ? startsAtDate < new Date() : false
   };
+}
+
+function formatInMadrid(_date, options) {
+  return new Intl.DateTimeFormat('es-ES', { ...options, timeZone: DISPLAY_TIMEZONE });
 }
 
 function siteDataPayload(events) {
@@ -246,6 +358,8 @@ async function buildSite(events) {
   }
 
   await writeFile('site-data.json', siteDataPayload(events));
+  await writeFile('rss.xml', buildRssXml(events));
+  await writeFile('calendar.ics', buildCalendarIcs(events));
 }
 
 async function main() {

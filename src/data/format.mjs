@@ -33,20 +33,27 @@ export function toSlug(value = '') {
     .replace(/^-+|-+$/g, '');
 }
 
+export const DISPLAY_TIMEZONE = 'Europe/Madrid';
+
 export function formatDateTime(value, locale = 'es-ES') {
   if (!value) return '';
   const date = parseDateLike(value);
   if (Number.isNaN(date.getTime())) return String(value);
   return new Intl.DateTimeFormat(locale, {
     dateStyle: 'medium',
-    timeStyle: value.includes('T') ? 'short' : undefined
+    timeStyle: value.includes('T') ? 'short' : undefined,
+    timeZone: DISPLAY_TIMEZONE
   }).format(date);
 }
 
 export function formatDateRange(start, end, locale = 'es-ES') {
   if (!start) return '';
   const startDate = parseDateLike(start);
-  const formatter = new Intl.DateTimeFormat(locale, { day: 'numeric', month: 'short' });
+  const formatter = new Intl.DateTimeFormat(locale, {
+    day: 'numeric',
+    month: 'short',
+    timeZone: DISPLAY_TIMEZONE
+  });
   const startLabel = formatter.format(startDate);
   if (!end) return startLabel;
   const endLabel = formatter.format(parseDateLike(end));
