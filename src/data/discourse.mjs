@@ -121,9 +121,23 @@ export function normalizeDiscourseTopic(topic, detail) {
     organizer,
     notes,
     isSticky: Boolean(topic.pinned || topic.pinned_globally || topic.featured_link),
-    isFree: /\bentrada libre\b|\bgratis\b/i.test(`${summary} ${notes} ${rawHtml}`),
+    isFree: detectIsFree(`${summary} ${notes} ${rawHtml}`),
     updatedAt: topic.last_posted_at || detailPost?.updated_at || topic.created_at || ''
   };
+}
+
+function detectIsFree(text = '') {
+  const content = String(text);
+  const explicitFree = /\bgratis\b|\bgratuit[oa]s?\b|\bentrada libre\b|\blibre acceso\b/i.test(content);
+  if (explicitFree) return true;
+
+  const explicitPaid = /\b(precio|coste|costo|taquilla|ticket|abono|pago|venta de entradas?)\b/i.test(content) ||
+    /(\d+[\.,]?\d*)\s?(€|euros?)\b/i.test(content) ||
+    /(€)\s?(\d+[\.,]?\d*)\b/i.test(content);
+  if (explicitPaid) return false;
+
+  // En contexto local la mayoría son gratuitos: asumimos gratis si no hay evidencia de pago.
+  return true;
 }
 
 export function normalizeDetailToRecord(topic, detail) {

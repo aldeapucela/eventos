@@ -20,6 +20,10 @@
         <div class="font-display text-base font-bold leading-tight text-ink">Eventos</div>
       </div>
     </a>
+    <nav class="header-main-nav hidden lg:flex" aria-label="Navegación principal">
+      <a class="nav-link" href="/">Inicio</a>
+      <a class="nav-link" href="/guardados">Mis guardados</a>
+    </nav>
     <div class="detail-topbar-actions flex items-center gap-3 text-slate-500">
       <button class="detail-topbar-mobile-action inline-flex items-center justify-center md:hidden" type="button" data-save-event data-event-id="{{ event.id }}" aria-label="Guardar"><i class="fa-regular fa-bookmark"></i></button>
       <button class="detail-topbar-mobile-action inline-flex items-center justify-center md:hidden" type="button" data-share-event data-event-url="{{ event.urlPath }}" data-event-title="{{ event.title }}" aria-label="Compartir"><i class="fa-solid fa-share-nodes"></i></button>
@@ -47,7 +51,7 @@
       <h1 class="detail-clean-title">{{ event.title }}</h1>
       <div class="detail-clean-meta">
         {% if event.scheduleLabel %}<div class="detail-clean-meta-row"><i class="fa-regular fa-calendar"></i><span>{{ event.scheduleLabel }}</span></div>{% elif event.dateRangeLabel %}<div class="detail-clean-meta-row"><i class="fa-regular fa-calendar"></i><span>{{ event.dateRangeLabel }}</span></div>{% endif %}
-        {% if event.location %}<button class="detail-clean-meta-row detail-clean-meta-row-location detail-clean-meta-row-button" type="button" data-location-open data-location="{{ event.location }}"><i class="fa-solid fa-location-dot detail-clean-meta-row-icon"></i><span>{{ event.location }}</span></button>{% endif %}
+        {% if event.location %}<a class="detail-clean-meta-row detail-clean-meta-row-location detail-clean-meta-row-button" data-location-open data-location="{{ event.location }}" href="#"><i class="fa-solid fa-location-dot detail-clean-meta-row-icon"></i><span>{{ event.location }}</span></a>{% endif %}
       </div>
       <p class="detail-clean-summary">{{ event.summary or event.excerpt }}</p>
 
@@ -73,11 +77,11 @@
           <i class="fa-regular fa-calendar-plus"></i>
           <span>Calendario</span>
         </button>
-        <button class="detail-clean-action" type="button" data-comments-open aria-label="Comentar">
+        <button class="detail-clean-action detail-clean-action-icon-only" type="button" data-comments-open aria-label="Comentar">
           <i class="fa-regular fa-comment"></i>
           <span>Comentar</span>
         </button>
-        <button class="detail-clean-action" type="button" data-share aria-label="Compartir">
+        <button class="detail-clean-action detail-clean-action-icon-only" type="button" data-share aria-label="Compartir">
           <i class="fa-solid fa-share-nodes"></i>
           <span>Compartir</span>
         </button>

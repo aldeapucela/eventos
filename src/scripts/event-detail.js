@@ -22,6 +22,7 @@ const hero = document.querySelector('.detail-clean-hero');
 const eventData = window.__EVENT_DETAIL__ || {};
 
 syncSavedStates();
+setupLocationLink();
 
 document.addEventListener('click', async (event) => {
   const saveButton = event.target.closest('[data-save-event]');
@@ -77,6 +78,7 @@ function closeCalendarModal() {
 }
 
 function openLocationModal() {
+  if (isLikelyMobileDevice()) return;
   if (!locationModal) return;
   populateLocationLinks();
   locationModal.hidden = false;
@@ -103,7 +105,13 @@ calendarCloseButtons.forEach((button) => button.addEventListener('click', closeC
 if (commentsOpenButton) commentsOpenButton.addEventListener('click', openComments);
 if (lightboxOpen) lightboxOpen.addEventListener('click', openLightbox);
 closeButtons.forEach((button) => button.addEventListener('click', closeLightbox));
-if (locationOpenButton) locationOpenButton.addEventListener('click', openLocationModal);
+if (locationOpenButton) {
+  locationOpenButton.addEventListener('click', (event) => {
+    if (isLikelyMobileDevice()) return;
+    event.preventDefault();
+    openLocationModal();
+  });
+}
 locationCloseButtons.forEach((button) => button.addEventListener('click', closeLocationModal));
 
 window.addEventListener('keydown', (event) => {
@@ -179,6 +187,26 @@ function populateLocationLinks() {
     }
     link.href = href;
   });
+}
+
+function setupLocationLink() {
+  if (!locationOpenButton) return;
+  const location = eventData.location || locationOpenButton?.dataset.location || '';
+  const query = normalizeLocationQuery(location);
+  locationOpenButton.href = query ? `geo:0,0?q=${encodeURIComponent(query)}` : '#';
+}
+
+function isLikelyMobileDevice() {
+  const ua = String(navigator.userAgent || '');
+  const uaDataMobile = navigator.userAgentData?.mobile === true;
+  const mobileUa = /android|iphone|ipad|ipod|mobile/i.test(ua);
+  const narrowScreen = window.matchMedia('(max-width: 900px)').matches;
+  const coarsePointer = window.matchMedia('(pointer: coarse)').matches;
+  const noHover = window.matchMedia('(hover: none)').matches;
+  const touchCapable = Number(navigator.maxTouchPoints || 0) > 0;
+
+  if (uaDataMobile || mobileUa) return true;
+  return narrowScreen && (coarsePointer || noHover || touchCapable);
 }
 
 function buildIcs({ title, description, location, startDate, endDate, url }) {

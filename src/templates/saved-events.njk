@@ -1,0 +1,75 @@
+{% extends "layout.njk" %}
+
+{% block header %}
+<header class="topbar">
+  <div class="topbar-inner">
+    <a class="header-brand home-brand-mobile flex items-center gap-4" href="/" aria-label="Aldea Pucela Eventos">
+      <img src="https://aldeapucela.org/img/logo-web.jpg" alt="" class="home-brand-mobile-mark" />
+      <span class="home-brand-mobile-copy">
+        <span class="home-brand-mobile-kicker">ALDEA PUCELA</span>
+        <span class="home-brand-mobile-title">Eventos</span>
+      </span>
+    </a>
+    <nav class="header-main-nav hidden lg:flex" aria-label="Navegación principal">
+      <a class="nav-link" href="/">Inicio</a>
+      <a class="nav-link nav-link-active" href="/guardados">Mis guardados</a>
+    </nav>
+    <button class="header-search-btn inline-flex h-11 w-11 items-center justify-center rounded-full text-slate-500 lg:hidden" type="button" data-menu-open aria-label="Abrir menú">
+      <i class="fa-solid fa-bars"></i>
+    </button>
+  </div>
+</header>
+{% endblock %}
+
+{% block body %}
+<main class="page-shell py-5 sm:py-8 lg:py-10">
+  <section class="home-layout space-y-7 lg:space-y-9">
+    <div class="section-mobile-head">
+      <h1 class="section-mobile-title">Mis guardados</h1>
+    </div>
+
+    <div class="saved-empty hidden" data-saved-empty>
+      <div class="saved-empty-icon" aria-hidden="true">
+        <i class="fa-regular fa-bookmark"></i>
+      </div>
+      <p class="saved-empty-copy">No tienes nada guardado</p>
+      <p class="saved-empty-subcopy">Cuando guardes eventos, aparecerán aquí organizados por fecha.</p>
+      <a class="btn-primary" href="/">
+        <i class="fa-solid fa-calendar-day"></i>
+        <span>Ver eventos</span>
+      </a>
+    </div>
+
+    <div class="saved-day-groups" data-saved-groups></div>
+  </section>
+</main>
+
+<button class="scroll-top-btn" type="button" data-scroll-top aria-label="Volver arriba">
+  <i class="fa-solid fa-arrow-up"></i>
+</button>
+
+<div class="menu-drawer" data-menu-drawer hidden>
+  <button class="menu-drawer-backdrop" type="button" data-menu-close aria-label="Cerrar menú"></button>
+  <aside class="menu-drawer-panel" role="dialog" aria-modal="true" aria-label="Secciones">
+    <div class="menu-drawer-head">
+      <div>
+        <p class="menu-drawer-kicker">ALDEA PUCELA</p>
+        <h2 class="menu-drawer-title">Eventos</h2>
+      </div>
+      <button class="menu-drawer-close" type="button" data-menu-close aria-label="Cerrar menú">
+        <i class="fa-solid fa-xmark"></i>
+      </button>
+    </div>
+    <nav class="menu-drawer-nav" aria-label="Navegación">
+      <a class="menu-drawer-link" href="/">
+        <i class="menu-drawer-link-icon fa-solid fa-house" aria-hidden="true"></i>
+        <span>Inicio</span>
+      </a>
+      <a class="menu-drawer-link menu-drawer-link-active" href="/guardados">
+        <i class="menu-drawer-link-icon fa-regular fa-bookmark" aria-hidden="true"></i>
+        <span>Mis guardados</span>
+      </a>
+    </nav>
+  </aside>
+</div>
+{% endblock %}

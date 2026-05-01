@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="description" content="{{ meta.description or 'Agenda cultural de Aldea Pucela' }}" />
     <title>{{ title or 'Aldea Pucela Eventos' }}</title>
+    <link rel="icon" type="image/png" href="/assets/favicon.png" />
     {% if social %}
     <meta property="og:type" content="{{ social.type or 'website' }}" />
     <meta property="og:title" content="{{ social.title or title or 'Aldea Pucela Eventos' }}" />
@@ -26,6 +27,7 @@
       window.__EVENTS__ = {{ eventsJson | safe }};
       window.__FILTERS__ = {{ filtersJson | safe }};
     </script>
+    <script src="/assets/js/matomo.js"></script>
     <script src="/assets/js/{{ pageJs }}" defer></script>
   </body>
 </html>

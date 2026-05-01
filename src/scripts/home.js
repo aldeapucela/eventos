@@ -6,7 +6,14 @@ const resultsTitle = document.querySelector('[data-results-title]');
 const weekEmpty = document.querySelector('[data-week-empty]');
 const clearFilters = document.querySelector('[data-clear-filters]');
 const weekGroups = document.querySelector('[data-week-groups]');
+const typeSelect = document.querySelector('[data-filter-type]');
+const typeSelectWrap = document.querySelector('.mobile-chip-select-wrap');
+const typeSelectLabel = document.querySelector('[data-filter-type-label]');
+const scrollTopButton = document.querySelector('[data-scroll-top]');
+const shareSiteButton = document.querySelector('[data-share-site]');
 const menuDrawer = document.querySelector('[data-menu-drawer]');
+const addEventOpenButton = document.querySelector('[data-add-event-open]');
+const addEventModal = document.querySelector('[data-add-event-modal]');
 const events = Array.isArray(window.__EVENTS__?.events) ? window.__EVENTS__.events : [];
 const storageKey = 'aldeapucela_saved_events';
 
@@ -15,14 +22,25 @@ const horizonEnd = endOfHorizon(today, 30);
 const monthEnd = endOfMonth(today);
 const weekStart = startOfWeek(today);
 const weekEnd = endOfWeek(today);
-const initialFilter = getFilterFromUrl() || 'all';
+const nextWeekStart = startOfNextWeek(today);
+const nextWeekEnd = endOfNextWeek(today);
+const initialState = getFiltersFromUrl();
+let activeTimeFilter = initialState.time;
+let activeFreeFilter = initialState.free;
+let activeTypeFilter = initialState.type;
 
 if (weekGroups) {
   renderWeekGroups();
 }
 
 syncSavedStates();
-setActive(initialFilter, { updateUrl: false });
+applyFilters({ updateUrl: false });
+if (typeSelect) {
+  typeSelect.value = activeTypeFilter;
+  updateTypePill();
+}
+
+setupScrollTopButton();
 
 document.addEventListener('click', async (event) => {
   const saveButton = event.target.closest('[data-save-event]');
@@ -30,6 +48,9 @@ document.addEventListener('click', async (event) => {
   const menuOpen = event.target.closest('[data-menu-open]');
   const menuClose = event.target.closest('[data-menu-close]');
   const menuPick = event.target.closest('[data-menu-drawer] [data-filter]');
+  const shareSiteTrigger = event.target.closest('[data-share-site]');
+  const addEventOpen = event.target.closest('[data-add-event-open]');
+  const addEventClose = event.target.closest('[data-add-event-close]');
 
   if (saveButton) {
     event.preventDefault();
@@ -41,6 +62,11 @@ document.addEventListener('click', async (event) => {
     event.preventDefault();
     event.stopPropagation();
     await shareEvent(shareButton.dataset.eventUrl, shareButton.dataset.eventTitle, shareButton);
+  }
+
+  if (shareSiteTrigger) {
+    event.preventDefault();
+    await shareSite(shareSiteTrigger);
   }
 
   if (menuOpen) {
@@ -56,59 +82,93 @@ document.addEventListener('click', async (event) => {
   if (menuPick) {
     event.preventDefault();
     closeMenu();
-    setActive(menuPick.dataset.filter);
+    toggleQuickFilter(menuPick.dataset.filter);
     const target = document.querySelector(`[data-filter="${CSS.escape(menuPick.dataset.filter)}"]`);
     target?.scrollIntoView({ behavior: 'smooth', block: 'center' });
   }
+
+  if (addEventOpen) {
+    event.preventDefault();
+    openAddEventModal();
+  }
+
+  if (addEventClose) {
+    event.preventDefault();
+    closeAddEventModal();
+  }
 });
 
-function setActive(filterValue, options = {}) {
+document.addEventListener('keydown', (event) => {
+  if (event.key === 'Escape' && addEventModal && !addEventModal.hidden) {
+    closeAddEventModal();
+  }
+});
+
+function applyFilters(options = {}) {
   const { updateUrl = true } = options;
   filters.forEach((button) => {
-    button.classList.toggle('pill-active', button.dataset.filter === filterValue);
-    button.classList.toggle('mobile-chip-active', button.dataset.filter === filterValue);
-    button.setAttribute('aria-pressed', String(button.dataset.filter === filterValue));
+    const value = button.dataset.filter;
+    const isActive = (value === 'free' && activeFreeFilter) || (value !== 'free' && value === activeTimeFilter);
+    button.classList.toggle('pill-active', isActive);
+    button.classList.toggle('mobile-chip-active', isActive);
+    button.setAttribute('aria-pressed', String(isActive));
   });
+  if (typeSelect) {
+    typeSelect.value = activeTypeFilter;
+    updateTypePill();
+  }
   cards.forEach((card) => {
     const category = card.dataset.category || '';
     const isFree = card.dataset.free === 'true';
     const startsAt = card.dataset.startsAt ? parseDateLike(card.dataset.startsAt) : null;
-    const visible =
-      filterValue === 'all' ||
-      (filterValue === 'Hoy' && startsAt && sameDay(startsAt, today)) ||
-      (filterValue === 'Este finde' && startsAt && startsAt >= today && startsAt <= weekEnd && isWeekend(startsAt)) ||
-      (filterValue === 'Esta semana' && startsAt && startsAt >= weekStart && startsAt <= weekEnd) ||
-      (filterValue === 'Este mes' && startsAt && startsAt <= monthEnd) ||
-      (filterValue === 'free' && isFree) ||
-      category === filterValue;
+    const timeVisible =
+      activeTimeFilter === 'all' ||
+      (activeTimeFilter === 'Hoy' && startsAt && sameDay(startsAt, today)) ||
+      (activeTimeFilter === 'Este finde' && startsAt && startsAt >= today && startsAt <= weekEnd && isWeekend(startsAt)) ||
+      (activeTimeFilter === 'Esta semana' && startsAt && startsAt >= weekStart && startsAt <= weekEnd) ||
+      (activeTimeFilter === 'Próxima semana' && startsAt && startsAt >= nextWeekStart && startsAt <= nextWeekEnd) ||
+      (activeTimeFilter === 'Este mes' && startsAt && startsAt <= monthEnd);
+    const freeVisible = !activeFreeFilter || isFree;
+    const typeVisible = activeTypeFilter === 'all' || category === activeTypeFilter;
+    const visible = timeVisible && freeVisible && typeVisible;
     card.style.display = visible ? '' : 'none';
   });
-  filterWeekGroups(filterValue);
+  filterWeekGroups();
 
   if (filterHint) {
-    filterHint.textContent = filterValue === 'all' ? 'Mostrando: próximos eventos' : `Mostrando: ${getLabel(filterValue)}`;
+    filterHint.textContent = getCombinedLabel();
   }
   if (resultsTitle) {
-    resultsTitle.textContent = filterValue === 'all' ? 'Próximos eventos' : getLabel(filterValue);
+    resultsTitle.textContent = getCombinedLabel();
   }
   if (clearFilters) {
-    clearFilters.classList.toggle('hidden', filterValue === 'all');
-    clearFilters.href = filterValue === 'all' ? '/' : '/';
+    clearFilters.classList.toggle('hidden', activeTimeFilter === 'all' && !activeFreeFilter && activeTypeFilter === 'all');
+    clearFilters.href = '/';
   }
   if (updateUrl) {
-    updateFilterUrl(filterValue);
+    updateFilterUrl();
   }
 }
 
 filters.forEach((button) => {
   button.setAttribute('aria-pressed', 'false');
-  button.addEventListener('click', () => setActive(button.dataset.filter));
+  button.addEventListener('click', () => toggleQuickFilter(button.dataset.filter));
 });
+
+if (typeSelect) {
+  typeSelect.addEventListener('change', () => {
+    activeTypeFilter = normalizeTypeFilter(typeSelect.value || 'all');
+    applyFilters();
+  });
+}
 
 if (clearFilters) {
   clearFilters.addEventListener('click', (event) => {
     event.preventDefault();
-    setActive('all');
+    activeTimeFilter = 'all';
+    activeFreeFilter = false;
+    activeTypeFilter = 'all';
+    applyFilters();
   });
 }
 
@@ -152,6 +212,20 @@ function endOfMonth(date) {
   return new Date(date.getFullYear(), date.getMonth() + 1, 0, 23, 59, 59, 999);
 }
 
+function startOfNextWeek(date) {
+  const copy = startOfWeek(date);
+  copy.setDate(copy.getDate() + 7);
+  copy.setHours(0, 0, 0, 0);
+  return copy;
+}
+
+function endOfNextWeek(date) {
+  const copy = endOfWeek(date);
+  copy.setDate(copy.getDate() + 7);
+  copy.setHours(23, 59, 59, 999);
+  return copy;
+}
+
 function parseDateLike(value) {
   const stringValue = String(value || '');
   if (/^\d{4}-\d{2}-\d{2}$/.test(stringValue)) {
@@ -161,28 +235,49 @@ function parseDateLike(value) {
   return new Date(stringValue);
 }
 
-function getFilterFromUrl() {
+function getFiltersFromUrl() {
   const params = new URLSearchParams(window.location.search);
-  const filter = params.get('filter');
-  return normalizeFilterValue(filter);
+  const time = normalizeTimeFilter(params.get('time'));
+  const free = params.get('free') === '1' || normalizeTimeFilter(params.get('filter')) === 'free';
+  const type = normalizeTypeFilter(params.get('type') || params.get('filter'));
+  return { time, free, type };
 }
 
-function updateFilterUrl(filterValue) {
+function updateFilterUrl() {
   const url = new URL(window.location.href);
-  const normalized = normalizeFilterValue(filterValue);
-  if (!normalized || normalized === 'all') {
-    url.searchParams.delete('filter');
+  if (activeTimeFilter === 'all') {
+    url.searchParams.delete('time');
   } else {
-    url.searchParams.set('filter', normalized);
+    url.searchParams.set('time', activeTimeFilter);
+  }
+  if (activeFreeFilter) {
+    url.searchParams.set('free', '1');
+  } else {
+    url.searchParams.delete('free');
+  }
+  if (activeTypeFilter === 'all') {
+    url.searchParams.delete('type');
+  } else {
+    url.searchParams.set('type', activeTypeFilter);
+  }
+  if (activeTimeFilter === 'all' && !activeFreeFilter && activeTypeFilter === 'all') {
+    url.searchParams.delete('filter');
   }
   window.history.replaceState({}, '', `${url.pathname}${url.search}${url.hash}`);
 }
 
-function normalizeFilterValue(filterValue) {
+function normalizeTimeFilter(filterValue) {
   const value = String(filterValue || '').trim();
   if (!value) return 'all';
-  const allowed = new Set(['all', 'Hoy', 'Este finde', 'Esta semana', 'Este mes', 'free']);
+  const allowed = new Set(['all', 'Hoy', 'Este finde', 'Esta semana', 'Próxima semana', 'Este mes']);
   return allowed.has(value) ? value : 'all';
+}
+
+function normalizeTypeFilter(filterValue) {
+  const value = String(filterValue || '').trim();
+  if (!value || value === 'all' || isQuickFilter(value) || value === 'free') return 'all';
+  const categories = new Set((Array.isArray(window.__FILTERS__) ? window.__FILTERS__ : []).map(String));
+  return categories.has(value) ? value : 'all';
 }
 
 function getLabel(filterValue) {
@@ -193,13 +288,34 @@ function getLabel(filterValue) {
       return 'Este finde';
     case 'Esta semana':
       return 'Esta semana';
+    case 'Próxima semana':
+      return 'Próxima semana';
     case 'Este mes':
       return 'Este mes';
     case 'free':
       return 'Gratis';
     default:
-      return 'Todos';
+      return filterValue || 'Todos';
   }
+}
+
+function isQuickFilter(value) {
+  return ['Hoy', 'Este finde', 'Esta semana', 'Próxima semana', 'Este mes', 'free'].includes(value);
+}
+
+function getCombinedLabel() {
+  const parts = [];
+  if (activeTimeFilter !== 'all') parts.push(getLabel(activeTimeFilter));
+  if (activeFreeFilter) parts.push('Gratis');
+  if (activeTypeFilter !== 'all') parts.push(activeTypeFilter);
+  return parts.length ? parts.join(' · ') : 'Próximos eventos';
+}
+
+function updateTypePill() {
+  if (!typeSelectWrap || !typeSelectLabel || !typeSelect) return;
+  const active = typeSelect.value && typeSelect.value !== 'all';
+  typeSelectWrap.classList.toggle('mobile-chip-active', Boolean(active));
+  typeSelectLabel.textContent = active ? typeSelect.value : 'Tipo';
 }
 
 function renderWeekGroups() {
@@ -250,10 +366,36 @@ function openMenu() {
   document.body.style.overflow = 'hidden';
 }
 
+function setupScrollTopButton() {
+  if (!scrollTopButton) return;
+  const onScroll = () => {
+    const shouldShow = window.scrollY > 280;
+    scrollTopButton.classList.toggle('is-hidden', !shouldShow);
+  };
+  onScroll();
+  window.addEventListener('scroll', onScroll, { passive: true });
+  scrollTopButton.addEventListener('click', () => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  });
+}
+
 function closeMenu() {
   if (!menuDrawer) return;
   menuDrawer.hidden = true;
   document.body.style.overflow = '';
+}
+
+function openAddEventModal() {
+  if (!addEventModal) return;
+  addEventModal.hidden = false;
+  document.body.style.overflow = 'hidden';
+}
+
+function closeAddEventModal() {
+  if (!addEventModal) return;
+  addEventModal.hidden = true;
+  document.body.style.overflow = '';
+  addEventOpenButton?.focus();
 }
 
 function renderWeekItem(event) {
@@ -287,7 +429,7 @@ function isWithinHorizon(iso) {
   return date >= today && date <= horizonEnd;
 }
 
-function filterWeekGroups(filterValue) {
+function filterWeekGroups() {
   if (!weekGroups) return;
 
   const items = Array.from(weekGroups.querySelectorAll('[data-category]'));
@@ -295,14 +437,16 @@ function filterWeekGroups(filterValue) {
     const category = item.dataset.category || '';
     const isFree = item.dataset.free === 'true';
       const startsAt = item.dataset.startsAt ? parseDateLike(item.dataset.startsAt) : null;
-      const visible =
-        filterValue === 'all' ||
-        (filterValue === 'Hoy' && startsAt && sameDay(startsAt, today)) ||
-        (filterValue === 'Este finde' && startsAt && startsAt >= today && startsAt <= weekEnd && isWeekend(startsAt)) ||
-        (filterValue === 'Esta semana' && startsAt && startsAt >= weekStart && startsAt <= weekEnd) ||
-        (filterValue === 'Este mes' && startsAt && startsAt <= monthEnd) ||
-        (filterValue === 'free' && isFree) ||
-        category === filterValue;
+      const timeVisible =
+        activeTimeFilter === 'all' ||
+        (activeTimeFilter === 'Hoy' && startsAt && sameDay(startsAt, today)) ||
+        (activeTimeFilter === 'Este finde' && startsAt && startsAt >= today && startsAt <= weekEnd && isWeekend(startsAt)) ||
+        (activeTimeFilter === 'Esta semana' && startsAt && startsAt >= weekStart && startsAt <= weekEnd) ||
+        (activeTimeFilter === 'Próxima semana' && startsAt && startsAt >= nextWeekStart && startsAt <= nextWeekEnd) ||
+        (activeTimeFilter === 'Este mes' && startsAt && startsAt <= monthEnd);
+      const freeVisible = !activeFreeFilter || isFree;
+      const typeVisible = activeTypeFilter === 'all' || category === activeTypeFilter;
+      const visible = timeVisible && freeVisible && typeVisible;
     item.style.display = visible ? '' : 'none';
   });
 
@@ -314,6 +458,17 @@ function filterWeekGroups(filterValue) {
   if (weekEmpty) {
     weekEmpty.classList.toggle('hidden', anyVisible);
   }
+}
+
+function toggleQuickFilter(filterValue) {
+  if (filterValue === 'free') {
+    activeFreeFilter = !activeFreeFilter;
+    applyFilters();
+    return;
+  }
+  const normalized = normalizeTimeFilter(filterValue);
+  activeTimeFilter = activeTimeFilter === normalized ? 'all' : normalized;
+  applyFilters();
 }
 
 function toLocalDateKey(date) {
@@ -410,4 +565,28 @@ function setShareFailure(button) {
   window.setTimeout(() => {
     icon.className = previous;
   }, 1600);
+}
+
+async function shareSite(button = shareSiteButton) {
+  const shareUrl = window.location.origin;
+  const message = 'Descubre qué hacer en Valladolid: eventos culturales compartidos por Aldea Pucela.';
+  try {
+    if (navigator.share) {
+      await navigator.share({
+        title: 'Aldea Pucela Eventos',
+        text: message,
+        url: shareUrl
+      });
+      setShareSuccess(button);
+      return;
+    }
+    throw new Error('no web share');
+  } catch {
+    try {
+      await navigator.clipboard.writeText(`${message}\n\n${shareUrl}`);
+      setShareSuccess(button);
+    } catch {
+      setShareFailure(button);
+    }
+  }
 }
