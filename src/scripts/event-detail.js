@@ -31,7 +31,10 @@ document.addEventListener('click', async (event) => {
   if (saveButton) {
     event.preventDefault();
     event.stopPropagation();
-    toggleSaved(saveButton.dataset.eventId);
+    const action = toggleSaved(saveButton.dataset.eventId);
+    if (action && typeof window.showSavedToast === 'function') {
+      window.showSavedToast({ action });
+    }
   }
 
   if (shareButton) {
@@ -292,18 +295,22 @@ function setSavedEvents(ids) {
   window.localStorage.setItem(storageKey, JSON.stringify(ids));
 }
 
-function toggleSaved(eventId, button) {
+function toggleSaved(eventId) {
   const id = String(eventId || '');
-  if (!id) return;
+  if (!id) return null;
 
   const saved = new Set(getSavedEvents().map(String));
   if (saved.has(id)) {
     saved.delete(id);
+    setSavedEvents(Array.from(saved));
+    syncSavedStates();
+    return 'removed';
   } else {
     saved.add(id);
+    setSavedEvents(Array.from(saved));
+    syncSavedStates();
+    return 'added';
   }
-  setSavedEvents(Array.from(saved));
-  syncSavedStates();
 }
 
 function syncSavedStates() {

@@ -19,6 +19,10 @@
         <i class="fa-regular fa-bookmark" aria-hidden="true"></i>
         <span>Mis guardados</span>
       </a>
+      <button class="nav-link" type="button" data-subscribe-open>
+        <i class="fa-solid fa-rss" aria-hidden="true"></i>
+        <span>Suscribirse</span>
+      </button>
       <a class="nav-link" href="https://aldeapucela.org" target="_blank" rel="noopener noreferrer">
         <i class="fa-solid fa-people-group" aria-hidden="true"></i>
         <span>Comunidad</span>
@@ -83,6 +87,10 @@
         <i class="menu-drawer-link-icon fa-regular fa-bookmark" aria-hidden="true"></i>
         <span>Mis guardados</span>
       </a>
+      <button class="menu-drawer-link" type="button" data-subscribe-open>
+        <i class="menu-drawer-link-icon fa-solid fa-rss" aria-hidden="true"></i>
+        <span>Suscribirse</span>
+      </button>
       <a class="menu-drawer-link" href="https://aldeapucela.org" target="_blank" rel="noopener noreferrer">
         <i class="menu-drawer-link-icon fa-solid fa-people-group" aria-hidden="true"></i>
         <span>Comunidad</span>
@@ -92,6 +100,49 @@
         <span>Chat sobre eventos</span>
       </a>
     </nav>
+  </aside>
+</div>
+
+<div class="calendar-modal" data-subscribe-modal hidden>
+  <button class="calendar-modal-backdrop" type="button" data-subscribe-close aria-label="Cerrar diálogo"></button>
+  <aside class="calendar-modal-panel subscribe-modal-panel" role="dialog" aria-modal="true" aria-labelledby="subscribe-modal-title">
+    <div class="calendar-modal-header">
+      <div>
+        <h2 class="calendar-modal-title" id="subscribe-modal-title">Suscribirse</h2>
+        <p class="calendar-modal-copy">Copia las URL o abre tus apps favoritas para seguir los eventos y novedades.</p>
+      </div>
+      <button class="calendar-modal-close" type="button" data-subscribe-close aria-label="Cerrar">
+        <i class="fa-solid fa-xmark"></i>
+      </button>
+    </div>
+
+    <section class="subscribe-section">
+      <h3 class="subscribe-section-title"><i class="fa-regular fa-calendar"></i><span>Calendario</span></h3>
+      <p class="subscribe-section-copy">Suscríbete al calendario completo (incluye próximos e históricos).</p>
+      <div class="subscribe-url-row">
+        <input class="subscribe-url-input" type="text" value="https://eventos.aldeapucela.org/calendar.ics" readonly data-copy-source="calendar" />
+        <button class="calendar-modal-action calendar-modal-action-primary subscribe-copy-btn" type="button" data-copy-url="calendar">Copiar</button>
+      </div>
+      <div class="subscribe-links-grid">
+        <a class="calendar-modal-action" href="https://calendar.google.com/calendar/u/0/r/settings/addbyurl?url=https%3A%2F%2Feventos.aldeapucela.org%2Fcalendar.ics" target="_blank" rel="noopener noreferrer"><i class="fa-brands fa-google" aria-hidden="true"></i><span>Google Calendar</span></a>
+        <a class="calendar-modal-action" href="webcal://eventos.aldeapucela.org/calendar.ics"><i class="fa-brands fa-apple" aria-hidden="true"></i><span>Apple Calendar</span></a>
+        <a class="calendar-modal-action" href="https://outlook.live.com/calendar/0/addcalendar?url=https%3A%2F%2Feventos.aldeapucela.org%2Fcalendar.ics&name=Aldea%20Pucela%20Eventos" target="_blank" rel="noopener noreferrer"><i class="fa-brands fa-microsoft" aria-hidden="true"></i><span>Outlook</span></a>
+      </div>
+    </section>
+
+    <section class="subscribe-section">
+      <h3 class="subscribe-section-title"><i class="fa-solid fa-rss"></i><span>RSS</span></h3>
+      <p class="subscribe-section-copy">Recibe nuevas publicaciones en tu lector favorito.</p>
+      <div class="subscribe-url-row">
+        <input class="subscribe-url-input" type="text" value="https://eventos.aldeapucela.org/rss.xml" readonly data-copy-source="rss" />
+        <button class="calendar-modal-action calendar-modal-action-primary subscribe-copy-btn" type="button" data-copy-url="rss">Copiar</button>
+      </div>
+      <div class="subscribe-links-grid">
+        <a class="calendar-modal-action" href="https://feedly.com/i/subscription/feed/https%3A%2F%2Feventos.aldeapucela.org%2Frss.xml" target="_blank" rel="noopener noreferrer"><i class="fa-brands fa-feedly" aria-hidden="true"></i><span>Feedly</span></a>
+        <a class="calendar-modal-action" href="https://www.inoreader.com/?add_feed=https%3A%2F%2Feventos.aldeapucela.org%2Frss.xml" target="_blank" rel="noopener noreferrer"><i class="fa-solid fa-rss" aria-hidden="true"></i><span>Inoreader</span></a>
+        <a class="calendar-modal-action" href="https://theoldreader.com/feeds/subscribe?url=https%3A%2F%2Feventos.aldeapucela.org%2Frss.xml" target="_blank" rel="noopener noreferrer"><i class="fa-solid fa-rss" aria-hidden="true"></i><span>The Old Reader</span></a>
+      </div>
+    </section>
   </aside>
 </div>
 {% endblock %}

@@ -6,6 +6,8 @@
     <meta name="description" content="{{ meta.description or 'Agenda cultural de Aldea Pucela' }}" />
     <title>{{ title or 'Aldea Pucela Eventos' }}</title>
     <link rel="icon" type="image/png" href="/assets/favicon.png" />
+    <link rel="alternate" type="application/rss+xml" title="Aldea Pucela Eventos RSS" href="https://eventos.aldeapucela.org/rss.xml" />
+    <link rel="alternate" type="text/calendar" title="Aldea Pucela Eventos Calendario" href="https://eventos.aldeapucela.org/calendar.ics" />
     {% if social %}
     <meta property="og:type" content="{{ social.type or 'website' }}" />
     <meta property="og:title" content="{{ social.title or title or 'Aldea Pucela Eventos' }}" />
@@ -23,9 +25,50 @@
   <body>
     {% block header %}{% endblock %}
     {% block body %}{% endblock %}
+    <div class="saved-toast" data-saved-toast aria-live="polite" aria-atomic="true" hidden>
+      <p class="saved-toast-copy">
+        <span data-saved-toast-prefix></span>&nbsp;
+        <a class="saved-toast-link" href="/guardados"> lista de guardados</a>
+      </p>
+    </div>
     <script>
       window.__EVENTS__ = {{ eventsJson | safe }};
       window.__FILTERS__ = {{ filtersJson | safe }};
+      (function () {
+        const toast = document.querySelector('[data-saved-toast]');
+        if (!toast) return;
+        const prefix = toast.querySelector('[data-saved-toast-prefix]');
+        const link = toast.querySelector('.saved-toast-link');
+        let hideTimer = null;
+        const copy = {
+          added: 'Evento añadido a tu ',
+          removed: 'Evento eliminado de tu '
+        };
+
+        window.showSavedToast = function showSavedToast(options) {
+          const action = options && options.action === 'removed' ? 'removed' : 'added';
+          if (prefix) {
+            prefix.textContent = copy[action];
+          }
+          toast.hidden = false;
+          toast.classList.add('saved-toast-visible');
+          window.clearTimeout(hideTimer);
+          hideTimer = window.setTimeout(() => {
+            toast.classList.remove('saved-toast-visible');
+            window.setTimeout(() => {
+              if (!toast.classList.contains('saved-toast-visible')) {
+                toast.hidden = true;
+              }
+            }, 180);
+          }, 2000);
+        };
+
+        if (link) {
+          link.addEventListener('click', () => {
+            window.clearTimeout(hideTimer);
+          });
+        }
+      }());
     </script>
     <script src="/assets/js/matomo.js?v={{ assetVersion }}"></script>
     <script src="/assets/js/{{ pageJs }}?v={{ assetVersion }}" defer></script>

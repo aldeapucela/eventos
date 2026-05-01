@@ -14,6 +14,7 @@ const shareSiteButton = document.querySelector('[data-share-site]');
 const menuDrawer = document.querySelector('[data-menu-drawer]');
 const addEventOpenButton = document.querySelector('[data-add-event-open]');
 const addEventModal = document.querySelector('[data-add-event-modal]');
+const subscribeModal = document.querySelector('[data-subscribe-modal]');
 const events = Array.isArray(window.__EVENTS__?.events) ? window.__EVENTS__.events : [];
 const storageKey = 'aldeapucela_saved_events';
 
@@ -51,11 +52,17 @@ document.addEventListener('click', async (event) => {
   const shareSiteTrigger = event.target.closest('[data-share-site]');
   const addEventOpen = event.target.closest('[data-add-event-open]');
   const addEventClose = event.target.closest('[data-add-event-close]');
+  const subscribeOpen = event.target.closest('[data-subscribe-open]');
+  const subscribeClose = event.target.closest('[data-subscribe-close]');
+  const copyButton = event.target.closest('[data-copy-url]');
 
   if (saveButton) {
     event.preventDefault();
     event.stopPropagation();
-    toggleSaved(saveButton.dataset.eventId, saveButton);
+    const action = toggleSaved(saveButton.dataset.eventId);
+    if (action && typeof window.showSavedToast === 'function') {
+      window.showSavedToast({ action });
+    }
   }
 
   if (shareButton) {
@@ -95,11 +102,30 @@ document.addEventListener('click', async (event) => {
     event.preventDefault();
     closeAddEventModal();
   }
+
+  if (subscribeOpen) {
+    event.preventDefault();
+    closeMenu();
+    openSubscribeModal();
+  }
+
+  if (subscribeClose) {
+    event.preventDefault();
+    closeSubscribeModal();
+  }
+
+  if (copyButton) {
+    event.preventDefault();
+    copySubscribeUrl(copyButton);
+  }
 });
 
 document.addEventListener('keydown', (event) => {
   if (event.key === 'Escape' && addEventModal && !addEventModal.hidden) {
     closeAddEventModal();
+  }
+  if (event.key === 'Escape' && subscribeModal && !subscribeModal.hidden) {
+    closeSubscribeModal();
   }
 });
 
@@ -393,6 +419,45 @@ function openAddEventModal() {
   document.body.style.overflow = 'hidden';
 }
 
+function openSubscribeModal() {
+  if (!subscribeModal) return;
+  subscribeModal.hidden = false;
+  document.body.style.overflow = 'hidden';
+  subscribeModal.querySelector('[data-subscribe-close]')?.focus();
+}
+
+function closeSubscribeModal() {
+  if (!subscribeModal) return;
+  subscribeModal.hidden = true;
+  document.body.style.overflow = '';
+}
+
+async function copySubscribeUrl(button) {
+  const key = button.dataset.copyUrl;
+  const input = document.querySelector(`[data-copy-source="${key}"]`);
+  if (!input) return;
+  const value = input.value;
+  const originalLabel = button.textContent;
+  try {
+    if (navigator.clipboard?.writeText) {
+      await navigator.clipboard.writeText(value);
+    } else {
+      input.removeAttribute('readonly');
+      input.focus();
+      input.select();
+      document.execCommand('copy');
+      input.setAttribute('readonly', 'readonly');
+    }
+    button.textContent = 'Copiado';
+    window.setTimeout(() => {
+      button.textContent = originalLabel;
+    }, 1200);
+  } catch {
+    input.focus();
+    input.select();
+  }
+}
+
 function closeAddEventModal() {
   if (!addEventModal) return;
   addEventModal.hidden = true;
@@ -494,20 +559,22 @@ function setSavedEvents(ids) {
   window.localStorage.setItem(storageKey, JSON.stringify(ids));
 }
 
-function toggleSaved(eventId, button) {
+function toggleSaved(eventId) {
   const id = String(eventId || '');
-  if (!id) return;
+  if (!id) return null;
 
   const saved = new Set(getSavedEvents().map(String));
   if (saved.has(id)) {
     saved.delete(id);
-    button.classList.remove('event-compact-action-active');
-    button.innerHTML = '<i class="fa-regular fa-bookmark"></i>';
+    setSavedEvents(Array.from(saved));
+    syncSavedStates();
+    return 'removed';
   } else {
     saved.add(id);
+    setSavedEvents(Array.from(saved));
+    syncSavedStates();
+    return 'added';
   }
-  setSavedEvents(Array.from(saved));
-  syncSavedStates();
 }
 
 function syncSavedStates() {

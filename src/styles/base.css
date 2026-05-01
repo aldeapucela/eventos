@@ -219,6 +219,22 @@
     @apply mt-5 flex h-12 items-center gap-3 rounded-full border border-line bg-white px-4 text-sm text-slate-400 shadow-sm;
   }
 
+  .saved-toast {
+    @apply pointer-events-none fixed inset-0 z-50 flex items-center justify-center px-4 opacity-0 transition-opacity duration-200;
+  }
+
+  .saved-toast-visible {
+    @apply opacity-100;
+  }
+
+  .saved-toast-copy {
+    @apply pointer-events-auto inline-flex min-h-12 items-center rounded-2xl border border-line bg-white/95 px-5 py-3 text-[15px] font-medium leading-6 text-slate-700 shadow-sm backdrop-blur;
+  }
+
+  .saved-toast-link {
+    @apply font-semibold text-brand-700 underline decoration-brand-400/70 underline-offset-2 transition hover:text-brand-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-300 focus-visible:ring-offset-2 focus-visible:ring-offset-white;
+  }
+
   .hero-mobile-visual {
     @apply relative bg-[#f4ede1] bg-cover bg-center;
   }
@@ -645,6 +661,42 @@
     @apply text-base text-current;
   }
 
+  .subscribe-modal-panel {
+    @apply max-h-[86vh] overflow-y-auto;
+  }
+
+  .subscribe-section {
+    @apply mt-6 border-t border-line pt-5;
+  }
+
+  .subscribe-section-title {
+    @apply inline-flex items-center gap-2 font-display text-xl font-bold text-ink;
+  }
+
+  .subscribe-section-title i {
+    @apply text-base text-brand-600;
+  }
+
+  .subscribe-section-copy {
+    @apply mt-2 text-sm leading-6 text-slate-600;
+  }
+
+  .subscribe-url-row {
+    @apply mt-3 grid gap-3 sm:grid-cols-[1fr_auto];
+  }
+
+  .subscribe-url-input {
+    @apply min-h-12 w-full rounded-2xl border border-line bg-paper px-4 text-sm text-ink;
+  }
+
+  .subscribe-copy-btn {
+    @apply min-h-12 px-5;
+  }
+
+  .subscribe-links-grid {
+    @apply mt-3 grid gap-3 sm:grid-cols-2;
+  }
+
   .detail-lightbox {
     @apply fixed inset-0 z-50 flex items-center justify-center p-4;
   }
@@ -1060,9 +1112,13 @@
     @apply p-3;
   }
 
-  .detail-mobile-copy {
-    @apply text-sm leading-6;
-  }
+    .detail-mobile-copy {
+      @apply text-sm leading-6;
+    }
+
+    .saved-toast-copy {
+      @apply max-w-[22rem] px-4 py-3 text-sm leading-6;
+    }
 
   @media (max-width: 767px) {
     #event-grid[hidden] {
