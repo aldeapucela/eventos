@@ -17,7 +17,7 @@
     <meta name="twitter:description" content="{{ social.description or meta.description or 'Agenda cultural de Aldea Pucela' }}" />
     {% if social.image %}<meta name="twitter:image" content="{{ social.image }}" />{% endif %}
     {% endif %}
-    <link rel="stylesheet" href="/assets/css/{{ pageCss }}" />
+    <link rel="stylesheet" href="/assets/css/{{ pageCss }}?v={{ assetVersion }}" />
     <link rel="stylesheet" href="/assets/fontawesome/css/all.min.css" />
   </head>
   <body>
@@ -27,7 +27,7 @@
       window.__EVENTS__ = {{ eventsJson | safe }};
       window.__FILTERS__ = {{ filtersJson | safe }};
     </script>
-    <script src="/assets/js/matomo.js"></script>
-    <script src="/assets/js/{{ pageJs }}" defer></script>
+    <script src="/assets/js/matomo.js?v={{ assetVersion }}"></script>
+    <script src="/assets/js/{{ pageJs }}?v={{ assetVersion }}" defer></script>
   </body>
 </html>

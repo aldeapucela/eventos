@@ -319,24 +319,26 @@ function syncSavedStates() {
 async function shareEvent(url, title, button) {
   const shareUrl = withShareCampaign(url || window.location.pathname);
   const shareText = `${title}\n\n${shareUrl}`;
+
+  if (navigator.share) {
+    try {
+      await navigator.share({
+        title,
+        text: shareText,
+        url: shareUrl
+      });
+      setShareSuccess(button);
+      return;
+    } catch (error) {
+      if (error?.name === 'AbortError') return;
+    }
+  }
+
   try {
     await navigator.clipboard.writeText(shareText);
     setShareSuccess(button);
   } catch {
-    try {
-      if (navigator.share) {
-        await navigator.share({
-          title,
-          text: shareText,
-          url: shareUrl
-        });
-        setShareSuccess(button);
-        return;
-      }
-      throw new Error('no share support');
-    } catch {
-      setShareFailure(button);
-    }
+    setShareFailure(button);
   }
 }
 

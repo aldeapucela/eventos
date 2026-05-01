@@ -1,5 +1,6 @@
 import fs from 'node:fs/promises';
 import path from 'node:path';
+import { createHash } from 'node:crypto';
 import nunjucks from 'nunjucks';
 import postcss from 'postcss';
 import tailwindcss from 'tailwindcss';
@@ -144,6 +145,23 @@ function toLocalDateKey(date) {
   return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`;
 }
 
+async function computeAssetVersion() {
+  const files = [
+    path.join(root, 'src', 'styles', 'base.css'),
+    path.join(root, 'src', 'styles', 'home.css'),
+    path.join(root, 'src', 'styles', 'event-detail.css'),
+    path.join(root, 'src', 'scripts', 'home.js'),
+    path.join(root, 'src', 'scripts', 'saved-events.js'),
+    path.join(root, 'src', 'scripts', 'event-detail.js'),
+    path.join(root, 'src', 'scripts', 'matomo.js')
+  ];
+  const hash = createHash('sha1');
+  for (const file of files) {
+    hash.update(await fs.readFile(file));
+  }
+  return hash.digest('hex').slice(0, 10);
+}
+
 async function buildSite(events) {
   await fs.rm(dist, { recursive: true, force: true });
   await ensureDirs();
@@ -156,11 +174,13 @@ async function buildSite(events) {
   const sorted = sortEvents(events).map(enrichEvent);
   const filters = deriveFilters(events);
   const { featured, week, ongoing, today } = splitFeatured(events);
+  const assetVersion = await computeAssetVersion();
 
   const sharedContext = {
     filtersJson: JSON.stringify(filters),
     eventsJson: siteDataPayload(events),
-    filters
+    filters,
+    assetVersion
   };
 
   await writeFile('index.html', render('home.njk', {
