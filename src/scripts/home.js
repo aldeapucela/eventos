@@ -83,8 +83,7 @@ document.addEventListener('click', async (event) => {
     event.preventDefault();
     closeMenu();
     toggleQuickFilter(menuPick.dataset.filter);
-    const target = document.querySelector(`[data-filter="${CSS.escape(menuPick.dataset.filter)}"]`);
-    target?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
   if (addEventOpen) {
@@ -152,7 +151,10 @@ function applyFilters(options = {}) {
 
 filters.forEach((button) => {
   button.setAttribute('aria-pressed', 'false');
-  button.addEventListener('click', () => toggleQuickFilter(button.dataset.filter));
+  button.addEventListener('click', () => {
+    if (button.closest('[data-menu-drawer]')) return;
+    toggleQuickFilter(button.dataset.filter);
+  });
 });
 
 if (typeSelect) {

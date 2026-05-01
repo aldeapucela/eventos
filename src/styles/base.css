@@ -31,11 +31,11 @@
   }
 
   .topbar {
-    @apply sticky top-0 z-20 border-b border-line bg-white/80 backdrop-blur-xl;
+    @apply sticky top-0 z-20 border-b border-line bg-white;
   }
 
   .detail-topbar {
-    @apply bg-white/95 backdrop-blur-xl;
+    @apply bg-white;
   }
 
   .topbar-inner {
@@ -115,7 +115,7 @@
   }
 
   .menu-drawer-link-icon {
-    @apply h-5 w-5 shrink-0 text-slate-500;
+    @apply inline-flex h-5 w-5 shrink-0 items-center justify-center text-[18px] leading-none text-slate-500;
   }
 
   .menu-drawer-link-active {
@@ -140,7 +140,11 @@
   }
 
   .menu-drawer-pick-icon {
-    @apply h-5 w-5 shrink-0 text-slate-400;
+    @apply inline-flex h-5 w-5 shrink-0 items-center justify-center text-[18px] leading-none text-slate-400;
+  }
+
+  .menu-drawer-pick.pill-active .menu-drawer-pick-icon {
+    @apply text-white;
   }
 
   .search-field {
@@ -951,11 +955,11 @@
 
   @media (max-width: 767px) {
     .topbar {
-      @apply border-b-0 bg-transparent;
+      @apply border-b border-line bg-white;
     }
 
     .detail-topbar {
-      @apply border-b border-line bg-white/95;
+      @apply border-b border-line bg-white;
     }
 
     .topbar-inner {
@@ -1094,6 +1098,36 @@
     }
 
     .week-day-group .event-compact-action {
+      @apply h-8 w-8 rounded-full bg-white/90 text-slate-500 shadow-sm;
+    }
+
+    .saved-day-group .event-row-list {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 0.75rem;
+    }
+
+    .saved-day-group .event-compact {
+      @apply relative block overflow-hidden rounded-2xl border border-line/70 bg-white;
+    }
+
+    .saved-day-group .event-compact-link {
+      @apply grid-cols-1 gap-0 p-0;
+    }
+
+    .saved-day-group .event-compact-image {
+      @apply aspect-[4/5] rounded-none;
+    }
+
+    .saved-day-group .event-compact-copy {
+      @apply p-3;
+    }
+
+    .saved-day-group .event-compact-actions {
+      @apply absolute right-2 top-2 z-10 w-auto p-0;
+    }
+
+    .saved-day-group .event-compact-action {
       @apply h-8 w-8 rounded-full bg-white/90 text-slate-500 shadow-sm;
     }
 
