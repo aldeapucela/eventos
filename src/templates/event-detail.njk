@@ -21,8 +21,22 @@
       </div>
     </a>
     <nav class="header-main-nav hidden lg:flex" aria-label="Navegación principal">
-      <a class="nav-link" href="/">Inicio</a>
-      <a class="nav-link" href="/guardados">Mis guardados</a>
+      <a class="nav-link " href="/">
+        <i class="fa-solid fa-house" aria-hidden="true"></i>
+        <span>Inicio</span>
+      </a>
+      <a class="nav-link " href="/guardados">
+        <i class="fa-regular fa-bookmark" aria-hidden="true"></i>
+        <span>Mis guardados</span>
+      </a>
+      <a class="nav-link" href="https://aldeapucela.org" target="_blank" rel="noopener noreferrer">
+        <i class="fa-solid fa-people-group" aria-hidden="true"></i>
+        <span>Comunidad</span>
+      </a>
+      <a class="nav-link" href="https://t.me/aldeapucela/244" target="_blank" rel="noopener noreferrer">
+        <i class="fa-brands fa-telegram" aria-hidden="true"></i>
+        <span>Chat</span>
+      </a>
     </nav>
     <div class="detail-topbar-actions flex items-center gap-3 text-slate-500">
       <button class="detail-topbar-mobile-action inline-flex items-center justify-center md:hidden" type="button" data-save-event data-event-id="{{ event.id }}" aria-label="Guardar"><i class="fa-regular fa-bookmark"></i></button>

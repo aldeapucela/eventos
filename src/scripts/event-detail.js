@@ -317,7 +317,7 @@ function syncSavedStates() {
 }
 
 async function shareEvent(url, title, button) {
-  const shareUrl = new URL(url || window.location.pathname, window.location.origin).toString();
+  const shareUrl = withShareCampaign(url || window.location.pathname);
   const shareText = `${title}\n\n${shareUrl}`;
   try {
     await navigator.clipboard.writeText(shareText);
@@ -338,6 +338,12 @@ async function shareEvent(url, title, button) {
       setShareFailure(button);
     }
   }
+}
+
+function withShareCampaign(url) {
+  const shareUrl = new URL(url || window.location.pathname, window.location.origin);
+  shareUrl.searchParams.set('mtm_campaign', 'share');
+  return shareUrl.toString();
 }
 
 function setButtonFeedback(button, label) {

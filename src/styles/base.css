@@ -71,7 +71,7 @@
   }
 
   .header-main-nav {
-    @apply items-center gap-2;
+    @apply items-center gap-1;
   }
 
   .menu-drawer {
@@ -152,10 +152,18 @@
   }
 
   .nav-link {
-    @apply text-sm font-medium text-slate-600 transition hover:text-brand-700;
+    @apply inline-flex min-h-11 items-center gap-2 rounded-full px-3 text-sm font-medium text-slate-600 transition hover:bg-slate-100 hover:text-brand-700;
+  }
+
+  .nav-link i {
+    @apply text-sm text-slate-500;
   }
 
   .nav-link-active {
+    @apply bg-brand-50 text-brand-700;
+  }
+
+  .nav-link-active i {
     @apply text-brand-700;
   }
 

@@ -524,7 +524,7 @@ function syncSavedStates() {
 }
 
 async function shareEvent(url, title, button) {
-  const shareUrl = new URL(url || window.location.pathname, window.location.origin).toString();
+  const shareUrl = withShareCampaign(url || window.location.pathname);
   const shareText = `${title || document.title}\n\n${shareUrl}`;
   try {
     await navigator.clipboard.writeText(shareText);
@@ -570,7 +570,7 @@ function setShareFailure(button) {
 }
 
 async function shareSite(button = shareSiteButton) {
-  const shareUrl = window.location.origin;
+  const shareUrl = withShareCampaign('/');
   const message = 'Descubre qué hacer en Valladolid: eventos culturales compartidos por Aldea Pucela.';
   try {
     if (navigator.share) {
@@ -591,4 +591,10 @@ async function shareSite(button = shareSiteButton) {
       setShareFailure(button);
     }
   }
+}
+
+function withShareCampaign(url) {
+  const shareUrl = new URL(url || window.location.pathname, window.location.origin);
+  shareUrl.searchParams.set('mtm_campaign', 'share');
+  return shareUrl.toString();
 }
