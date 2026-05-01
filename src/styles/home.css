@@ -1,0 +1,7 @@
+@layer components {
+  .hero-grid {
+    background:
+      radial-gradient(circle at top right, rgba(127, 91, 180, 0.14), transparent 30%),
+      linear-gradient(180deg, rgba(255, 255, 255, 0.92), rgba(251, 250, 248, 0.98));
+  }
+}

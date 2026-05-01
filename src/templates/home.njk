@@ -1,0 +1,162 @@
+{% extends "layout.njk" %}
+
+{% block header %}
+<header class="topbar">
+  <div class="topbar-inner">
+    <a class="header-brand home-brand-mobile flex items-center gap-4" href="/" aria-label="Aldea Pucela Eventos">
+      <img src="https://aldeapucela.org/img/logo-web.jpg" alt="" class="home-brand-mobile-mark" />
+      <span class="home-brand-mobile-copy">
+        <span class="home-brand-mobile-kicker">ALDEA PUCELA</span>
+        <span class="home-brand-mobile-title">Eventos</span>
+      </span>
+    </a>
+    <button class="header-search-btn inline-flex h-11 w-11 items-center justify-center rounded-full text-slate-500 lg:hidden" type="button" data-menu-open aria-label="Abrir menú">
+      <i class="fa-solid fa-bars"></i>
+    </button>
+  </div>
+</header>
+{% endblock %}
+
+{% block body %}
+<main class="page-shell py-5 sm:py-8 lg:py-10">
+  <section class="home-layout space-y-8 lg:space-y-10">
+    <div class="home-column space-y-6">
+      <section class="hero-mobile-copy">
+        <h1 class="hero-mobile-title">Qué hacer en Valladolid</h1>
+        <p class="hero-mobile-subtitle">Agenda vecinal de eventos culturales</p>
+
+        <div class="hero-mobile-search">
+          <i class="fa-solid fa-magnifying-glass"></i>
+          <span>Buscar eventos, lugares, temas...</span>
+        </div>
+
+        <div class="mobile-chip-row" aria-label="Filtros rápidos">
+          <button class="mobile-chip" data-filter="Hoy">Hoy</button>
+          <button class="mobile-chip" data-filter="Este finde">Este finde</button>
+          <button class="mobile-chip" data-filter="Esta semana">Esta semana</button>
+          <button class="mobile-chip" data-filter="Este mes">Este mes</button>
+          <button class="mobile-chip" data-filter="free">Gratis</button>
+        </div>
+      </section>
+
+      {% if featured %}
+      {% if featured %}
+      <section class="space-y-4">
+        <div class="section-mobile-head">
+          <h2 class="section-mobile-title">Destacado</h2>
+        </div>
+        <article class="featured-mobile-card">
+          <div class="featured-mobile-image" style="background-image:url('{{ featured.image }}')"></div>
+          <div class="featured-mobile-copy">
+            <p class="muted-label">{{ featured.categoryLabel or 'Destacado' }}</p>
+            <h3 class="featured-mobile-title">{{ featured.title }}</h3>
+            <p class="featured-mobile-summary">{{ featured.summary or featured.excerpt }}</p>
+            <div class="featured-mobile-meta">
+              <span>{% if featured.scheduleLabel %}{{ featured.scheduleLabel }}{% else %}{{ featured.dateRangeLabel }}{% endif %}</span>
+              {% if featured.location %}<span>{{ featured.location }}</span>{% endif %}
+            </div>
+            {% if featured.isFree %}
+            <span class="compact-badge compact-badge-success">Entrada libre</span>
+            {% endif %}
+          </div>
+        </article>
+      </section>
+      {% endif %}
+      {% endif %}
+
+      <section class="space-y-3">
+        <div class="section-mobile-head">
+          <h2 class="section-mobile-title" data-results-title>Próximos 30 días</h2>
+          <a class="section-mobile-link hidden" href="/" data-clear-filters>Ver todo</a>
+        </div>
+        <div class="week-groups" id="week-groups" data-week-groups></div>
+        <p class="hidden text-sm leading-6 text-slate-500" data-week-empty>No hay eventos para este filtro.</p>
+        <div class="event-row-list" id="event-grid" hidden>
+          {% for event in week %}
+          <article class="event-compact event-compact-featured" data-category="{{ event.categoryLabel }}" data-free="{{ 'true' if event.isFree else 'false' }}" data-starts-at="{{ event.startsAt }}">
+            <a href="{{ event.urlPath }}" class="event-compact-link">
+              <div class="event-compact-image" style="background-image:url('{{ event.image or '/assets/placeholder-event.svg' }}')"></div>
+              <div class="event-compact-copy">
+                <div class="event-compact-topline">
+                  <span>{% if event.scheduleLabel %}{{ event.scheduleLabel }}{% else %}{{ event.compactDateLabel }}{% if event.timeLabel %} · {{ event.timeLabel }}{% endif %}{% endif %}</span>
+                </div>
+                <h4 class="event-compact-title">{{ event.title }}</h4>
+                <p class="event-compact-meta">{{ event.location }}</p>
+                <div class="event-compact-badges">
+                  <span class="compact-badge">{{ event.categoryLabel or 'Evento' }}</span>
+                  {% if event.isFree %}<span class="compact-badge compact-badge-success">Gratis</span>{% endif %}
+                </div>
+              </div>
+            </a>
+            <div class="event-compact-actions">
+              <button class="event-compact-action" type="button" data-save-event data-event-id="{{ event.id }}" aria-label="Guardar evento">
+                <i class="fa-regular fa-bookmark"></i>
+              </button>
+            </div>
+          </article>
+          {% endfor %}
+        </div>
+      </section>
+
+      {% if ongoing.length %}
+      <section class="space-y-3">
+        <div class="section-mobile-head">
+          <h2 class="section-mobile-title">En curso</h2>
+        </div>
+        <div class="event-row-list">
+          {% for event in ongoing %}
+          <article class="event-compact event-compact-featured" data-starts-at="{{ event.startsAt }}">
+            <a href="{{ event.urlPath }}" class="event-compact-link">
+              <div class="event-compact-image" style="background-image:url('{{ event.image or '/assets/placeholder-event.svg' }}')"></div>
+              <div class="event-compact-copy">
+                <p class="event-compact-topline"><span>{% if event.endsAtDayLabel %}Hasta {{ event.endsAtDayLabel }}{% else %}{% if event.scheduleLabel %}{{ event.scheduleLabel }}{% else %}{{ event.compactDateLabel }}{% if event.timeLabel %} · {{ event.timeLabel }}{% endif %}{% endif %}{% endif %}</span></p>
+                <h4 class="event-compact-title">{{ event.title }}</h4>
+                <p class="event-compact-meta">{{ event.location }}</p>
+                <div class="event-compact-badges">
+                  <span class="compact-badge">{{ event.categoryLabel or 'Evento' }}</span>
+                </div>
+              </div>
+            </a>
+            <div class="event-compact-actions">
+              <button class="event-compact-action" type="button" data-save-event data-event-id="{{ event.id }}" aria-label="Guardar evento">
+                <i class="fa-regular fa-bookmark"></i>
+              </button>
+            </div>
+          </article>
+          {% endfor %}
+        </div>
+      </section>
+      {% endif %}
+  </section>
+</main>
+
+<div class="menu-drawer" data-menu-drawer hidden>
+  <button class="menu-drawer-backdrop" type="button" data-menu-close aria-label="Cerrar menú"></button>
+  <aside class="menu-drawer-panel" role="dialog" aria-modal="true" aria-label="Secciones">
+    <div class="menu-drawer-head">
+      <div>
+        <p class="menu-drawer-kicker">ALDEA PUCELA</p>
+        <h2 class="menu-drawer-title">Eventos</h2>
+      </div>
+      <button class="menu-drawer-close" type="button" data-menu-close aria-label="Cerrar menú">
+        <i class="fa-solid fa-xmark"></i>
+      </button>
+    </div>
+    <nav class="menu-drawer-nav">
+      <a href="/" class="menu-drawer-link menu-drawer-link-active">Inicio</a>
+      <a href="/" class="menu-drawer-link">Eventos</a>
+      <a href="/" class="menu-drawer-link">Foro</a>
+      <a href="/" class="menu-drawer-link">Guía vecinal</a>
+      <a href="/" class="menu-drawer-link">Proyectos</a>
+      <a href="/" class="menu-drawer-link">Noticias</a>
+    </nav>
+    <div class="menu-drawer-actions">
+      <button class="menu-drawer-pick" type="button" data-filter="Hoy">Hoy</button>
+      <button class="menu-drawer-pick" type="button" data-filter="Esta semana">Esta semana</button>
+      <button class="menu-drawer-pick" type="button" data-filter="Este finde">Este finde</button>
+      <button class="menu-drawer-pick" type="button" data-filter="Este mes">Este mes</button>
+      <button class="menu-drawer-pick" type="button" data-filter="free">Gratis</button>
+    </div>
+  </aside>
+</div>
+{% endblock %}

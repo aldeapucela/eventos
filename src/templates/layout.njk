@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content="{{ meta.description or 'Agenda cultural de Aldea Pucela' }}" />
+    <title>{{ title or 'Aldea Pucela Eventos' }}</title>
+    {% if social %}
+    <meta property="og:type" content="{{ social.type or 'website' }}" />
+    <meta property="og:title" content="{{ social.title or title or 'Aldea Pucela Eventos' }}" />
+    <meta property="og:description" content="{{ social.description or meta.description or 'Agenda cultural de Aldea Pucela' }}" />
+    {% if social.image %}<meta property="og:image" content="{{ social.image }}" />{% endif %}
+    {% if social.url %}<meta property="og:url" content="{{ social.url }}" />{% endif %}
+    <meta name="twitter:card" content="{{ social.card or 'summary_large_image' }}" />
+    <meta name="twitter:title" content="{{ social.title or title or 'Aldea Pucela Eventos' }}" />
+    <meta name="twitter:description" content="{{ social.description or meta.description or 'Agenda cultural de Aldea Pucela' }}" />
+    {% if social.image %}<meta name="twitter:image" content="{{ social.image }}" />{% endif %}
+    {% endif %}
+    <link rel="stylesheet" href="/assets/css/{{ pageCss }}" />
+    <link rel="stylesheet" href="/assets/fontawesome/css/all.min.css" />
+  </head>
+  <body>
+    {% block header %}{% endblock %}
+    {% block body %}{% endblock %}
+    <script>
+      window.__EVENTS__ = {{ eventsJson | safe }};
+      window.__FILTERS__ = {{ filtersJson | safe }};
+    </script>
+    <script src="/assets/js/{{ pageJs }}" defer></script>
+  </body>
+</html>

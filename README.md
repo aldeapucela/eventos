@@ -42,7 +42,7 @@ npm run dev
 El repositorio incluye un workflow que:
 
 - se ejecuta en cada `push` a `main`;
-- se ejecuta de forma programada cada 3 horas;
+- se ejecuta de forma programada cada hora;
 - permite lanzarlo manualmente desde GitHub Actions;
 - instala dependencias, reconstruye el sitio y publica `dist/` en GitHub Pages.
 
@@ -58,5 +58,5 @@ No hace falta versionar `dist/` ni `cache/`; GitHub Actions los genera en cada d
 
 ## Notas
 
-- La tarea programada usa UTC. El workflow actual corre a las `00:00`, `03:00`, `06:00`, `09:00`, `12:00`, `15:00`, `18:00` y `21:00` UTC.
+- La tarea programada usa UTC. El workflow actual corre a minuto `00` de cada hora.
 - Si quieres otra frecuencia, cambia la expresion `cron` del workflow.

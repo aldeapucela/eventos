@@ -1,0 +1,7 @@
+@layer components {
+  .detail-hero {
+    background:
+      linear-gradient(180deg, rgba(255, 255, 255, 0.18), rgba(255, 255, 255, 0.92)),
+      radial-gradient(circle at top left, rgba(127, 91, 180, 0.10), transparent 35%);
+  }
+}

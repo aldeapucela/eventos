@@ -1,0 +1,176 @@
+{% extends "layout.njk" %}
+
+{% block header %}
+<header class="topbar detail-topbar">
+  <div class="topbar-inner detail-topbar-inner">
+    <a class="detail-topbar-mobile-back inline-flex items-center justify-center text-slate-500" href="/" aria-label="Volver">
+      <i class="fa-solid fa-arrow-left"></i>
+    </a>
+    <a class="detail-brand-mobile detail-topbar-mobile-brand md:hidden" href="/" aria-label="Aldea Pucela Eventos">
+      <img src="https://aldeapucela.org/img/logo-web.jpg" alt="" class="detail-brand-mobile-mark" />
+      <span class="detail-brand-mobile-copy">
+        <span class="detail-brand-mobile-kicker">ALDEA PUCELA</span>
+        <span class="detail-brand-mobile-title">Eventos</span>
+      </span>
+    </a>
+    <a class="hidden items-center gap-3 md:flex" href="/">
+      <img src="https://aldeapucela.org/img/logo-web.jpg" alt="Aldea Pucela" class="h-12 w-12 rounded-2xl object-cover shadow-sm" />
+      <div>
+        <div class="font-display text-[10px] font-semibold uppercase tracking-[0.26em] text-brand-500">Aldea Pucela</div>
+        <div class="font-display text-base font-bold leading-tight text-ink">Eventos</div>
+      </div>
+    </a>
+    <div class="detail-topbar-actions flex items-center gap-3 text-slate-500">
+      <button class="detail-topbar-mobile-action inline-flex items-center justify-center md:hidden" type="button" data-save-event data-event-id="{{ event.id }}" aria-label="Guardar"><i class="fa-regular fa-bookmark"></i></button>
+      <button class="detail-topbar-mobile-action inline-flex items-center justify-center md:hidden" type="button" data-share-event data-event-url="{{ event.urlPath }}" data-event-title="{{ event.title }}" aria-label="Compartir"><i class="fa-solid fa-share-nodes"></i></button>
+      <button class="hidden md:inline-flex h-11 w-11 items-center justify-center rounded-full text-slate-500 transition hover:bg-slate-100 hover:text-brand-700" type="button" data-save-event data-event-id="{{ event.id }}" aria-label="Guardar"><i class="fa-regular fa-bookmark"></i></button>
+      <button class="hidden md:inline-flex h-11 w-11 items-center justify-center rounded-full text-slate-500 transition hover:bg-slate-100 hover:text-brand-700" type="button" data-share-event data-event-url="{{ event.urlPath }}" data-event-title="{{ event.title }}" aria-label="Compartir"><i class="fa-solid fa-share-nodes"></i></button>
+    </div>
+  </div>
+</header>
+{% endblock %}
+
+{% block body %}
+<main class="page-shell py-0 sm:py-4 lg:py-8">
+  <article class="detail-clean">
+    <button
+      class="detail-clean-hero detail-clean-hero-button"
+      type="button"
+      data-lightbox-open
+      aria-label="Ver imagen completa"
+      style="background-image:url('{{ event.image or '/assets/placeholder-event.svg' }}')"
+    ></button>
+    <div class="detail-clean-body">
+      {% if event.categoryLabel %}
+      <span class="compact-badge">{{ event.categoryLabel }}</span>
+      {% endif %}
+      <h1 class="detail-clean-title">{{ event.title }}</h1>
+      <div class="detail-clean-meta">
+        {% if event.scheduleLabel %}<div class="detail-clean-meta-row"><i class="fa-regular fa-calendar"></i><span>{{ event.scheduleLabel }}</span></div>{% elif event.dateRangeLabel %}<div class="detail-clean-meta-row"><i class="fa-regular fa-calendar"></i><span>{{ event.dateRangeLabel }}</span></div>{% endif %}
+        {% if event.location %}<button class="detail-clean-meta-row detail-clean-meta-row-location detail-clean-meta-row-button" type="button" data-location-open data-location="{{ event.location }}"><i class="fa-solid fa-location-dot detail-clean-meta-row-icon"></i><span>{{ event.location }}</span></button>{% endif %}
+      </div>
+      <p class="detail-clean-summary">{{ event.summary or event.excerpt }}</p>
+
+      {% if event.organizer or event.notes %}
+      <section class="detail-clean-extra">
+        {% if event.organizer %}
+        <div class="detail-clean-extra-row">
+          <div class="detail-clean-extra-label">Organiza</div>
+          <div class="detail-clean-extra-value">{{ event.organizer }}</div>
+        </div>
+        {% endif %}
+        {% if event.notes %}
+        <div class="detail-clean-extra-row">
+          <div class="detail-clean-extra-label">Más información</div>
+          <div class="detail-clean-extra-value">{{ event.notes }}</div>
+        </div>
+        {% endif %}
+      </section>
+      {% endif %}
+
+      <div class="detail-clean-actions detail-clean-actions-sticky">
+        <button class="detail-clean-action detail-clean-action-primary" type="button" data-calendar-open>
+          <i class="fa-regular fa-calendar-plus"></i>
+          <span>Calendario</span>
+        </button>
+        <button class="detail-clean-action" type="button" data-comments-open aria-label="Comentar">
+          <i class="fa-regular fa-comment"></i>
+          <span>Comentar</span>
+        </button>
+        <button class="detail-clean-action" type="button" data-share aria-label="Compartir">
+          <i class="fa-solid fa-share-nodes"></i>
+          <span>Compartir</span>
+        </button>
+      </div>
+
+      <section class="detail-comments" data-comments hidden>
+        <div class="detail-comments-head">
+          <h2 class="detail-comments-title">Comentarios</h2>
+          <a class="detail-comments-link" href="{{ event.sourceUrl }}" target="_blank" rel="noreferrer">Abrir en el foro</a>
+        </div>
+        <iframe
+          class="detail-comments-iframe"
+          data-comments-iframe
+          title="Comentarios del evento"
+          loading="lazy"
+        ></iframe>
+      </section>
+    </div>
+  </article>
+</main>
+
+<div class="calendar-modal" data-calendar-modal hidden>
+  <button class="calendar-modal-backdrop" type="button" data-calendar-close aria-label="Cerrar"></button>
+  <div class="calendar-modal-panel" role="dialog" aria-modal="true" aria-labelledby="calendar-modal-title">
+    <div class="calendar-modal-header">
+      <h2 class="calendar-modal-title" id="calendar-modal-title">Añadir al calendario</h2>
+      <button class="calendar-modal-close" type="button" data-calendar-close aria-label="Cerrar">
+        <i class="fa-solid fa-xmark"></i>
+      </button>
+    </div>
+    <p class="calendar-modal-copy">Elige una opción para guardar este evento en tu calendario.</p>
+    <div class="calendar-modal-actions">
+      <a class="calendar-modal-action calendar-modal-action-primary" data-calendar-ics href="#" download>
+        <i class="fa-solid fa-download"></i>
+        <span>Descargar ICS</span>
+      </a>
+      <a class="calendar-modal-action" data-calendar-google href="#" target="_blank" rel="noreferrer">
+        <i class="fa-brands fa-google"></i>
+        <span>Google Calendar</span>
+      </a>
+      <a class="calendar-modal-action" data-calendar-apple href="#" target="_blank" rel="noreferrer">
+        <i class="fa-brands fa-apple"></i>
+        <span>Apple Calendar</span>
+      </a>
+      <a class="calendar-modal-action" data-calendar-outlook href="#" target="_blank" rel="noreferrer">
+        <i class="fa-brands fa-microsoft"></i>
+        <span>Outlook</span>
+      </a>
+    </div>
+  </div>
+</div>
+
+<div class="detail-lightbox" data-lightbox hidden>
+  <button class="detail-lightbox-backdrop" type="button" data-lightbox-close aria-label="Cerrar imagen"></button>
+  <div class="detail-lightbox-panel" role="dialog" aria-modal="true" aria-label="Imagen del evento">
+    <img class="detail-lightbox-image" data-lightbox-image alt="" />
+    <button class="detail-lightbox-close" type="button" data-lightbox-close aria-label="Cerrar">
+      <i class="fa-solid fa-xmark"></i>
+    </button>
+  </div>
+</div>
+
+<div class="location-modal" data-location-modal hidden>
+  <button class="location-modal-backdrop" type="button" data-location-close aria-label="Cerrar"></button>
+  <div class="location-modal-panel" role="dialog" aria-modal="true" aria-labelledby="location-modal-title">
+    <div class="location-modal-header">
+      <h2 class="location-modal-title" id="location-modal-title">Abrir ubicación en</h2>
+      <button class="location-modal-close" type="button" data-location-close aria-label="Cerrar">
+        <i class="fa-solid fa-xmark"></i>
+      </button>
+    </div>
+    <div class="location-modal-actions">
+      <a class="location-modal-action" data-location-map="openstreetmap" href="#" target="_blank" rel="noreferrer">
+        <i class="fa-solid fa-map-location-dot"></i>
+        <span>OpenStreetMap</span>
+      </a>
+      <a class="location-modal-action" data-location-map="google" href="#" target="_blank" rel="noreferrer">
+        <i class="fa-brands fa-google"></i>
+        <span>Google Maps</span>
+      </a>
+      <a class="location-modal-action" data-location-map="apple" href="#" target="_blank" rel="noreferrer">
+        <i class="fa-brands fa-apple"></i>
+        <span>Apple Maps</span>
+      </a>
+      <a class="location-modal-action" data-location-map="bing" href="#" target="_blank" rel="noreferrer">
+        <i class="fa-brands fa-microsoft"></i>
+        <span>Bing Maps</span>
+      </a>
+    </div>
+  </div>
+</div>
+
+<script>
+  window.__EVENT_DETAIL__ = {{ eventDetailJson | safe }};
+</script>
+{% endblock %}
