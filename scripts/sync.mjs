@@ -1,6 +1,8 @@
 import { syncEvents } from './sync-lib.mjs';
 
-syncEvents().catch((error) => {
+const rebuild = process.argv.includes('--rebuild');
+
+syncEvents({ rebuild }).catch((error) => {
   console.error(error);
   process.exit(1);
 });

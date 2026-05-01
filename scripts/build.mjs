@@ -54,6 +54,7 @@ async function compileCss(inputFile, outputFile) {
 async function copyJs() {
   await fs.copyFile(path.join(root, 'src', 'scripts', 'home.js'), path.join(jsDir, 'home.js'));
   await fs.copyFile(path.join(root, 'src', 'scripts', 'event-detail.js'), path.join(jsDir, 'event-detail.js'));
+  await fs.copyFile(path.join(root, 'src', 'scripts', 'saved-events.js'), path.join(jsDir, 'saved-events.js'));
 }
 
 function render(template, context) {
@@ -180,6 +181,21 @@ async function buildSite(events) {
     today: today.map(enrichEvent),
     todayCount: today.length,
     categories: filters,
+    ...sharedContext
+  }));
+
+  await writeFile('guardados/index.html', render('saved-events.njk', {
+    title: 'Mis guardados | Aldea Pucela Eventos',
+    meta: { description: 'Tus eventos guardados en Aldea Pucela Eventos.' },
+    social: {
+      type: 'website',
+      title: 'Mis guardados | Aldea Pucela Eventos',
+      description: 'Tus eventos guardados en Aldea Pucela Eventos.',
+      image: `${publicBaseUrl}/assets/social-preview.jpg`,
+      url: `${publicBaseUrl}/guardados`
+    },
+    pageCss: 'home.css',
+    pageJs: 'saved-events.js',
     ...sharedContext
   }));
 
