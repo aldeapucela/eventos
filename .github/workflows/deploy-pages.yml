@@ -5,7 +5,7 @@ on:
     branches:
       - main
   schedule:
-    - cron: '0 * * * *'
+    - cron: '*/15 * * * *'
   workflow_dispatch:
 
 permissions:
@@ -18,7 +18,37 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  detect-changes:
+    runs-on: ubuntu-latest
+    outputs:
+      changed: ${{ steps.detect.outputs.changed }}
+      digest: ${{ steps.detect.outputs.digest }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Restore previous signature state
+        id: restore-state
+        uses: actions/cache/restore@v4
+        with:
+          path: .ci-state
+          key: events-signature-${{ runner.os }}-${{ github.run_id }}
+          restore-keys: |
+            events-signature-${{ runner.os }}-
+
+      - name: Detect event changes
+        id: detect
+        run: node scripts/check-events-signature.mjs
+
   build:
+    needs: detect-changes
+    if: github.event_name != 'schedule' || needs.detect-changes.outputs.changed == 'true'
     runs-on: ubuntu-latest
     environment:
       name: github-pages
@@ -51,3 +81,14 @@ jobs:
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
+
+      - name: Confirm deployed signature state
+        run: |
+          mkdir -p .ci-state
+          printf '%s\n' '${{ needs.detect-changes.outputs.digest }}' > .ci-state/events-signature.txt
+
+      - name: Save deployed signature state
+        uses: actions/cache/save@v4
+        with:
+          path: .ci-state
+          key: events-signature-${{ runner.os }}-${{ github.run_id }}

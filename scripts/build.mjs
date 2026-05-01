@@ -16,7 +16,7 @@ const dist = path.join(root, 'dist');
 const assetsDir = path.join(dist, 'assets');
 const cssDir = path.join(assetsDir, 'css');
 const jsDir = path.join(assetsDir, 'js');
-const publicBaseUrl = 'https://aldeapucela.org';
+const publicBaseUrl = 'https://eventos.aldeapucela.org';
 
 const args = new Set(process.argv.slice(2));
 
@@ -165,6 +165,13 @@ async function buildSite(events) {
   await writeFile('index.html', render('home.njk', {
     title: 'Qué hacer en Valladolid | Aldea Pucela',
     meta: { description: 'Agenda cultural de Valladolid alimentada desde el foro de Aldea Pucela.' },
+    social: {
+      type: 'website',
+      title: 'Qué hacer en Valladolid | Aldea Pucela',
+      description: 'Agenda cultural de Valladolid alimentada desde el foro de Aldea Pucela.',
+      image: `${publicBaseUrl}/assets/social-preview.jpg`,
+      url: `${publicBaseUrl}/`
+    },
     pageCss: 'home.css',
     pageJs: 'home.js',
     featured: featured ? enrichEvent(featured) : null,
@@ -172,6 +179,7 @@ async function buildSite(events) {
     ongoing: ongoing.map(enrichEvent),
     today: today.map(enrichEvent),
     todayCount: today.length,
+    categories: filters,
     ...sharedContext
   }));
 
