@@ -228,7 +228,11 @@
   }
 
   .saved-toast-copy {
-    @apply pointer-events-auto inline-flex min-h-12 items-center rounded-2xl border border-line bg-white/95 px-5 py-3 text-[15px] font-medium leading-6 text-slate-700 shadow-sm backdrop-blur;
+    @apply pointer-events-none inline-flex min-h-12 items-center rounded-2xl border border-line bg-white/95 px-5 py-3 text-[15px] font-medium leading-6 text-slate-700 shadow-sm backdrop-blur;
+  }
+
+  .saved-toast-visible .saved-toast-copy {
+    @apply pointer-events-auto;
   }
 
   .saved-toast-link {
