@@ -318,13 +318,14 @@ function syncSavedStates() {
 
 async function shareEvent(url, title, button) {
   const shareUrl = withShareCampaign(url || window.location.pathname);
-  const shareText = `${title}\n\n${shareUrl}`;
+  const shareTitle = title || document.title;
+  const shareText = `${shareTitle}\n\n${shareUrl}`;
 
   if (navigator.share) {
     try {
       await navigator.share({
-        title,
-        text: shareText,
+        title: shareTitle,
+        text: shareTitle,
         url: shareUrl
       });
       setShareSuccess(button);
