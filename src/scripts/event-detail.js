@@ -1,3 +1,5 @@
+import { initTheme } from './theme.js';
+
 const storageKey = 'aldeapucela_saved_events';
 
 const calendarOpenButton = document.querySelector('[data-calendar-open]');
@@ -20,6 +22,7 @@ const locationCloseButtons = document.querySelectorAll('[data-location-close]');
 const locationMapLinks = Array.from(document.querySelectorAll('[data-location-map]'));
 const hero = document.querySelector('.detail-clean-hero');
 const eventData = window.__EVENT_DETAIL__ || {};
+initTheme();
 
 syncSavedStates();
 setupLocationLink();

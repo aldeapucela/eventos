@@ -19,6 +19,20 @@
     <meta name="twitter:description" content="{{ social.description or meta.description or 'Agenda cultural de Aldea Pucela' }}" />
     {% if social.image %}<meta name="twitter:image" content="{{ social.image }}" />{% endif %}
     {% endif %}
+    <script>
+      (function () {
+        const key = 'aldeapucela_theme';
+        try {
+          const saved = window.localStorage.getItem(key);
+          const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+          const theme = saved === 'dark' || saved === 'light' ? saved : (prefersDark ? 'dark' : 'light');
+          if (theme === 'dark') {
+            document.documentElement.classList.add('dark');
+          }
+          document.documentElement.style.colorScheme = theme;
+        } catch (_) {}
+      }());
+    </script>
     <link rel="stylesheet" href="/assets/css/{{ pageCss }}?v={{ assetVersion }}" />
     <link rel="stylesheet" href="/assets/fontawesome/css/all.min.css" />
   </head>
@@ -71,6 +85,6 @@
       }());
     </script>
     <script src="/assets/js/matomo.js?v={{ assetVersion }}"></script>
-    <script src="/assets/js/{{ pageJs }}?v={{ assetVersion }}" defer></script>
+    <script type="module" src="/assets/js/{{ pageJs }}?v={{ assetVersion }}" defer></script>
   </body>
 </html>

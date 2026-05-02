@@ -1,3 +1,5 @@
+import { initTheme } from './theme.js';
+
 const storageKey = 'aldeapucela_saved_events';
 const menuDrawer = document.querySelector('[data-menu-drawer]');
 const groupsRoot = document.querySelector('[data-saved-groups]');
@@ -5,6 +7,7 @@ const emptyState = document.querySelector('[data-saved-empty]');
 const scrollTopButton = document.querySelector('[data-scroll-top]');
 const subscribeModal = document.querySelector('[data-subscribe-modal]');
 const events = Array.isArray(window.__EVENTS__?.events) ? window.__EVENTS__.events : [];
+initTheme();
 
 renderSavedGroups();
 syncSavedStates();

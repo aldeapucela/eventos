@@ -1,3 +1,5 @@
+import { initTheme } from './theme.js';
+
 const filters = Array.from(document.querySelectorAll('[data-filter]'));
 const cards = Array.from(document.querySelectorAll('#event-grid [data-category]'));
 const weekCards = Array.from(document.querySelectorAll('[data-week-groups] [data-category]'));
@@ -17,6 +19,7 @@ const addEventModal = document.querySelector('[data-add-event-modal]');
 const subscribeModal = document.querySelector('[data-subscribe-modal]');
 const events = Array.isArray(window.__EVENTS__?.events) ? window.__EVENTS__.events : [];
 const storageKey = 'aldeapucela_saved_events';
+initTheme();
 
 const today = new Date();
 const horizonEnd = endOfHorizon(today, 30);

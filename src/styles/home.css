@@ -151,6 +151,49 @@
     outline-offset: 2px;
   }
 
+  html.dark .add-event-modal-backdrop {
+    background: rgba(17, 19, 22, 0.78);
+  }
+
+  html.dark .add-event-modal-panel {
+    border: 1px solid #31353d;
+    background: #1a1d22;
+    color: #f5f3ee;
+    box-shadow: 0 24px 46px -26px rgba(0, 0, 0, 0.42);
+  }
+
+  html.dark .add-event-modal-title {
+    color: #fafaf7;
+  }
+
+  html.dark .add-event-modal-copy {
+    color: #d4d0c7;
+  }
+
+  html.dark .add-event-steps {
+    color: #d4d0c7;
+  }
+
+  html.dark .add-event-step-number {
+    background: #6f59a8;
+    color: #ffffff;
+  }
+
+  html.dark .add-event-modal-mark {
+    background: rgba(111, 89, 168, 0.28);
+    color: #d5c8f3;
+  }
+
+  html.dark .add-event-modal-cta {
+    border: 1px solid rgba(111, 89, 168, 0.6);
+    background: #6f59a8;
+    color: #ffffff;
+  }
+
+  html.dark .add-event-modal-cta:hover {
+    background: #5f4a96;
+  }
+
   @media (min-width: 768px) {
     .add-event-fab {
       right: 1.25rem;
