@@ -495,8 +495,16 @@ function renderWeekItem(event) {
   }
 
 function isWithinHorizon(iso) {
-  const date = new Date(iso);
-  return date >= today && date <= horizonEnd;
+  const startsAt = new Date(iso);
+  if (Number.isNaN(startsAt.getTime())) return false;
+  if (startsAt >= today && startsAt <= horizonEnd) return true;
+
+  return events.some((event) => {
+    if (event.startsAtIso !== iso || !event.endsAtIso) return false;
+    const endsAt = new Date(event.endsAtIso);
+    if (Number.isNaN(endsAt.getTime())) return false;
+    return startsAt <= today && endsAt >= today;
+  });
 }
 
 function filterWeekGroups() {

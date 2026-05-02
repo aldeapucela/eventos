@@ -26,11 +26,9 @@ export function splitFeatured(events) {
   horizonEnd.setDate(horizonEnd.getDate() + 30);
   const sorted = sortEvents(events);
   const featuredCandidates = sorted.filter((event) => event.isSticky);
-  const upcoming = sorted.filter((event) => event.startsAt && new Date(event.startsAt) >= now);
+  const upcoming = sorted.filter((event) => isActiveOrUpcoming(event, now));
   const horizon = sorted.filter((event) => {
-    if (!event.startsAt) return false;
-    const starts = new Date(event.startsAt);
-    return starts >= now && starts <= horizonEnd;
+    return isActiveWithinHorizon(event, now, horizonEnd);
   });
   const base = horizon.length ? horizon : upcoming.length ? upcoming : sorted;
   const today = sorted.filter((event) => event.startsAt && sameDate(event.startsAt, now));
@@ -44,6 +42,10 @@ export function splitFeatured(events) {
     if (!spansMultipleDays(starts, ends)) return false;
 
     return starts <= now && ends >= now;
+  }).sort((a, b) => {
+    const aEnd = a.endsAt ? new Date(a.endsAt).getTime() : Number.MAX_SAFE_INTEGER;
+    const bEnd = b.endsAt ? new Date(b.endsAt).getTime() : Number.MAX_SAFE_INTEGER;
+    return aEnd - bEnd;
   });
 
   return {
@@ -69,4 +71,29 @@ function sameDay(a, b) {
 
 function spansMultipleDays(starts, ends) {
   return !sameDay(starts, ends);
+}
+
+function isActiveOrUpcoming(event, now) {
+  if (!event.startsAt) return false;
+  const starts = new Date(event.startsAt);
+  if (Number.isNaN(starts.getTime())) return false;
+  if (starts >= now) return true;
+
+  if (!event.endsAt) return false;
+  const ends = new Date(event.endsAt);
+  if (Number.isNaN(ends.getTime())) return false;
+  return ends >= now;
+}
+
+function isActiveWithinHorizon(event, now, horizonEnd) {
+  if (!event.startsAt) return false;
+  const starts = new Date(event.startsAt);
+  if (Number.isNaN(starts.getTime())) return false;
+
+  if (starts >= now && starts <= horizonEnd) return true;
+
+  if (!event.endsAt) return false;
+  const ends = new Date(event.endsAt);
+  if (Number.isNaN(ends.getTime())) return false;
+  return starts <= now && ends >= now;
 }
