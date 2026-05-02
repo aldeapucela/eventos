@@ -1138,6 +1138,80 @@
   .detail-topbar-mobile-action {
     display: none !important;
   }
+
+  .detail-page-main {
+    @apply pb-6;
+  }
+}
+
+.site-footer {
+  @apply mt-10 border-t border-line bg-white/90;
+}
+
+.site-footer-inner {
+  @apply page-shell py-5 sm:py-6;
+}
+
+.site-footer-copy {
+  @apply text-sm leading-7 text-slate-700;
+}
+
+.site-footer-copy a {
+  @apply font-semibold text-slate-900 underline decoration-slate-400 underline-offset-4 transition hover:text-brand-700 hover:decoration-brand-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-400 focus-visible:ring-offset-2;
+}
+
+.site-footer--event-detail {
+  @apply mt-0;
+}
+
+@media (max-width: 767px) {
+  .page-event-detail .detail-page-main {
+    padding-bottom: 0;
+  }
+
+  .site-footer--event-detail {
+    margin-top: 0;
+  }
+
+  .site-footer--event-detail .site-footer-inner {
+    padding-top: 0.75rem;
+    padding-bottom: calc(env(safe-area-inset-bottom) + 6.75rem);
+  }
+
+  .site-footer--event-detail .site-footer-copy {
+    @apply text-sm leading-6 text-slate-600;
+  }
+
+  .site-footer--event-detail .site-footer-copy a {
+    @apply font-semibold text-slate-900 underline decoration-slate-400 underline-offset-4;
+  }
+
+  .detail-clean-actions-sticky {
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    margin: 0;
+    z-index: 40;
+    padding-left: 0.75rem;
+    padding-right: 0.75rem;
+    padding-top: 0.5rem;
+    padding-bottom: calc(env(safe-area-inset-bottom) + 0.5rem);
+    background: color-mix(in oklab, var(--bg-body) 88%, transparent);
+    backdrop-filter: blur(10px);
+  }
+}
+
+html.dark .site-footer {
+  @apply border-slate-700/70 bg-slate-950;
+}
+
+html.dark .site-footer-copy {
+  @apply text-slate-300;
+}
+
+html.dark .site-footer-copy a {
+  @apply text-slate-100 decoration-slate-500 hover:text-brand-200 hover:decoration-brand-300 focus-visible:ring-offset-slate-950;
 }
 
 @media (min-width: 768px) and (max-width: 1023px) {
@@ -1418,10 +1492,15 @@
     }
 
     .detail-clean-actions-sticky {
+      position: fixed;
+      left: 0;
+      right: 0;
+      bottom: 0;
       width: 100vw;
       margin-left: calc(50% - 50vw);
       margin-right: calc(50% - 50vw);
-      @apply mt-5 grid grid-cols-[1.25fr_1fr_1fr] gap-2 space-y-0 rounded-none border-t border-line/80 border-b-0 border-x-0 bg-white/95 px-4 pb-[calc(env(safe-area-inset-bottom)+0.7rem)] pt-2 shadow-[0_-10px_24px_rgba(15,23,42,0.06)] backdrop-blur-md;
+      z-index: 40;
+      @apply mt-0 grid grid-cols-[1.25fr_1fr_1fr] gap-2 space-y-0 rounded-none border-t border-line/80 border-b-0 border-x-0 bg-white/95 px-4 pb-[calc(env(safe-area-inset-bottom)+0.7rem)] pt-2 shadow-[0_-10px_24px_rgba(15,23,42,0.06)] backdrop-blur-md;
     }
 
     .detail-clean-actions-sticky .detail-clean-action {

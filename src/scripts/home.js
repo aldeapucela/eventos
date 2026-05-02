@@ -357,7 +357,7 @@ function renderWeekGroups() {
   });
 
   const grouped = events
-    .filter((event) => event.startsAtIso && isWithinHorizon(event.startsAtIso))
+    .filter((event) => isWithinHorizon(event))
     .sort((a, b) => new Date(a.startsAtIso) - new Date(b.startsAtIso))
     .reduce((acc, event) => {
       const key = event.startsAtDayKey || toLocalDateKey(parseDateLike(event.startsAtIso));
@@ -494,17 +494,26 @@ function renderWeekItem(event) {
     `;
   }
 
-function isWithinHorizon(iso) {
-  const startsAt = new Date(iso);
+function isWithinHorizon(event) {
+  if (!event?.startsAtIso) return false;
+  const startsAt = new Date(event.startsAtIso);
   if (Number.isNaN(startsAt.getTime())) return false;
-  if (startsAt >= today && startsAt <= horizonEnd) return true;
+  const todayStart = startOfToday(today);
+  if (startsAt < todayStart || startsAt > horizonEnd) return false;
+  return !isOngoingMultiDay(event);
+}
 
-  return events.some((event) => {
-    if (event.startsAtIso !== iso || !event.endsAtIso) return false;
-    const endsAt = new Date(event.endsAtIso);
-    if (Number.isNaN(endsAt.getTime())) return false;
-    return startsAt <= today && endsAt >= today;
-  });
+function isOngoingMultiDay(event) {
+  if (!event?.startsAtIso || !event?.endsAtIso) return false;
+  const startsAt = new Date(event.startsAtIso);
+  const endsAt = new Date(event.endsAtIso);
+  if (Number.isNaN(startsAt.getTime()) || Number.isNaN(endsAt.getTime())) return false;
+  if (sameDay(startsAt, endsAt)) return false;
+  return startsAt <= today && endsAt >= today;
+}
+
+function startOfToday(value) {
+  return new Date(value.getFullYear(), value.getMonth(), value.getDate());
 }
 
 function filterWeekGroups() {

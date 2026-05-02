@@ -36,9 +36,21 @@
     <link rel="stylesheet" href="/assets/css/{{ pageCss }}?v={{ assetVersion }}" />
     <link rel="stylesheet" href="/assets/fontawesome/css/all.min.css" />
   </head>
-  <body>
+  <body class="{% block bodyClass %}{% endblock %}">
     {% block header %}{% endblock %}
     {% block body %}{% endblock %}
+    <footer class="site-footer{% block footerClass %}{% endblock %}">
+      <div class="site-footer-inner">
+        <p class="site-footer-copy">
+          Licencia contenido
+          <a href="https://creativecommons.org/licenses/by-sa/4.0/deed.es" target="_blank" rel="noopener noreferrer">CC BY-SA 4.0</a>
+          · Código
+          <a href="https://github.com/aldeapucela/eventos" target="_blank" rel="noopener noreferrer">GitHub</a>
+          · Proyecto creado por vecinos voluntarios de
+          <a href="https://aldeapucela.org" target="_blank" rel="noopener noreferrer">Aldea Pucela</a>
+        </p>
+      </div>
+    </footer>
     <div class="saved-toast" data-saved-toast aria-live="polite" aria-atomic="true" hidden>
       <p class="saved-toast-copy">
         <span data-saved-toast-prefix></span>&nbsp;

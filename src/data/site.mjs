@@ -22,13 +22,14 @@ export function sortEvents(events) {
 
 export function splitFeatured(events) {
   const now = new Date();
+  const todayStart = startOfDay(now);
   const horizonEnd = new Date(now);
   horizonEnd.setDate(horizonEnd.getDate() + 30);
   const sorted = sortEvents(events);
   const featuredCandidates = sorted.filter((event) => event.isSticky);
-  const upcoming = sorted.filter((event) => isActiveOrUpcoming(event, now));
+  const upcoming = sorted.filter((event) => isUpcomingForWeek(event, todayStart));
   const horizon = sorted.filter((event) => {
-    return isActiveWithinHorizon(event, now, horizonEnd);
+    return isUpcomingForWeek(event, todayStart) && new Date(event.startsAt) <= horizonEnd;
   });
   const base = horizon.length ? horizon : upcoming.length ? upcoming : sorted;
   const today = sorted.filter((event) => event.startsAt && sameDate(event.startsAt, now));
@@ -73,27 +74,23 @@ function spansMultipleDays(starts, ends) {
   return !sameDay(starts, ends);
 }
 
-function isActiveOrUpcoming(event, now) {
-  if (!event.startsAt) return false;
-  const starts = new Date(event.startsAt);
-  if (Number.isNaN(starts.getTime())) return false;
-  if (starts >= now) return true;
-
-  if (!event.endsAt) return false;
-  const ends = new Date(event.endsAt);
-  if (Number.isNaN(ends.getTime())) return false;
-  return ends >= now;
+function startOfDay(value) {
+  return new Date(value.getFullYear(), value.getMonth(), value.getDate());
 }
 
-function isActiveWithinHorizon(event, now, horizonEnd) {
+function isOngoingMultiDay(event, now) {
+  if (!event.startsAt || !event.endsAt) return false;
+  const starts = new Date(event.startsAt);
+  const ends = new Date(event.endsAt);
+  if (Number.isNaN(starts.getTime()) || Number.isNaN(ends.getTime())) return false;
+  if (!spansMultipleDays(starts, ends)) return false;
+  return starts <= now && ends >= now;
+}
+
+function isUpcomingForWeek(event, todayStart) {
   if (!event.startsAt) return false;
   const starts = new Date(event.startsAt);
   if (Number.isNaN(starts.getTime())) return false;
-
-  if (starts >= now && starts <= horizonEnd) return true;
-
-  if (!event.endsAt) return false;
-  const ends = new Date(event.endsAt);
-  if (Number.isNaN(ends.getTime())) return false;
-  return starts <= now && ends >= now;
+  if (starts < todayStart) return false;
+  return !isOngoingMultiDay(event, todayStart);
 }
