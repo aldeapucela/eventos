@@ -48,8 +48,23 @@
   <section class="home-layout space-y-8 lg:space-y-10">
     <div class="home-column space-y-6">
       <section class="hero-mobile-copy">
-        <h1 class="hero-mobile-title">Qué hacer en Valladolid</h1>
-        <p class="hero-mobile-subtitle">Agenda vecinal de eventos culturales</p>
+        <div class="hero-mobile-visual">
+          <img
+            class="hero-mobile-image"
+            src="/assets/home-hero.jpg"
+            alt=""
+            loading="eager"
+            fetchpriority="high"
+            decoding="async"
+          />
+          <div class="hero-mobile-overlay">
+            <div class="hero-mobile-text-panel">
+              <h1 class="hero-mobile-title">Qué hacer en Valladolid</h1>
+              <p class="hero-mobile-subtitle">Agenda vecinal de eventos culturales</p>
+              <span class="hero-mobile-accent" aria-hidden="true"></span>
+            </div>
+          </div>
+        </div>
 
         <div class="hero-mobile-search hidden" aria-hidden="true">
           <i class="fa-solid fa-magnifying-glass"></i>
@@ -82,6 +97,7 @@
             <span>Gratis</span>
           </button>
           <label class="mobile-chip mobile-chip-select-wrap" for="filter-type-select">
+            <i class="mobile-chip-icon mobile-chip-leading fa-solid fa-filter" aria-hidden="true"></i>
             <span data-filter-type-label>Tipo</span>
             <i class="fa-solid fa-chevron-down"></i>
             <select id="filter-type-select" class="mobile-chip-select" data-filter-type>
@@ -273,9 +289,9 @@
       <span class="add-event-modal-mark" aria-hidden="true">
         <i class="fa-solid fa-calendar-plus"></i>
       </span>
-      <h2 class="add-event-modal-title" id="add-event-title">Añade tu evento</h2>
+      <h2 class="add-event-modal-title" id="add-event-title">Añade un evento</h2>
     </div>
-    <p class="add-event-modal-copy">Sigue estos pasos para publicar tu evento cultural en la comunidad:</p>
+    <p class="add-event-modal-copy">Sigue estos pasos para publicar un evento cultural en la agenda:</p>
     <ol class="add-event-steps">
       <li><span class="add-event-step-number">1</span><span>Entra al grupo de Telegram de la comunidad.</span></li>
       <li><span class="add-event-step-number">2</span><span>Deberás hablar un poco e interactuar con los usuarios para poder enviar imágenes.</span></li>
