@@ -84,7 +84,6 @@ function closeCalendarModal() {
 }
 
 function openLocationModal() {
-  if (isLikelyMobileDevice()) return;
   if (!locationModal) return;
   populateLocationLinks();
   locationModal.hidden = false;
@@ -113,7 +112,6 @@ if (lightboxOpen) lightboxOpen.addEventListener('click', openLightbox);
 closeButtons.forEach((button) => button.addEventListener('click', closeLightbox));
 if (locationOpenButton) {
   locationOpenButton.addEventListener('click', (event) => {
-    if (isLikelyMobileDevice()) return;
     event.preventDefault();
     openLocationModal();
   });
@@ -178,6 +176,7 @@ function populateLocationLinks() {
   const location = eventData.location || locationOpenButton?.dataset.location || '';
   const query = normalizeLocationQuery(location);
   const encoded = encodeURIComponent(query);
+  const isIos = isAppleMobileDevice();
 
   locationMapLinks.forEach((link) => {
     const provider = link.dataset.locationMap;
@@ -185,13 +184,20 @@ function populateLocationLinks() {
     if (provider === 'openstreetmap') {
       href = `https://www.openstreetmap.org/search?query=${encoded}`;
     } else if (provider === 'google') {
-      href = `https://maps.google.com/?q=${encoded}`;
+      href = isIos ? `comgooglemaps://?q=${encoded}` : `https://maps.google.com/?q=${encoded}`;
     } else if (provider === 'apple') {
       href = `https://maps.apple.com/?q=${encoded}`;
     } else if (provider === 'bing') {
       href = `https://www.bing.com/maps?q=${encoded}`;
     }
     link.href = href;
+
+    if (provider === 'bing') {
+      link.hidden = isIos;
+      return;
+    }
+
+    link.hidden = false;
   });
 }
 
@@ -199,7 +205,18 @@ function setupLocationLink() {
   if (!locationOpenButton) return;
   const location = eventData.location || locationOpenButton?.dataset.location || '';
   const query = normalizeLocationQuery(location);
-  locationOpenButton.href = query ? `geo:0,0?q=${encodeURIComponent(query)}` : '#';
+  if (!query) {
+    locationOpenButton.href = '#';
+    return;
+  }
+  locationOpenButton.href = `https://maps.google.com/?q=${encodeURIComponent(query)}`;
+}
+
+function isAppleMobileDevice() {
+  const ua = String(navigator.userAgent || '');
+  const isIphoneIpodIpad = /iphone|ipod|ipad/i.test(ua);
+  const isIpadDesktopMode = /macintosh/i.test(ua) && Number(navigator.maxTouchPoints || 0) > 1;
+  return isIphoneIpodIpad || isIpadDesktopMode;
 }
 
 function isLikelyMobileDevice() {
