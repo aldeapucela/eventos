@@ -8,9 +8,10 @@ const resultsTitle = document.querySelector('[data-results-title]');
 const weekEmpty = document.querySelector('[data-week-empty]');
 const clearFilters = document.querySelector('[data-clear-filters]');
 const weekGroups = document.querySelector('[data-week-groups]');
-const typeSelect = document.querySelector('[data-filter-type]');
+const typeModal = document.querySelector('[data-type-modal]');
 const typeSelectWrap = document.querySelector('.mobile-chip-select-wrap');
 const typeSelectLabel = document.querySelector('[data-filter-type-label]');
+const typeCheckboxes = Array.from(document.querySelectorAll('[data-type-checkbox]'));
 const scrollTopButton = document.querySelector('[data-scroll-top]');
 const shareSiteButton = document.querySelector('[data-share-site]');
 const menuDrawer = document.querySelector('[data-menu-drawer]');
@@ -31,7 +32,7 @@ const nextWeekEnd = endOfNextWeek(today);
 const initialState = getFiltersFromUrl();
 let activeTimeFilter = initialState.time;
 let activeFreeFilter = initialState.free;
-let activeTypeFilter = initialState.type;
+let activeTypeFilters = initialState.type;
 
 if (weekGroups) {
   renderWeekGroups();
@@ -39,8 +40,17 @@ if (weekGroups) {
 
 syncSavedStates();
 applyFilters({ updateUrl: false });
-if (typeSelect) {
-  typeSelect.value = activeTypeFilter;
+if (typeCheckboxes.length) {
+  typeCheckboxes.forEach(cb => {
+    cb.checked = activeTypeFilters.length === 0 || activeTypeFilters.includes(cb.value);
+    cb.addEventListener('change', () => {
+      activeTypeFilters = typeCheckboxes.filter(c => c.checked).map(c => c.value);
+      if (activeTypeFilters.length === typeCheckboxes.length) {
+        activeTypeFilters = [];
+      }
+      applyFilters();
+    });
+  });
   updateTypePill();
 }
 
@@ -58,6 +68,11 @@ document.addEventListener('click', async (event) => {
   const subscribeOpen = event.target.closest('[data-subscribe-open]');
   const subscribeClose = event.target.closest('[data-subscribe-close]');
   const copyButton = event.target.closest('[data-copy-url]');
+  const typeModalOpen = event.target.closest('[data-type-modal-open]');
+  const typeModalClose = event.target.closest('[data-type-modal-close]');
+  const typeSelectAll = event.target.closest('[data-type-select-all]');
+  const typeDeselectAll = event.target.closest('[data-type-deselect-all]');
+  const typeOnly = event.target.closest('[data-type-only]');
 
   if (saveButton) {
     event.preventDefault();
@@ -121,6 +136,38 @@ document.addEventListener('click', async (event) => {
     event.preventDefault();
     copySubscribeUrl(copyButton);
   }
+
+  if (typeModalOpen) {
+    event.preventDefault();
+    openTypeModal();
+  }
+
+  if (typeModalClose) {
+    event.preventDefault();
+    closeTypeModal();
+  }
+
+  if (typeSelectAll) {
+    event.preventDefault();
+    typeCheckboxes.forEach(cb => cb.checked = true);
+    activeTypeFilters = [];
+    applyFilters();
+  }
+
+  if (typeDeselectAll) {
+    event.preventDefault();
+    typeCheckboxes.forEach(cb => cb.checked = false);
+    activeTypeFilters = ['__NONE__'];
+    applyFilters();
+  }
+
+  if (typeOnly) {
+    event.preventDefault();
+    const value = typeOnly.dataset.typeOnly;
+    typeCheckboxes.forEach(cb => cb.checked = (cb.value === value));
+    activeTypeFilters = [value];
+    applyFilters();
+  }
 });
 
 document.addEventListener('keydown', (event) => {
@@ -129,6 +176,9 @@ document.addEventListener('keydown', (event) => {
   }
   if (event.key === 'Escape' && subscribeModal && !subscribeModal.hidden) {
     closeSubscribeModal();
+  }
+  if (event.key === 'Escape' && typeModal && !typeModal.hidden) {
+    closeTypeModal();
   }
 });
 
@@ -141,8 +191,10 @@ function applyFilters(options = {}) {
     button.classList.toggle('mobile-chip-active', isActive);
     button.setAttribute('aria-pressed', String(isActive));
   });
-  if (typeSelect) {
-    typeSelect.value = activeTypeFilter;
+  if (typeCheckboxes.length) {
+    typeCheckboxes.forEach(cb => {
+      cb.checked = activeTypeFilters.length === 0 || activeTypeFilters.includes(cb.value);
+    });
     updateTypePill();
   }
   cards.forEach((card) => {
@@ -157,7 +209,7 @@ function applyFilters(options = {}) {
       (activeTimeFilter === 'Próxima semana' && startsAt && startsAt >= nextWeekStart && startsAt <= nextWeekEnd) ||
       (activeTimeFilter === 'Este mes' && startsAt && startsAt <= monthEnd);
     const freeVisible = !activeFreeFilter || isFree;
-    const typeVisible = activeTypeFilter === 'all' || category === activeTypeFilter;
+    const typeVisible = activeTypeFilters.length === 0 || activeTypeFilters.includes(category);
     const visible = timeVisible && freeVisible && typeVisible;
     card.style.display = visible ? '' : 'none';
   });
@@ -170,7 +222,7 @@ function applyFilters(options = {}) {
     resultsTitle.textContent = getCombinedLabel();
   }
   if (clearFilters) {
-    clearFilters.classList.toggle('hidden', activeTimeFilter === 'all' && !activeFreeFilter && activeTypeFilter === 'all');
+    clearFilters.classList.toggle('hidden', activeTimeFilter === 'all' && !activeFreeFilter && activeTypeFilters.length === 0);
     clearFilters.href = '/';
   }
   if (updateUrl) {
@@ -186,19 +238,14 @@ filters.forEach((button) => {
   });
 });
 
-if (typeSelect) {
-  typeSelect.addEventListener('change', () => {
-    activeTypeFilter = normalizeTypeFilter(typeSelect.value || 'all');
-    applyFilters();
-  });
-}
+
 
 if (clearFilters) {
   clearFilters.addEventListener('click', (event) => {
     event.preventDefault();
     activeTimeFilter = 'all';
     activeFreeFilter = false;
-    activeTypeFilter = 'all';
+    activeTypeFilters = [];
     applyFilters();
   });
 }
@@ -270,7 +317,8 @@ function getFiltersFromUrl() {
   const params = new URLSearchParams(window.location.search);
   const time = normalizeTimeFilter(params.get('time'));
   const free = params.get('free') === '1' || normalizeTimeFilter(params.get('filter')) === 'free';
-  const type = normalizeTypeFilter(params.get('type') || params.get('filter'));
+  const typeParam = params.get('type') || params.get('filter') || '';
+  const type = typeParam ? typeParam.split(',').map(normalizeTypeFilter).filter(t => t !== 'all') : [];
   return { time, free, type };
 }
 
@@ -286,12 +334,12 @@ function updateFilterUrl() {
   } else {
     url.searchParams.delete('free');
   }
-  if (activeTypeFilter === 'all') {
+  if (activeTypeFilters.length === 0) {
     url.searchParams.delete('type');
   } else {
-    url.searchParams.set('type', activeTypeFilter);
+    url.searchParams.set('type', activeTypeFilters.join(','));
   }
-  if (activeTimeFilter === 'all' && !activeFreeFilter && activeTypeFilter === 'all') {
+  if (activeTimeFilter === 'all' && !activeFreeFilter && activeTypeFilters.length === 0) {
     url.searchParams.delete('filter');
   }
   window.history.replaceState({}, '', `${url.pathname}${url.search}${url.hash}`);
@@ -338,15 +386,21 @@ function getCombinedLabel() {
   const parts = [];
   if (activeTimeFilter !== 'all') parts.push(getLabel(activeTimeFilter));
   if (activeFreeFilter) parts.push('Gratis');
-  if (activeTypeFilter !== 'all') parts.push(activeTypeFilter);
+  if (activeTypeFilters.length > 0 && activeTypeFilters[0] !== '__NONE__') {
+    if (activeTypeFilters.length === 1) {
+      parts.push(activeTypeFilters[0]);
+    } else {
+      parts.push(`Varios tipos (${activeTypeFilters.length})`);
+    }
+  }
   return parts.length ? parts.join(' · ') : 'Próximos eventos';
 }
 
 function updateTypePill() {
-  if (!typeSelectWrap || !typeSelectLabel || !typeSelect) return;
-  const active = typeSelect.value && typeSelect.value !== 'all';
+  if (!typeSelectWrap || !typeSelectLabel) return;
+  const active = activeTypeFilters.length > 0;
   typeSelectWrap.classList.toggle('mobile-chip-active', Boolean(active));
-  typeSelectLabel.textContent = active ? typeSelect.value : 'Tipo';
+  typeSelectLabel.textContent = active && activeTypeFilters[0] !== '__NONE__' ? `Tipo (${activeTypeFilters.length})` : 'Tipo';
 }
 
 function renderWeekGroups() {
@@ -432,6 +486,18 @@ function openSubscribeModal() {
 function closeSubscribeModal() {
   if (!subscribeModal) return;
   subscribeModal.hidden = true;
+  document.body.style.overflow = '';
+}
+
+function openTypeModal() {
+  if (!typeModal) return;
+  typeModal.hidden = false;
+  document.body.style.overflow = 'hidden';
+}
+
+function closeTypeModal() {
+  if (!typeModal) return;
+  typeModal.hidden = true;
   document.body.style.overflow = '';
 }
 
@@ -532,7 +598,7 @@ function filterWeekGroups() {
         (activeTimeFilter === 'Próxima semana' && startsAt && startsAt >= nextWeekStart && startsAt <= nextWeekEnd) ||
         (activeTimeFilter === 'Este mes' && startsAt && startsAt <= monthEnd);
       const freeVisible = !activeFreeFilter || isFree;
-      const typeVisible = activeTypeFilter === 'all' || category === activeTypeFilter;
+      const typeVisible = activeTypeFilters.length === 0 || activeTypeFilters.includes(category);
       const visible = timeVisible && freeVisible && typeVisible;
     item.style.display = visible ? '' : 'none';
   });
