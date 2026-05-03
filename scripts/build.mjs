@@ -7,7 +7,7 @@ import tailwindcss from 'tailwindcss';
 import autoprefixer from 'autoprefixer';
 import { fileURLToPath } from 'node:url';
 import { loadCachedEvents } from '../src/data/store.mjs';
-import { deriveFilters, sortEvents, splitFeatured } from '../src/data/site.mjs';
+import { deriveFilters, sortEvents, splitFeatured, getPastEvents, groupEventsByMonth } from '../src/data/site.mjs';
 import { DISPLAY_TIMEZONE, escapeHtml, formatDateRange, formatDateTime, parseDateLike } from '../src/data/format.mjs';
 import { syncEvents } from './sync-lib.mjs';
 
@@ -331,6 +331,25 @@ async function buildSite(events) {
     },
     pageCss: 'home.css',
     pageJs: 'saved-events.js',
+    ...sharedContext
+  }));
+
+  const pastEvents = getPastEvents(events).map(enrichEvent);
+  const groups = groupEventsByMonth(pastEvents);
+
+  await writeFile('archivo/index.html', render('archivo.njk', {
+    title: 'Archivo de eventos | Aldea Pucela',
+    meta: { description: 'Histórico de eventos culturales pasados en Valladolid.' },
+    social: {
+      type: 'website',
+      title: 'Archivo de eventos | Aldea Pucela',
+      description: 'Histórico de eventos culturales pasados en Valladolid.',
+      image: `${publicBaseUrl}/assets/social-preview.jpg`,
+      url: `${publicBaseUrl}/archivo`
+    },
+    pageCss: 'home.css',
+    pageJs: 'home.js',
+    groups,
     ...sharedContext
   }));
 

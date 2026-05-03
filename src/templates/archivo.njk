@@ -15,11 +15,11 @@
         <i class="fa-solid fa-house" aria-hidden="true"></i>
         <span>Inicio</span>
       </a>
-      <a class="nav-link nav-link-active" href="/guardados">
+      <a class="nav-link " href="/guardados">
         <i class="fa-regular fa-bookmark" aria-hidden="true"></i>
         <span>Mis guardados</span>
       </a>
-      <a class="nav-link " href="/archivo">
+      <a class="nav-link nav-link-active" href="/archivo">
         <i class="fa-solid fa-box-archive" aria-hidden="true"></i>
         <span>Archivo</span>
       </a>
@@ -51,26 +51,57 @@
 <main class="page-shell py-5 sm:py-8 lg:py-10">
   <section class="home-layout space-y-7 lg:space-y-9">
     <div class="section-mobile-head">
-      <h1 class="section-mobile-title">Mis guardados</h1>
+      <h1 class="section-mobile-title">Archivo</h1>
     </div>
 
-    <div class="saved-empty hidden" data-saved-empty>
+    {% if groups.length == 0 %}
+    <div class="saved-empty" data-saved-empty>
       <div class="saved-empty-icon" aria-hidden="true">
-        <i class="fa-regular fa-bookmark"></i>
+        <i class="fa-solid fa-box-archive"></i>
       </div>
-      <p class="saved-empty-copy">No tienes nada guardado</p>
-      <p class="saved-empty-subcopy">Cuando guardes eventos, aparecerán aquí organizados por fecha.</p>
-      <a class="btn-primary" href="/">
-        <i class="fa-solid fa-calendar-day"></i>
-        <span>Ver eventos</span>
-      </a>
+      <p class="saved-empty-copy">El archivo está vacío</p>
+      <p class="saved-empty-subcopy">Aún no hay eventos pasados registrados.</p>
     </div>
-
-    <div class="saved-day-groups" data-saved-groups></div>
+    {% else %}
+    <div class="week-groups">
+      {% for group in groups %}
+      <section class="week-day-group">
+        <div class="week-day-header">
+          <div class="week-day-label">{{ group.label }}</div>
+        </div>
+        <div class="event-row-list">
+          {% for event in group.events %}
+          <article class="event-compact" data-category="{{ event.categoryLabel }}" data-free="{{ 'true' if event.isFree else 'false' }}" data-starts-at="{{ event.startsAt }}">
+            <a href="{{ event.urlPath }}" class="event-compact-link">
+              <div class="event-compact-image" style="background-image:url('{{ event.image or '/assets/placeholder-event.svg' }}')"></div>
+              <div class="event-compact-copy">
+                <div class="event-compact-topline">
+                  <span>{% if event.scheduleLabel %}{{ event.scheduleLabel }}{% else %}{{ event.compactDateLabel }}{% if event.timeLabel %} · {{ event.timeLabel }}{% endif %}{% endif %}</span>
+                </div>
+                <h4 class="event-compact-title">{{ event.title }}</h4>
+                <p class="event-compact-meta">{{ event.location }}</p>
+                <div class="event-compact-badges">
+                  <span class="compact-badge">{{ event.categoryLabel or 'Evento' }}</span>
+                  {% if event.isFree %}<span class="compact-badge compact-badge-success">Gratis</span>{% endif %}
+                </div>
+              </div>
+            </a>
+            <div class="event-compact-actions">
+              <button class="event-compact-action" type="button" data-save-event data-event-id="{{ event.id }}" aria-label="Guardar evento">
+                <i class="fa-regular fa-bookmark"></i>
+              </button>
+            </div>
+          </article>
+          {% endfor %}
+        </div>
+      </section>
+      {% endfor %}
+    </div>
+    {% endif %}
   </section>
 </main>
 
-<button class="scroll-top-btn" type="button" data-scroll-top aria-label="Volver arriba">
+<button class="scroll-top-btn is-hidden" type="button" data-scroll-top aria-label="Volver arriba">
   <i class="fa-solid fa-arrow-up"></i>
 </button>
 
@@ -91,11 +122,11 @@
         <i class="menu-drawer-link-icon fa-solid fa-house" aria-hidden="true"></i>
         <span>Inicio</span>
       </a>
-      <a class="menu-drawer-link menu-drawer-link-active" href="/guardados">
+      <a class="menu-drawer-link" href="/guardados">
         <i class="menu-drawer-link-icon fa-regular fa-bookmark" aria-hidden="true"></i>
         <span>Mis guardados</span>
       </a>
-      <a class="menu-drawer-link" href="/archivo">
+      <a class="menu-drawer-link menu-drawer-link-active" href="/archivo">
         <i class="menu-drawer-link-icon fa-solid fa-box-archive" aria-hidden="true"></i>
         <span>Archivo</span>
       </a>

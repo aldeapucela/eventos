@@ -94,3 +94,59 @@ function isUpcomingForWeek(event, todayStart) {
   if (starts < todayStart) return false;
   return !isOngoingMultiDay(event, todayStart);
 }
+
+export function getPastEvents(events) {
+  const now = new Date();
+  const todayStart = startOfDay(now);
+  
+  const pastEvents = events.filter((event) => {
+    // If it's ongoing, it's not past
+    if (isOngoingMultiDay(event, todayStart)) return false;
+    
+    // Check if it ended or started in the past
+    const referenceDate = event.endsAt ? new Date(event.endsAt) : new Date(event.startsAt);
+    if (Number.isNaN(referenceDate.getTime())) return false;
+    
+    return referenceDate < todayStart;
+  });
+
+  // Sort descending (most recent first)
+  return pastEvents.sort((a, b) => {
+    const aTime = a.startsAt ? new Date(a.startsAt).getTime() : 0;
+    const bTime = b.startsAt ? new Date(b.startsAt).getTime() : 0;
+    return bTime - aTime;
+  });
+}
+
+export function groupEventsByMonth(events) {
+  const groups = [];
+  const map = new Map();
+  
+  const formatter = new Intl.DateTimeFormat('es-ES', { month: 'long', year: 'numeric' });
+
+  for (const event of events) {
+    if (!event.startsAt) continue;
+    const date = new Date(event.startsAt);
+    if (Number.isNaN(date.getTime())) continue;
+    
+    const key = `${date.getFullYear()}-${date.getMonth()}`;
+    if (!map.has(key)) {
+      let label = formatter.format(date);
+      label = label.charAt(0).toUpperCase() + label.slice(1);
+      
+      const group = {
+        key,
+        label,
+        year: date.getFullYear(),
+        month: date.getMonth(),
+        events: []
+      };
+      groups.push(group);
+      map.set(key, group);
+    }
+    
+    map.get(key).events.push(event);
+  }
+  
+  return groups;
+}
