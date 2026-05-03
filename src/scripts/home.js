@@ -1,7 +1,7 @@
 import { initTheme } from './theme.js';
 
 const filters = Array.from(document.querySelectorAll('[data-filter]'));
-const cards = Array.from(document.querySelectorAll('#event-grid [data-category]'));
+const cards = Array.from(document.querySelectorAll('article[data-category]'));
 const weekCards = Array.from(document.querySelectorAll('[data-week-groups] [data-category]'));
 const filterHint = document.querySelector('.mobile-filter-hint');
 const resultsTitle = document.querySelector('[data-results-title]');
