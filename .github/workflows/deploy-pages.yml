@@ -64,6 +64,14 @@ jobs:
           node-version: 20
           cache: npm
 
+      - name: Restore events data cache
+        uses: actions/cache/restore@v4
+        with:
+          path: cache
+          key: events-data-${{ runner.os }}-${{ github.run_id }}
+          restore-keys: |
+            events-data-${{ runner.os }}-
+
       - name: Install dependencies
         run: npm ci
 
@@ -77,6 +85,12 @@ jobs:
         uses: actions/upload-pages-artifact@v3
         with:
           path: ./dist
+
+      - name: Save events data cache
+        uses: actions/cache/save@v4
+        with:
+          path: cache
+          key: events-data-${{ runner.os }}-${{ github.run_id }}
 
       - name: Deploy to GitHub Pages
         id: deployment
