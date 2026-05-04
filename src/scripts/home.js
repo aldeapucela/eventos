@@ -114,7 +114,13 @@ document.addEventListener('click', async (event) => {
     event.preventDefault();
     closeMenu();
     toggleQuickFilter(menuPick.dataset.filter);
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    if (resultsTitle) {
+      const offset = 100;
+      const top = resultsTitle.getBoundingClientRect().top + window.pageYOffset - offset;
+      window.scrollTo({ top, behavior: 'smooth' });
+    } else {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
   }
 
   if (addEventOpen) {

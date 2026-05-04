@@ -109,7 +109,7 @@
   }
 
   .menu-drawer {
-    @apply fixed inset-0 z-40;
+    @apply fixed inset-0 z-40 flex justify-end;
   }
 
   .menu-drawer[hidden] {
@@ -121,7 +121,12 @@
   }
 
   .menu-drawer-panel {
-    @apply absolute right-0 top-0 h-full w-[84vw] max-w-sm bg-white px-5 py-6 shadow-2xl;
+    @apply relative w-[84vw] max-w-sm bg-white px-5 pt-6 pb-24 shadow-2xl;
+    height: 100vh;
+    height: 100dvh;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior-y: contain;
   }
 
   .menu-drawer-head {
