@@ -112,6 +112,11 @@ if (lightboxOpen) lightboxOpen.addEventListener('click', openLightbox);
 closeButtons.forEach((button) => button.addEventListener('click', closeLightbox));
 if (locationOpenButton) {
   locationOpenButton.addEventListener('click', (event) => {
+    const isAndroid = /android/i.test(navigator.userAgent);
+    if (isAndroid) {
+      // Allow default action for Android (geo: link)
+      return;
+    }
     event.preventDefault();
     openLocationModal();
   });
@@ -209,7 +214,12 @@ function setupLocationLink() {
     locationOpenButton.href = '#';
     return;
   }
-  locationOpenButton.href = `https://maps.google.com/?q=${encodeURIComponent(query)}`;
+  const isAndroid = /android/i.test(navigator.userAgent);
+  if (isAndroid) {
+    locationOpenButton.href = `geo:0,0?q=${encodeURIComponent(query)}`;
+  } else {
+    locationOpenButton.href = `https://maps.google.com/?q=${encodeURIComponent(query)}`;
+  }
 }
 
 function isAppleMobileDevice() {
