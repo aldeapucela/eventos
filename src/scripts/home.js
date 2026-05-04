@@ -79,6 +79,28 @@ document.addEventListener('click', async (event) => {
   const typeSelectAll = event.target.closest('[data-type-select-all]');
   const typeDeselectAll = event.target.closest('[data-type-deselect-all]');
   const typeOnly = event.target.closest('[data-type-only]');
+  const carouselPrev = event.target.closest('[data-carousel-prev]');
+  const carouselNext = event.target.closest('[data-carousel-next]');
+
+  if (carouselPrev) {
+    event.preventDefault();
+    const targetId = carouselPrev.dataset.carouselPrev;
+    const carousel = document.getElementById(`${targetId}-carousel`);
+    if (carousel) {
+      const scrollAmount = carousel.offsetWidth * 0.8;
+      carousel.scrollBy({ left: -scrollAmount, behavior: 'smooth' });
+    }
+  }
+
+  if (carouselNext) {
+    event.preventDefault();
+    const targetId = carouselNext.dataset.carouselNext;
+    const carousel = document.getElementById(`${targetId}-carousel`);
+    if (carousel) {
+      const scrollAmount = carousel.offsetWidth * 0.8;
+      carousel.scrollBy({ left: scrollAmount, behavior: 'smooth' });
+    }
+  }
 
   if (saveButton) {
     event.preventDefault();

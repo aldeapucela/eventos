@@ -602,6 +602,14 @@
     @apply mt-1 inline-flex min-h-12 items-center gap-2;
   }
 
+  .carousel-nav-btn {
+    @apply flex h-9 w-9 items-center justify-center rounded-full border border-line bg-white text-slate-600 shadow-sm transition hover:bg-slate-50 hover:text-brand-700;
+  }
+
+  html.dark .carousel-nav-btn {
+    @apply border-[#31353d] bg-[#1a1d22] text-[#a6a19a] hover:bg-[#262b31] hover:text-[#d5c8f3];
+  }
+
   .scroll-top-btn {
     @apply fixed right-5 z-30 inline-flex h-12 w-12 items-center justify-center rounded-full border border-line bg-white text-slate-600 shadow-md transition hover:text-brand-700;
     bottom: 9.5rem;
@@ -767,13 +775,12 @@
   .detail-clean-action {
     @apply flex min-h-12 w-full items-center justify-center gap-3 rounded-full border border-line bg-white px-5 py-3 text-base font-medium text-ink shadow-sm transition hover:border-brand-300 hover:text-brand-700;
   }
-
   .detail-clean-action-primary {
     @apply bg-brand-500 text-white hover:border-brand-600 hover:bg-brand-600 hover:text-white;
   }
 
   .detail-comments {
-    @apply mt-8 rounded-3xl border border-line bg-white p-4 shadow-soft sm:p-6;
+    @apply mt-8 -mx-4 rounded-none border-x-0 border-line bg-white p-4 shadow-none sm:mx-0 sm:rounded-3xl sm:border-x sm:p-6 sm:shadow-soft;
   }
 
   .detail-comments-head {
@@ -785,7 +792,7 @@
   }
 
   .detail-comments-link {
-    @apply text-sm font-medium text-brand-700;
+    @apply min-h-[2.5rem] px-4 py-2 text-xs sm:text-sm;
   }
 
   .detail-comments-iframe {
@@ -1572,7 +1579,7 @@ html.dark .site-footer-copy a {
       @apply flex-row items-center justify-center gap-2 py-2;
     }
 
-    .detail-clean-actions-sticky .detail-clean-action-icon-only span {
+    .detail-clean-actions-sticky .detail-clean-action-icon-only span:not(.js-comment-count-number) {
       @apply sr-only;
     }
 

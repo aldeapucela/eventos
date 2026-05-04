@@ -1,11 +1,11 @@
 import { initTheme } from './theme.js';
+import { setupCommentsSection } from './comments.js';
 
 const storageKey = 'aldeapucela_saved_events';
 
 const calendarOpenButton = document.querySelector('[data-calendar-open]');
 const commentsOpenButton = document.querySelector('[data-comments-open]');
 const commentsSection = document.querySelector('[data-comments]');
-const commentsIframe = document.querySelector('[data-comments-iframe]');
 const calendarModal = document.querySelector('[data-calendar-modal]');
 const calendarCloseButtons = document.querySelectorAll('[data-calendar-close]');
 const calendarIcsLink = document.querySelector('[data-calendar-ics]');
@@ -26,6 +26,7 @@ initTheme();
 
 syncSavedStates();
 setupLocationLink();
+setupCommentsSection();
 
 document.addEventListener('click', async (event) => {
   const saveButton = event.target.closest('[data-save-event]');
@@ -99,15 +100,20 @@ function closeLocationModal() {
 function openComments() {
   if (!commentsSection) return;
   commentsSection.hidden = false;
-  if (commentsIframe && !commentsIframe.src) {
-    commentsIframe.src = eventData.sourceUrl || window.location.href;
-  }
   commentsSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
 
 if (calendarOpenButton) calendarOpenButton.addEventListener('click', openCalendarModal);
 calendarCloseButtons.forEach((button) => button.addEventListener('click', closeCalendarModal));
 if (commentsOpenButton) commentsOpenButton.addEventListener('click', openComments);
+
+document.querySelectorAll('[data-scroll-to-comments]').forEach((link) => {
+  link.addEventListener('click', (event) => {
+    event.preventDefault();
+    openComments();
+  });
+});
+
 if (lightboxOpen) lightboxOpen.addEventListener('click', openLightbox);
 closeButtons.forEach((button) => button.addEventListener('click', closeLightbox));
 if (locationOpenButton) {

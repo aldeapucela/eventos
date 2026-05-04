@@ -52,7 +52,7 @@ export function splitFeatured(events) {
   return {
     featured: featuredCandidates[0] || null,
     week: featuredCandidates.length ? base.filter((event) => !event.isSticky) : base,
-    ongoing: ongoing.slice(0, 3),
+    ongoing: ongoing.slice(0, 12),
     today: daily
   };
 }

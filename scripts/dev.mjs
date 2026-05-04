@@ -5,7 +5,7 @@ import { spawn } from 'node:child_process';
 
 const root = path.resolve(path.dirname(new URL(import.meta.url).pathname), '..');
 const dist = path.join(root, 'dist');
-const port = 4173;
+const port = 8000;
 
 function runBuild() {
   return new Promise((resolve, reject) => {

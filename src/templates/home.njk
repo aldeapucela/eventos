@@ -136,8 +136,16 @@
       <section class="space-y-3" data-ongoing-section>
         <div class="section-mobile-head">
           <h2 class="section-mobile-title">En curso</h2>
+          <div class="flex gap-2">
+            <button class="carousel-nav-btn" data-carousel-prev="ongoing" aria-label="Anterior">
+              <i class="fa-solid fa-chevron-left"></i>
+            </button>
+            <button class="carousel-nav-btn" data-carousel-next="ongoing" aria-label="Siguiente">
+              <i class="fa-solid fa-chevron-right"></i>
+            </button>
+          </div>
         </div>
-        <div class="flex overflow-x-auto gap-4 snap-x pb-4 -mx-4 px-4 sm:mx-0 sm:px-0" style="scrollbar-width: none;">
+        <div id="ongoing-carousel" class="flex overflow-x-auto gap-4 snap-x pb-4 -mx-4 px-4 sm:mx-0 sm:px-0" style="scrollbar-width: none;">
           {% for event in ongoing %}
           <article class="event-compact event-compact-featured flex-none w-[46%] md:w-[23%] snap-start" data-category="{{ event.categoryLabel }}" data-free="{{ 'true' if event.isFree else 'false' }}" data-starts-at="{{ event.startsAt }}" data-ends-at="{{ event.endsAt }}">
             <a href="{{ event.urlPath }}" class="event-compact-link">

@@ -79,6 +79,7 @@
       <div class="detail-clean-meta">
         {% if event.scheduleLabel %}<div class="detail-clean-meta-row"><i class="fa-regular fa-calendar"></i><span>{{ event.scheduleLabel }}</span></div>{% elif event.dateRangeLabel %}<div class="detail-clean-meta-row"><i class="fa-regular fa-calendar"></i><span>{{ event.dateRangeLabel }}</span></div>{% endif %}
         {% if event.location %}<a class="detail-clean-meta-row detail-clean-meta-row-location detail-clean-meta-row-button" data-location-open data-location="{{ event.location }}" href="#"><i class="fa-solid fa-location-dot detail-clean-meta-row-icon"></i><span>{{ event.location }}</span></a>{% endif %}
+        <a href="#comentarios" class="detail-clean-meta-row detail-clean-meta-row-button js-comment-count-full hidden" data-scroll-to-comments><i class="fa-regular fa-comment"></i><span></span></a>
       </div>
       <p class="detail-clean-summary">{{ event.summary or event.excerpt }}</p>
 
@@ -106,7 +107,11 @@
         </button>
         <button class="detail-clean-action detail-clean-action-icon-only" type="button" data-comments-open aria-label="Comentar">
           <i class="fa-regular fa-comment"></i>
-          <span>Comentar</span>
+          <span class="js-comment-count-number hidden ml-1 font-semibold text-sm">
+            <span class="md:hidden js-comment-count-mobile"></span>
+            <span class="hidden md:inline js-comment-count-desktop"></span>
+          </span>
+          <span class="js-comment-label">Comentar</span>
         </button>
         <button class="detail-clean-action detail-clean-action-icon-only" type="button" data-share aria-label="Compartir">
           <i class="fa-solid fa-share-nodes"></i>
@@ -114,18 +119,7 @@
         </button>
       </div>
 
-      <section class="detail-comments" data-comments hidden>
-        <div class="detail-comments-head">
-          <h2 class="detail-comments-title">Comentarios</h2>
-          <a class="detail-comments-link" href="{{ event.sourceUrl }}" target="_blank" rel="noreferrer">Abrir en el foro</a>
-        </div>
-        <iframe
-          class="detail-comments-iframe"
-          data-comments-iframe
-          title="Comentarios del evento"
-          loading="lazy"
-        ></iframe>
-      </section>
+
 
       {% if relatedEvents.length %}
       <section class="detail-related mt-12 space-y-4 pt-10 border-t border-line">
@@ -163,6 +157,52 @@
         </div>
       </section>
       {% endif %}
+
+      <section
+        id="comentarios"
+        class="js-comments-root detail-comments"
+        data-discourse-url="https://foro.aldeapucela.org/"
+        data-topic-id="{{ event.id }}"
+        data-topic-url="{{ event.sourceUrl }}"
+        data-topic-json-url="{{ event.sourceUrl }}.json"
+        data-initial-replies="0"
+        data-comments
+      >
+        <div class="detail-comments-head">
+          <div class="w-full text-left">
+            <h2 class="detail-comments-title">Comentarios</h2>
+          </div>
+          <a
+            href="{{ event.sourceUrl }}/2"
+            class="js-add-comment-link btn-ghost detail-comments-link hidden"
+            target="_blank"
+            rel="noreferrer"
+            style="white-space: nowrap;"
+          >
+            Añadir comentario
+          </a>
+        </div>
+
+        <div class="js-comments-embed-wrapper hidden mt-8 overflow-hidden rounded-2xl bg-white p-4 sm:p-6">
+          <div id="discourse-comments" class="js-comments-embed bg-white"></div>
+        </div>
+
+        <div class="js-comments-empty-state mt-6 text-left">
+          <p class="text-lg font-semibold text-slate-900 dark:text-slate-100" style="color: #0f172a !important;">¿Qué piensas de este evento?</p>
+          <p class="mt-1 text-sm leading-relaxed text-slate-700 dark:text-slate-300" style="color: #334155 !important;">
+            Sé la primera persona en comentar y comparte tu punto de vista.
+          </p>
+          <a
+            href="{{ event.sourceUrl }}/2"
+            class="mt-4 btn-primary"
+            target="_blank"
+            rel="noreferrer"
+          >
+            Añadir un comentario
+          </a>
+        </div>
+      </section>
+
     </div>
   </article>
 </main>
