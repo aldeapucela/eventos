@@ -95,17 +95,11 @@ function updateCommentCount(commentCount) {
     }
   });
 
+  const isDesktop = window.matchMedia("(min-width: 768px)").matches;
+
   numberElements.forEach((element) => {
     if (commentCount > 0) {
-      const mobile = element.querySelector(".js-comment-count-mobile");
-      const desktop = element.querySelector(".js-comment-count-desktop");
-
-      if (mobile && desktop) {
-        mobile.textContent = numberLabel;
-        desktop.textContent = fullLabel;
-      } else {
-        element.textContent = numberLabel;
-      }
+      element.textContent = isDesktop ? fullLabel : numberLabel;
       element.classList.remove("hidden");
     } else {
       element.classList.add("hidden");

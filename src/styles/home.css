@@ -37,7 +37,7 @@
   .add-event-modal {
     position: fixed;
     inset: 0;
-    z-index: 60;
+    z-index: 70;
     display: grid;
     place-items: center;
     padding: 1rem;
