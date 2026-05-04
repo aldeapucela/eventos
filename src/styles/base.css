@@ -332,6 +332,67 @@
     @apply font-semibold text-brand-700 underline decoration-brand-400/70 underline-offset-2 transition hover:text-brand-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-300 focus-visible:ring-offset-2 focus-visible:ring-offset-white;
   }
 
+  .compact-badge {
+    @apply inline-flex rounded-full bg-brand-50 px-2.5 py-1 text-[11px] font-medium text-brand-700;
+  }
+
+  .compact-badge-success {
+    @apply bg-emerald-50 text-emerald-700;
+  }
+
+  .event-compact {
+    @apply relative grid grid-cols-1 items-start gap-0 rounded-2xl border border-line/60 bg-paper shadow-none;
+  }
+
+  .event-compact-featured {
+    @apply overflow-hidden;
+  }
+
+  .event-compact-link {
+    @apply block min-w-0 p-0;
+  }
+
+  .event-compact-image {
+    @apply aspect-[4/5] rounded-none bg-cover bg-center;
+  }
+
+  .event-compact-copy {
+    @apply min-w-0 p-3;
+  }
+
+  .event-compact-topline {
+    @apply flex items-start justify-between gap-2 text-[11px] uppercase tracking-[0.14em] text-slate-500;
+  }
+
+  .event-compact-title {
+    @apply mt-1 text-sm font-semibold leading-tight text-ink;
+  }
+
+  .event-compact-meta {
+    @apply mt-1 text-xs leading-4 text-slate-500;
+  }
+
+  .event-compact-badges {
+    @apply mt-2 flex flex-wrap gap-1.5;
+  }
+
+  .event-compact-actions {
+    @apply absolute right-2 top-2 z-20 flex w-auto flex-col items-center justify-start gap-4 p-0;
+  }
+
+  .event-compact-action {
+    @apply inline-flex h-9 w-9 items-center justify-center rounded-full border border-line/70 bg-white/95 text-slate-600 shadow-sm transition hover:text-brand-700;
+  }
+
+  .event-compact-action-active,
+  .event-compact-action.event-compact-action-active {
+    @apply border-[#6a4d9b] bg-[#6a4d9b] text-white shadow-md;
+  }
+
+  .event-compact-action-active i {
+    @apply text-white;
+  }
+
   .mobile-chip-row {
     @apply mt-5 flex flex-wrap justify-center gap-3 px-4 pb-1 pt-1 sm:px-6;
   }

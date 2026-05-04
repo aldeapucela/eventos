@@ -354,29 +354,34 @@ async function buildSite(events) {
   }));
 
   for (const event of sorted) {
+    const relatedEvents = event.categoryLabel
+      ? sorted.filter((e) => e.id !== event.id && e.categoryLabel === event.categoryLabel && !e.hasEnded).slice(0, 4)
+      : [];
+
     await writeFile(path.join('e', String(event.id), event.slug, 'index.html'), render('event-detail.njk', {
-    title: `${event.title} | Aldea Pucela Eventos`,
-    meta: { description: event.excerpt },
-    pageCss: 'event-detail.css',
-    pageJs: 'event-detail.js',
-    event: enrichEvent(event),
-    eventDetailJson: JSON.stringify({
-      title: event.title,
-      summary: event.summary || event.excerpt,
-      location: event.location,
-      sourceUrl: event.sourceUrl,
-      startsAtIso: event.startsAt,
-      endsAtIso: event.endsAt
-    }),
-    social: {
-      type: 'article',
-      title: event.title,
-      description: event.summary || event.excerpt,
-      image: event.image || `${publicBaseUrl}/img/logo-web.jpg`,
-      url: `${publicBaseUrl}/e/${event.id}/${event.slug}`
-    },
-    ...sharedContext
-  }));
+      title: `${event.title} | Aldea Pucela Eventos`,
+      meta: { description: event.excerpt },
+      pageCss: 'event-detail.css',
+      pageJs: 'event-detail.js',
+      event,
+      relatedEvents,
+      eventDetailJson: JSON.stringify({
+        title: event.title,
+        summary: event.summary || event.excerpt,
+        location: event.location,
+        sourceUrl: event.sourceUrl,
+        startsAtIso: event.startsAt,
+        endsAtIso: event.endsAt
+      }),
+      social: {
+        type: 'article',
+        title: event.title,
+        description: event.summary || event.excerpt,
+        image: event.image || `${publicBaseUrl}/img/logo-web.jpg`,
+        url: `${publicBaseUrl}/e/${event.id}/${event.slug}`
+      },
+      ...sharedContext
+    }));
   }
 
   await writeFile('site-data.json', siteDataPayload(events));
