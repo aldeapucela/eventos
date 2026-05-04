@@ -112,7 +112,8 @@ function renderSavedGroups() {
     .sort((a, b) => new Date(a) - new Date(b))
     .map((key) => {
       const date = parseDateLike(key);
-      const label = capitalize(dateFormatter.format(date));
+      const prefix = getRelativeDatePrefix(key);
+      const label = prefix ? `${prefix}, ${capitalize(dateFormatter.format(date))}` : capitalize(dateFormatter.format(date));
       const cards = grouped[key].map(renderCard).join('');
       return `
         <section class="saved-day-group" data-saved-day-group>
@@ -128,7 +129,8 @@ function renderSavedGroups() {
 
 function renderCard(event) {
   const image = event.image || '/assets/placeholder-event.svg';
-  const schedule = event.scheduleLabel || `${event.compactDateLabel || ''}${event.timeLabel ? ` · ${event.timeLabel}` : ''}`;
+  const prefix = getRelativeDatePrefix(event.startsAtIso);
+  const schedule = `${prefix ? `${prefix}, ` : ''}${event.scheduleLabel || `${event.compactDateLabel || ''}${event.timeLabel ? ` · ${event.timeLabel}` : ''}`}`;
   return `
     <article class="event-compact" data-starts-at="${event.startsAtIso || ''}">
       <a href="${event.urlPath}" class="event-compact-link">
@@ -212,6 +214,20 @@ function parseDateLike(value) {
     return new Date(year, month - 1, day);
   }
   return new Date(stringValue);
+}
+
+function getRelativeDatePrefix(dateIso) {
+  if (!dateIso) return '';
+  const date = parseDateLike(dateIso);
+  if (Number.isNaN(date.getTime())) return '';
+  const now = new Date();
+  const todayStr = now.toLocaleDateString('sv-SE');
+  const tomorrow = new Date(now.getTime() + 24 * 60 * 60 * 1000);
+  const tomorrowStr = tomorrow.toLocaleDateString('sv-SE');
+  const dateStr = date.toLocaleDateString('sv-SE');
+  if (dateStr === todayStr) return 'Hoy';
+  if (dateStr === tomorrowStr) return 'Mañana';
+  return '';
 }
 
 function toLocalDateKey(date) {

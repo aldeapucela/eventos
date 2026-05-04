@@ -1,8 +1,13 @@
 import { initTheme } from './theme.js';
 
 const filters = Array.from(document.querySelectorAll('[data-filter]'));
-const cards = Array.from(document.querySelectorAll('article[data-category]'));
-const weekCards = Array.from(document.querySelectorAll('[data-week-groups] [data-category]'));
+let cards = [];
+let weekCards = [];
+
+function updateCards() {
+  cards = Array.from(document.querySelectorAll('article[data-category]'));
+  weekCards = Array.from(document.querySelectorAll('[data-week-groups] [data-category]'));
+}
 const filterHint = document.querySelector('.mobile-filter-hint');
 const resultsTitle = document.querySelector('[data-results-title]');
 const weekEmpty = document.querySelector('[data-week-empty]');
@@ -39,6 +44,7 @@ if (weekGroups) {
 }
 
 syncSavedStates();
+updateCards();
 applyFilters({ updateUrl: false });
 if (typeCheckboxes.length) {
   typeCheckboxes.forEach(cb => {
@@ -201,18 +207,20 @@ function applyFilters(options = {}) {
     const category = card.dataset.category || '';
     const isFree = card.dataset.free === 'true';
     const startsAt = card.dataset.startsAt ? parseDateLike(card.dataset.startsAt) : null;
-    const timeVisible =
-      activeTimeFilter === 'all' ||
-      (activeTimeFilter === 'Hoy' && startsAt && sameDay(startsAt, today)) ||
-      (activeTimeFilter === 'Este finde' && startsAt && startsAt >= today && startsAt <= weekEnd && isWeekend(startsAt)) ||
-      (activeTimeFilter === 'Esta semana' && startsAt && startsAt >= weekStart && startsAt <= weekEnd) ||
-      (activeTimeFilter === 'Próxima semana' && startsAt && startsAt >= nextWeekStart && startsAt <= nextWeekEnd) ||
-      (activeTimeFilter === 'Este mes' && startsAt && startsAt <= monthEnd);
+    const endsAt = card.dataset.endsAt ? parseDateLike(card.dataset.endsAt) : null;
+    const timeVisible = checkTimeVisible(startsAt, endsAt, activeTimeFilter);
     const freeVisible = !activeFreeFilter || isFree;
     const typeVisible = activeTypeFilters.length === 0 || activeTypeFilters.includes(category);
     const visible = timeVisible && freeVisible && typeVisible;
     card.style.display = visible ? '' : 'none';
   });
+  
+  const ongoingSection = document.querySelector('[data-ongoing-section]');
+  if (ongoingSection) {
+    const hasVisibleOngoing = Array.from(ongoingSection.querySelectorAll('article')).some(a => a.style.display !== 'none');
+    ongoingSection.style.display = hasVisibleOngoing ? '' : 'none';
+  }
+
   filterWeekGroups();
 
   if (filterHint) {
@@ -254,6 +262,44 @@ function sameDay(a, b) {
   return a.getFullYear() === b.getFullYear() &&
     a.getMonth() === b.getMonth() &&
     a.getDate() === b.getDate();
+}
+
+function checkTimeVisible(startsAt, endsAt, filterValue) {
+  if (filterValue === 'all') return true;
+  if (!startsAt) return false;
+  
+  const actualEndsAt = endsAt || startsAt;
+  const t = new Date();
+  
+  if (filterValue === 'Hoy') {
+    const todayEnd = new Date(t.getFullYear(), t.getMonth(), t.getDate(), 23, 59, 59, 999);
+    const todayStart = new Date(t.getFullYear(), t.getMonth(), t.getDate(), 0, 0, 0, 0);
+    return startsAt <= todayEnd && actualEndsAt >= todayStart;
+  }
+  
+  if (filterValue === 'Este finde') {
+    const wEnd = endOfWeek(t);
+    const wSat = new Date(wEnd);
+    wSat.setDate(wSat.getDate() - 1);
+    wSat.setHours(0, 0, 0, 0);
+    return startsAt <= wEnd && actualEndsAt >= wSat;
+  }
+  
+  if (filterValue === 'Esta semana') {
+    return startsAt <= endOfWeek(t) && actualEndsAt >= startOfWeek(t);
+  }
+  
+  if (filterValue === 'Próxima semana') {
+    return startsAt <= endOfNextWeek(t) && actualEndsAt >= startOfNextWeek(t);
+  }
+  
+  if (filterValue === 'Este mes') {
+    const monthE = endOfMonth(t);
+    const todayStart = new Date(t.getFullYear(), t.getMonth(), t.getDate(), 0, 0, 0, 0);
+    return startsAt <= monthE && actualEndsAt >= todayStart;
+  }
+  
+  return false;
 }
 
 function isWeekend(date) {
@@ -311,6 +357,23 @@ function parseDateLike(value) {
     return new Date(year, month - 1, day);
   }
   return new Date(stringValue);
+}
+
+function getRelativeDatePrefix(dateIso) {
+  if (!dateIso) return '';
+  const date = parseDateLike(dateIso);
+  if (Number.isNaN(date.getTime())) return '';
+  
+  const now = new Date();
+  const todayStr = now.toLocaleDateString('sv-SE');
+  const tomorrow = new Date(now.getTime() + 24 * 60 * 60 * 1000);
+  const tomorrowStr = tomorrow.toLocaleDateString('sv-SE');
+  
+  const dateStr = date.toLocaleDateString('sv-SE');
+  
+  if (dateStr === todayStr) return 'Hoy';
+  if (dateStr === tomorrowStr) return 'Mañana';
+  return '';
 }
 
 function getFiltersFromUrl() {
@@ -429,7 +492,8 @@ function renderWeekGroups() {
   weekGroups.innerHTML = keys
     .map((key) => {
       const date = parseDateLike(key);
-      const label = capitalize(formatter.format(date).replace(',', ''));
+      const prefix = getRelativeDatePrefix(key);
+      const label = prefix ? `${prefix}, ${capitalize(formatter.format(date).replace(',', ''))}` : capitalize(formatter.format(date).replace(',', ''));
       const items = grouped[key]
         .map(renderWeekItem)
         .join('');
@@ -443,6 +507,9 @@ function renderWeekGroups() {
       `;
     })
     .join('');
+  
+  updateCards();
+  syncSavedStates();
 }
 
 function openMenu() {
@@ -536,7 +603,7 @@ function closeAddEventModal() {
 
 function renderWeekItem(event) {
     return `
-      <article class="event-compact" data-category="${event.categoryLabel || ''}" data-free="${event.isFree ? 'true' : 'false'}" data-starts-at="${event.startsAtIso || ''}">
+      <article class="event-compact" data-category="${event.categoryLabel || ''}" data-free="${event.isFree ? 'true' : 'false'}" data-starts-at="${event.startsAtIso || ''}" data-ends-at="${event.endsAtIso || ''}">
         <a href="${event.urlPath}" class="event-compact-link">
           <div class="event-compact-image" style="background-image:url('${event.image || '/assets/placeholder-event.svg'}')"></div>
           <div class="event-compact-copy">
@@ -590,13 +657,8 @@ function filterWeekGroups() {
     const category = item.dataset.category || '';
     const isFree = item.dataset.free === 'true';
       const startsAt = item.dataset.startsAt ? parseDateLike(item.dataset.startsAt) : null;
-      const timeVisible =
-        activeTimeFilter === 'all' ||
-        (activeTimeFilter === 'Hoy' && startsAt && sameDay(startsAt, today)) ||
-        (activeTimeFilter === 'Este finde' && startsAt && startsAt >= today && startsAt <= weekEnd && isWeekend(startsAt)) ||
-        (activeTimeFilter === 'Esta semana' && startsAt && startsAt >= weekStart && startsAt <= weekEnd) ||
-        (activeTimeFilter === 'Próxima semana' && startsAt && startsAt >= nextWeekStart && startsAt <= nextWeekEnd) ||
-        (activeTimeFilter === 'Este mes' && startsAt && startsAt <= monthEnd);
+      const endsAt = item.dataset.endsAt ? parseDateLike(item.dataset.endsAt) : null;
+      const timeVisible = checkTimeVisible(startsAt, endsAt, activeTimeFilter);
       const freeVisible = !activeFreeFilter || isFree;
       const typeVisible = activeTypeFilters.length === 0 || activeTypeFilters.includes(category);
       const visible = timeVisible && freeVisible && typeVisible;

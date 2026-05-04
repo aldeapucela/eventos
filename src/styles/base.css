@@ -1082,15 +1082,6 @@
 }
 
 @media (min-width: 768px) {
-  #week-groups {
-    display: none;
-  }
-
-  #event-grid {
-    display: grid !important;
-    grid-template-columns: repeat(4, minmax(0, 1fr));
-    gap: 1.25rem;
-  }
 
   .event-row-list {
     grid-template-columns: repeat(4, minmax(0, 1fr));
