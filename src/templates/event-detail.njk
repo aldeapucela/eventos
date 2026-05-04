@@ -6,16 +6,18 @@
 {% block header %}
 <header class="topbar detail-topbar">
   <div class="topbar-inner detail-topbar-inner">
-    <a class="detail-topbar-mobile-back inline-flex items-center justify-center text-slate-500" href="/" aria-label="Volver">
-      <i class="fa-solid fa-arrow-left"></i>
-    </a>
-    <a class="detail-brand-mobile detail-topbar-mobile-brand md:hidden" href="/" aria-label="Aldea Pucela Eventos">
-      <img src="https://aldeapucela.org/img/logo-web.jpg" alt="" class="detail-brand-mobile-mark" />
-      <span class="detail-brand-mobile-copy">
-        <span class="detail-brand-mobile-kicker">ALDEA PUCELA</span>
-        <span class="detail-brand-mobile-title">Eventos</span>
-      </span>
-    </a>
+    <div class="flex items-center gap-3 md:hidden">
+      <a class="detail-topbar-mobile-back inline-flex items-center justify-center text-slate-500" href="/" aria-label="Volver">
+        <i class="fa-solid fa-arrow-left"></i>
+      </a>
+      <a class="detail-brand-mobile detail-topbar-mobile-brand" href="/" aria-label="Aldea Pucela Eventos">
+        <img src="https://aldeapucela.org/img/logo-web.jpg" alt="" class="detail-brand-mobile-mark" />
+        <span class="detail-brand-mobile-copy">
+          <span class="detail-brand-mobile-kicker">ALDEA PUCELA</span>
+          <span class="detail-brand-mobile-title">Eventos</span>
+        </span>
+      </a>
+    </div>
     <a class="hidden items-center gap-3 md:flex" href="/">
       <img src="https://aldeapucela.org/img/logo-web.jpg" alt="Aldea Pucela" class="h-12 w-12 rounded-2xl object-cover shadow-sm" />
       <div>

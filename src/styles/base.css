@@ -983,7 +983,7 @@
   }
 
   .detail-topbar-mobile-back {
-    @apply mr-1 h-10 w-10 shrink-0 rounded-full text-slate-500 hover:bg-slate-100 hover:text-brand-700;
+    @apply -ml-1 h-10 w-10 shrink-0 rounded-full text-slate-500 hover:bg-slate-100 hover:text-brand-700;
   }
 
   .detail-topbar-mobile-brand {
@@ -1515,12 +1515,11 @@ html.dark .site-footer-copy a {
     }
 
     .detail-brand-mobile {
-      @apply mx-auto min-w-0 flex-none;
-      transform: translateX(-0.5rem);
+      @apply min-w-0 flex-none;
     }
 
     .detail-brand-mobile-mark {
-      @apply h-9 w-9;
+      @apply h-11 w-11 rounded-2xl;
     }
 
     .detail-brand-mobile-kicker {
