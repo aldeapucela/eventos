@@ -2189,6 +2189,10 @@ html.dark .site-footer-copy a {
     background: rgba(111, 89, 168, 0.24);
   }
 
+  html.dark .type-checkbox-label {
+    color: var(--text-main);
+  }
+
   html.dark .subscribe-url-input {
     border-color: var(--border-light);
     background: var(--bg-body);
