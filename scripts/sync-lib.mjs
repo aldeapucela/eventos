@@ -5,6 +5,7 @@ import { fetchCategoryTopics, fetchTopicDetail, normalizeDetailToRecord, shouldS
 import { ensureCacheDirs, readIndex, writeCachedTopic, writeIndex } from '../src/data/store.mjs';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
+const CACHE_SCHEMA_VERSION = 1;
 
 export async function syncEvents({ rebuild = false } = {}) {
   await ensureCacheDirs();
@@ -19,7 +20,10 @@ export async function syncEvents({ rebuild = false } = {}) {
     seenIds.add(String(topic.id));
     const signature = topicSignature(topic);
     const cached = index.topics?.[topic.id];
-    const unchanged = !rebuild && cached && cached.signature === signature;
+    const unchanged = !rebuild &&
+      cached &&
+      cached.signature === signature &&
+      cached.schemaVersion === CACHE_SCHEMA_VERSION;
 
     if (unchanged) {
       const cachedPath = path.join(root, 'cache', 'data', `${topic.id}.json`);
@@ -38,6 +42,7 @@ export async function syncEvents({ rebuild = false } = {}) {
       slug: topic.slug,
       last_posted_at: topic.last_posted_at,
       signature,
+      schemaVersion: CACHE_SCHEMA_VERSION,
       detailPath: `/t/${topic.slug}/${topic.id}.json`,
       normalizedPath: `/cache/data/${topic.id}.json`
     };
