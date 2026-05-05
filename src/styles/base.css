@@ -748,6 +748,18 @@
     text-decoration-thickness: 1px;
   }
 
+  .detail-clean-meta-row-button-muted {
+    @apply font-medium text-slate-500;
+  }
+
+  .detail-clean-meta-row-button-muted span {
+    text-decoration: none;
+  }
+
+  .detail-clean-meta-row-comments {
+    @apply mt-1 flex w-full;
+  }
+
   .detail-clean-summary {
     @apply mt-6 text-base leading-7 text-slate-600;
   }
@@ -1946,6 +1958,10 @@ html.dark .site-footer-copy a {
   html.dark .detail-clean-meta-row i,
   html.dark .detail-clean-meta-row-icon {
     color: var(--text-muted);
+  }
+
+  html.dark .detail-clean-meta-row-button-muted {
+    color: var(--text-secondary);
   }
 
   html.dark .detail-clean-extra-row {

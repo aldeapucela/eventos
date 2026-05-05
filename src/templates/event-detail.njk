@@ -83,7 +83,7 @@
       <div class="detail-clean-meta">
         {% if event.scheduleLabel %}<div class="detail-clean-meta-row"><i class="fa-regular fa-calendar"></i><span>{{ event.scheduleLabel }}</span></div>{% elif event.dateRangeLabel %}<div class="detail-clean-meta-row"><i class="fa-regular fa-calendar"></i><span>{{ event.dateRangeLabel }}</span></div>{% endif %}
         {% if event.location %}<a class="detail-clean-meta-row detail-clean-meta-row-location detail-clean-meta-row-button" data-location-open data-location="{{ event.location }}" href="#"><i class="fa-solid fa-location-dot detail-clean-meta-row-icon"></i><span>{{ event.location }}</span></a>{% endif %}
-        <a href="#comentarios" class="detail-clean-meta-row detail-clean-meta-row-button js-comment-count-full hidden" data-scroll-to-comments><i class="fa-regular fa-comment"></i><span></span></a>
+        <a href="#comentarios" class="detail-clean-meta-row detail-clean-meta-row-button detail-clean-meta-row-button-muted detail-clean-meta-row-comments js-comment-count-full hidden" data-scroll-to-comments><i class="fa-regular fa-comment"></i><span></span></a>
       </div>
       <p class="detail-clean-summary">{{ event.summary or event.excerpt }}</p>
 
@@ -197,8 +197,8 @@
         </div>
 
         <div class="js-comments-empty-state mt-6 text-left">
-          <p class="text-lg font-semibold text-slate-900 dark:text-slate-100" style="color: #0f172a !important;">¿Qué piensas de este evento?</p>
-          <p class="mt-1 text-sm leading-relaxed text-slate-700 dark:text-slate-300" style="color: #334155 !important;">
+          <p class="text-lg font-semibold text-slate-900 dark:text-slate-100">¿Qué piensas de este evento?</p>
+          <p class="mt-1 text-sm leading-relaxed text-slate-700 dark:text-slate-300">
             Sé la primera persona en comentar y comparte tu punto de vista.
           </p>
           <a
