@@ -437,6 +437,10 @@
     min-width: 6.25rem;
   }
 
+  .mobile-chip-select-wrap.mobile-chip-active {
+    @apply pr-4;
+  }
+
   .mobile-chip-select-wrap .fa-chevron-down {
     @apply pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-xs leading-none text-slate-500;
   }
@@ -855,6 +859,109 @@
     @apply max-h-[86vh] overflow-y-auto;
   }
 
+  .filter-modal-toolbar {
+    @apply flex gap-2 px-5 pb-2 pt-4 sm:px-6;
+  }
+
+  .filter-modal-toolbar-action {
+    @apply flex-1 justify-center px-4 py-2;
+  }
+
+  .filter-modal-section {
+    margin-top: 0;
+    border-top: 0;
+  }
+
+  .filter-modal-section-compact {
+    max-height: 45vh;
+    overflow-y: auto;
+    padding-bottom: 1rem;
+  }
+
+  .filter-modal-footer {
+    @apply sticky bottom-0 px-5 py-4 sm:px-6;
+    border-top: 1px solid rgba(15, 23, 42, 0.06);
+    background: inherit;
+    border-bottom-left-radius: inherit;
+    border-bottom-right-radius: inherit;
+  }
+
+  .filter-modal-submit {
+    width: 100%;
+    justify-content: center;
+    padding: 0.875rem 1rem;
+    font-weight: 700;
+  }
+
+  .type-checkbox-list {
+    @apply flex flex-col gap-1;
+  }
+
+  .type-checkbox-row {
+    @apply flex items-center justify-between gap-3 px-5 py-1 sm:px-6;
+  }
+
+  .type-checkbox-item {
+    @apply flex flex-1 cursor-pointer items-center gap-3 py-1;
+  }
+
+  .type-checkbox-input {
+    width: 1.25rem;
+    height: 1.25rem;
+    accent-color: var(--color-primary);
+  }
+
+  .type-checkbox-label {
+    @apply text-base leading-6 text-ink;
+  }
+
+  .type-only-btn {
+    @apply rounded-full border-0 px-3 py-1 text-xs font-semibold;
+    color: var(--color-primary);
+    background: rgba(111, 59, 178, 0.08);
+  }
+
+  .filter-date-actions {
+    @apply mt-6;
+  }
+
+  .filter-date-actions .calendar-modal-action {
+    justify-content: flex-start;
+    text-align: left;
+  }
+
+  .filter-date-select-option {
+    gap: 0.75rem;
+    flex-wrap: nowrap;
+    overflow: hidden;
+  }
+
+  .filter-date-select-label {
+    font-weight: 500;
+    flex: 0 0 auto;
+  }
+
+  .filter-date-select-control {
+    margin-left: auto;
+    min-width: 0;
+    max-width: 10rem;
+    width: 100%;
+    height: 2.35rem;
+    border-radius: 9999px;
+    border: 1px solid rgba(148, 163, 184, 0.35);
+    background: #fff;
+    padding: 0.35rem 0.75rem;
+    font-size: 0.95rem;
+    color: #334155;
+    appearance: auto;
+  }
+
+  html.dark .filter-date-select-control {
+    border-color: var(--border-light);
+    background: var(--bg-card);
+    color: var(--text-main);
+  }
+
   .subscribe-section {
     @apply mt-6 border-t border-line pt-5;
   }
@@ -957,7 +1064,7 @@
   }
 
   .location-modal {
-    @apply fixed inset-0 z-[60];
+    @apply fixed inset-0 z-[5000];
   }
 
   .location-modal[hidden] {
@@ -965,11 +1072,11 @@
   }
 
   .location-modal-backdrop {
-    @apply absolute inset-0 bg-slate-950/70;
+    @apply absolute inset-0 z-[1] bg-slate-950/70;
   }
 
   .location-modal-panel {
-    @apply absolute left-1/2 top-1/2 w-[min(92vw,32rem)] -translate-x-1/2 -translate-y-1/2 rounded-[2rem] border border-line bg-white p-5 shadow-2xl sm:p-6;
+    @apply absolute left-1/2 top-1/2 z-[2] w-[min(92vw,32rem)] -translate-x-1/2 -translate-y-1/2 rounded-[2rem] border border-line bg-white p-5 shadow-2xl sm:p-6;
   }
 
   .location-modal-header {
@@ -2015,12 +2122,21 @@ html.dark .site-footer-copy a {
     color: var(--text-main);
   }
 
+  html.dark .filter-modal-footer {
+    border-color: var(--border-light);
+  }
+
   html.dark .calendar-modal-action,
   html.dark .location-modal-action,
   html.dark .add-event-modal-cta {
     border-color: var(--border-light);
     background: var(--bg-card);
     color: var(--text-main);
+  }
+
+  html.dark .type-only-btn {
+    color: #ddd2fb;
+    background: rgba(111, 89, 168, 0.24);
   }
 
   html.dark .subscribe-url-input {

@@ -7,8 +7,9 @@ import tailwindcss from 'tailwindcss';
 import autoprefixer from 'autoprefixer';
 import { fileURLToPath } from 'node:url';
 import { loadCachedEvents } from '../src/data/store.mjs';
-import { deriveFilters, sortEvents, splitFeatured, getPastEvents, groupEventsByMonth } from '../src/data/site.mjs';
+import { deriveFilters, sortEvents, splitFeatured, getPastEvents, groupEventsByMonth, groupFutureEventsByVenue } from '../src/data/site.mjs';
 import { DISPLAY_TIMEZONE, escapeHtml, formatDateRange, formatDateTime, parseDateLike } from '../src/data/format.mjs';
+import { enrichVenueCatalog, mergeSpacesWithVenueCatalog } from '../src/data/venues.mjs';
 import { syncEvents } from './sync-lib.mjs';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -56,7 +57,9 @@ async function copyJs() {
   await fs.copyFile(path.join(root, 'src', 'scripts', 'home.js'), path.join(jsDir, 'home.js'));
   await fs.copyFile(path.join(root, 'src', 'scripts', 'event-detail.js'), path.join(jsDir, 'event-detail.js'));
   await fs.copyFile(path.join(root, 'src', 'scripts', 'comments.js'), path.join(jsDir, 'comments.js'));
+  await fs.copyFile(path.join(root, 'src', 'scripts', 'location-link.js'), path.join(jsDir, 'location-link.js'));
   await fs.copyFile(path.join(root, 'src', 'scripts', 'saved-events.js'), path.join(jsDir, 'saved-events.js'));
+  await fs.copyFile(path.join(root, 'src', 'scripts', 'spaces.js'), path.join(jsDir, 'spaces.js'));
   await fs.copyFile(path.join(root, 'src', 'scripts', 'theme.js'), path.join(jsDir, 'theme.js'));
   await fs.copyFile(path.join(root, 'src', 'scripts', 'matomo.js'), path.join(jsDir, 'matomo.js'));
 }
@@ -278,6 +281,8 @@ async function computeAssetVersion() {
     path.join(root, 'src', 'styles', 'home.css'),
     path.join(root, 'src', 'styles', 'event-detail.css'),
     path.join(root, 'src', 'scripts', 'home.js'),
+    path.join(root, 'src', 'scripts', 'location-link.js'),
+    path.join(root, 'src', 'scripts', 'spaces.js'),
     path.join(root, 'src', 'scripts', 'saved-events.js'),
     path.join(root, 'src', 'scripts', 'event-detail.js'),
     path.join(root, 'src', 'scripts', 'comments.js'),
@@ -304,6 +309,9 @@ async function buildSite(events) {
   const sorted = sortEvents(events).map(enrichEvent);
   const filters = deriveFilters(events);
   const { featured, week, ongoing, today } = splitFeatured(events);
+  const groupedSpaces = groupFutureEventsByVenue(sorted, { horizonMonths: 6 });
+  const venueCatalog = await enrichVenueCatalog(groupedSpaces);
+  const spaces = mergeSpacesWithVenueCatalog(groupedSpaces, venueCatalog);
   const assetVersion = await computeAssetVersion();
   const categoryFeeds = filters.map((category) => ({
     label: category,
@@ -373,6 +381,33 @@ async function buildSite(events) {
     pageCss: 'home.css',
     pageJs: 'home.js',
     groups,
+    ...sharedContext
+  }));
+
+  await writeFile('espacios/index.html', render('spaces.njk', {
+    title: 'Espacios - Eventos Valladolid - Aldea Pucela',
+    meta: { description: 'Eventos en los próximos seis meses agrupados por espacio en Valladolid.' },
+    social: {
+      type: 'website',
+      title: 'Espacios - Eventos Valladolid - Aldea Pucela',
+      description: 'Eventos en los próximos seis meses agrupados por espacio en Valladolid.',
+      image: `${publicBaseUrl}/assets/social-preview.jpg`,
+      url: `${publicBaseUrl}/espacios`
+    },
+    pageCss: 'home.css',
+    pageJs: 'home.js',
+    spaces,
+    spacesCount: spaces.length,
+    futureEventsCount: spaces.reduce((total, space) => total + space.count, 0),
+    spacesDataJson: JSON.stringify(spaces.map((space) => ({
+      slug: space.slug,
+      name: space.name,
+      address: space.address,
+      count: space.count,
+      lat: space.lat,
+      lon: space.lon,
+      hasMapPoint: space.hasMapPoint
+    }))),
     ...sharedContext
   }));
 

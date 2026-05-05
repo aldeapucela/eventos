@@ -1,3 +1,5 @@
+import { VENUE_CANONICAL_MAP, VENUE_SLUG_MAP } from './venue-aliases.mjs';
+
 export function groupByDate(events) {
   return events.reduce((acc, event) => {
     const dateKey = event.startsAt ? new Date(event.startsAt).toISOString().slice(0, 10) : 'sin-fecha';
@@ -149,4 +151,108 @@ export function groupEventsByMonth(events) {
   }
   
   return groups;
+}
+
+export function groupFutureEventsByVenue(events, options = {}) {
+  const now = new Date();
+  const horizonMonths = Number.isFinite(options.horizonMonths) ? options.horizonMonths : 6;
+  const horizonEnd = new Date(now);
+  horizonEnd.setMonth(horizonEnd.getMonth() + horizonMonths);
+  const groups = new Map();
+
+  for (const event of sortEvents(events)) {
+    if (!event.startsAt) continue;
+    const startsAt = new Date(event.startsAt);
+    if (Number.isNaN(startsAt.getTime()) || startsAt < now) continue;
+    if (startsAt > horizonEnd) continue;
+    if (!event.venue) continue;
+
+    const canonicalVenue = canonicalizeVenue(event.venue);
+    if (!canonicalVenue) continue;
+
+    const slug = VENUE_SLUG_MAP[canonicalVenue] || slugifyVenue(canonicalVenue);
+    const addressHint = event.address ? event.address.trim() : '';
+    const key = normalizeVenueKey(canonicalVenue);
+
+    if (!groups.has(key)) {
+      groups.set(key, {
+        slug,
+        canonicalVenue,
+        name: canonicalVenue,
+        aliases: new Set(),
+        addressHints: new Set(),
+        nextEventAt: event.startsAt,
+        events: [],
+        count: 0
+      });
+    }
+
+    const group = groups.get(key);
+    group.aliases.add(event.venue);
+    if (addressHint) group.addressHints.add(addressHint);
+    if (new Date(group.nextEventAt) > startsAt) {
+      group.nextEventAt = event.startsAt;
+    }
+    group.events.push(event);
+    group.count += 1;
+  }
+
+  return [...groups.values()]
+    .map((group) => {
+      const aliases = [...group.aliases].sort((a, b) => a.localeCompare(b, 'es'));
+      const addressHints = [...group.addressHints].sort((a, b) => a.localeCompare(b, 'es'));
+      const address = pickPrimaryAddress(addressHints);
+      return {
+        slug: group.slug,
+        canonicalVenue: group.canonicalVenue,
+        name: group.name,
+        aliases,
+        addressHints,
+        address,
+        nextEventAt: group.nextEventAt,
+        events: sortEvents(group.events),
+        count: group.count
+      };
+    })
+    .sort((a, b) => {
+      const timeDiff = new Date(a.nextEventAt).getTime() - new Date(b.nextEventAt).getTime();
+      return timeDiff !== 0 ? timeDiff : a.name.localeCompare(b.name, 'es');
+    });
+}
+
+function canonicalizeVenue(value) {
+  const raw = String(value || '').trim();
+  if (!raw) return '';
+  const normalizedKey = normalizeVenueKey(raw);
+  return VENUE_CANONICAL_MAP[raw.toLowerCase()] || VENUE_CANONICAL_MAP[normalizedKey] || raw;
+}
+
+function normalizeVenueKey(value) {
+  return String(value || '')
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase()
+    .replace(/\b(sala|espacio|centro|teatro|bar|csa|club)\b/g, ' ')
+    .replace(/[^a-z0-9]+/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+function slugifyVenue(value) {
+  return String(value || '')
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '');
+}
+
+function pickPrimaryAddress(addressHints) {
+  if (!addressHints.length) return '';
+  const counts = new Map();
+  for (const address of addressHints) {
+    counts.set(address, (counts.get(address) || 0) + 1);
+  }
+  return [...counts.entries()]
+    .sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0], 'es'))[0][0];
 }

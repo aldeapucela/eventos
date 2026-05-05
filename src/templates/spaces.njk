@@ -1,5 +1,14 @@
 {% extends "layout.njk" %}
 
+{% block extraHead %}
+<link
+  rel="stylesheet"
+  href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+  integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+  crossorigin=""
+/>
+{% endblock %}
+
 {% block header %}
 <header class="topbar">
   <div class="topbar-inner">
@@ -15,7 +24,7 @@
         <i class="fa-solid fa-house" aria-hidden="true"></i>
         <span>Inicio</span>
       </a>
-      <a class="nav-link " href="/espacios">
+      <a class="nav-link nav-link-active" href="/espacios">
         <i class="fa-solid fa-location-dot" aria-hidden="true"></i>
         <span>Espacios</span>
       </a>
@@ -23,7 +32,7 @@
         <i class="fa-regular fa-bookmark" aria-hidden="true"></i>
         <span>Mis guardados</span>
       </a>
-      <a class="nav-link nav-link-active" href="/archivo">
+      <a class="nav-link " href="/archivo">
         <i class="fa-solid fa-box-archive" aria-hidden="true"></i>
         <span>Archivo</span>
       </a>
@@ -54,27 +63,58 @@
 {% block body %}
 <main class="page-shell py-5 sm:py-8 lg:py-10">
   <section class="home-layout space-y-7 lg:space-y-9">
-    <div class="section-mobile-head">
-      <h1 class="section-mobile-title">Archivo</h1>
+    <section class="spaces-hero-copy">
+      <h1 class="spaces-page-title">Espacios</h1>
+      <p class="spaces-hero-text">Eventos en los próximos seis meses agrupados por espacio</p>
+    </section>
+
+    <div class="spaces-hero-stats" aria-label="Resumen de espacios">
+      <article class="spaces-stat-card">
+        <span class="spaces-stat-value">{{ spacesCount }}</span>
+        <span class="spaces-stat-label">espacios con actividad</span>
+      </article>
+      <article class="spaces-stat-card">
+        <span class="spaces-stat-value">{{ futureEventsCount }}</span>
+        <span class="spaces-stat-label">eventos futuros</span>
+      </article>
     </div>
 
-    {% if groups.length == 0 %}
-    <div class="saved-empty" data-saved-empty>
+    {% if spaces.length == 0 %}
+    <div class="saved-empty">
       <div class="saved-empty-icon" aria-hidden="true">
-        <i class="fa-solid fa-box-archive"></i>
+        <i class="fa-solid fa-location-dot"></i>
       </div>
-      <p class="saved-empty-copy">El archivo está vacío</p>
-      <p class="saved-empty-subcopy">Aún no hay eventos pasados registrados.</p>
+      <p class="saved-empty-copy">No hay espacios con eventos próximos</p>
+      <p class="saved-empty-subcopy">Cuando entren nuevos eventos en los próximos seis meses con venue detectado, aparecerán aquí agrupados.</p>
     </div>
     {% else %}
-    <div class="week-groups">
-      {% for group in groups %}
-      <section class="week-day-group">
-        <div class="week-day-header">
-          <div class="week-day-label">{{ group.label }}</div>
+    <div class="spaces-map-frame">
+      <div class="spaces-map-canvas" data-spaces-map></div>
+    </div>
+
+    <div class="spaces-groups">
+      {% for space in spaces %}
+      <section class="spaces-card" id="{{ space.slug }}">
+        <div class="spaces-card-head">
+          <div class="spaces-card-copy">
+            <h2 class="spaces-card-title">{{ space.name }}</h2>
+            <div class="spaces-card-meta">
+              <span><i class="fa-regular fa-calendar" aria-hidden="true"></i>{{ space.count }} {% if space.count == 1 %}próximo{% else %}próximos{% endif %}</span>
+              {% if space.address or space.name %}
+              <a class="spaces-card-location" data-location-open data-location="{{ space.address or space.name }}" href="#">
+                <i class="fa-solid fa-location-dot" aria-hidden="true"></i><span class="spaces-card-location-text">{{ space.address or space.name }}</span>
+              </a>
+              {% endif %}
+            </div>
+          </div>
+          <div class="spaces-card-next">
+            <i class="fa-regular fa-clock" aria-hidden="true"></i>
+            <span class="spaces-card-next-value">Siguiente: {{ (space.events[0].scheduleLabel or space.events[0].dateRangeLabel) | upper }}</span>
+          </div>
         </div>
+
         <div class="event-row-list">
-          {% for event in group.events %}
+          {% for event in space.events %}
           <article class="event-compact" data-category="{{ event.categoryLabel }}" data-free="{{ 'true' if event.isFree else 'false' }}" data-starts-at="{{ event.startsAt }}">
             <a href="{{ event.urlPath }}" class="event-compact-link">
               <div class="event-compact-image" style="background-image:url('{{ event.image or '/assets/placeholder-event.svg' }}')"></div>
@@ -83,7 +123,9 @@
                   <span>{% if event.scheduleLabel %}{{ event.scheduleLabel }}{% else %}{{ event.compactDateLabel }}{% if event.timeLabel %} · {{ event.timeLabel }}{% endif %}{% endif %}</span>
                 </div>
                 <h4 class="event-compact-title">{{ event.title }}</h4>
-                <p class="event-compact-meta">{{ event.location }}</p>
+                <p class="event-compact-meta">
+                  {% if event.location and event.location != space.name %}{{ event.location }}{% elseif event.address %}{{ event.address }}{% else %}{{ event.location }}{% endif %}
+                </p>
                 <div class="event-compact-badges">
                   <span class="compact-badge">{{ event.categoryLabel or 'Evento' }}</span>
                   {% if event.isFree %}<span class="compact-badge compact-badge-success">Gratis</span>{% endif %}
@@ -126,7 +168,7 @@
         <i class="menu-drawer-link-icon fa-solid fa-house" aria-hidden="true"></i>
         <span>Inicio</span>
       </a>
-      <a class="menu-drawer-link" href="/espacios">
+      <a class="menu-drawer-link menu-drawer-link-active" href="/espacios">
         <i class="menu-drawer-link-icon fa-solid fa-location-dot" aria-hidden="true"></i>
         <span>Espacios</span>
       </a>
@@ -134,7 +176,7 @@
         <i class="menu-drawer-link-icon fa-regular fa-bookmark" aria-hidden="true"></i>
         <span>Mis guardados</span>
       </a>
-      <a class="menu-drawer-link menu-drawer-link-active" href="/archivo">
+      <a class="menu-drawer-link" href="/archivo">
         <i class="menu-drawer-link-icon fa-solid fa-box-archive" aria-hidden="true"></i>
         <span>Archivo</span>
       </a>
@@ -159,4 +201,47 @@
 </div>
 
 {% include "partials/subscribe-modal.njk" %}
+
+<div class="location-modal" data-location-modal hidden>
+  <button class="location-modal-backdrop" type="button" data-location-close aria-label="Cerrar"></button>
+  <div class="location-modal-panel" role="dialog" aria-modal="true" aria-labelledby="location-modal-title">
+    <div class="location-modal-header">
+      <h2 class="location-modal-title" id="location-modal-title">Abrir ubicación en</h2>
+      <button class="location-modal-close" type="button" data-location-close aria-label="Cerrar">
+        <i class="fa-solid fa-xmark"></i>
+      </button>
+    </div>
+    <div class="location-modal-actions">
+      <a class="location-modal-action" data-location-map="openstreetmap" href="#" target="_blank" rel="noreferrer">
+        <i class="fa-solid fa-map-location-dot"></i>
+        <span>OpenStreetMap</span>
+      </a>
+      <a class="location-modal-action" data-location-map="google" href="#" target="_blank" rel="noreferrer">
+        <i class="fa-brands fa-google"></i>
+        <span>Google Maps</span>
+      </a>
+      <a class="location-modal-action" data-location-map="apple" href="#" target="_blank" rel="noreferrer">
+        <i class="fa-brands fa-apple"></i>
+        <span>Apple Maps</span>
+      </a>
+      <a class="location-modal-action" data-location-map="bing" href="#" target="_blank" rel="noreferrer">
+        <i class="fa-brands fa-microsoft"></i>
+        <span>Bing Maps</span>
+      </a>
+    </div>
+  </div>
+</div>
+
+<script>
+  window.__SPACES__ = {{ spacesDataJson | safe }};
+</script>
+{% endblock %}
+
+{% block extraScripts %}
+<script
+  src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+  integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+  crossorigin=""
+></script>
+<script type="module" src="/assets/js/spaces.js?v={{ assetVersion }}"></script>
 {% endblock %}

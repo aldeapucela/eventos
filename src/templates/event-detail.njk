@@ -30,6 +30,10 @@
         <i class="fa-solid fa-house" aria-hidden="true"></i>
         <span>Inicio</span>
       </a>
+      <a class="nav-link " href="/espacios">
+        <i class="fa-solid fa-location-dot" aria-hidden="true"></i>
+        <span>Espacios</span>
+      </a>
       <a class="nav-link " href="/guardados">
         <i class="fa-regular fa-bookmark" aria-hidden="true"></i>
         <span>Mis guardados</span>
@@ -94,7 +98,15 @@
         {% if event.notes %}
         <div class="detail-clean-extra-row">
           <div class="detail-clean-extra-label">Más información</div>
-          <div class="detail-clean-extra-value">{{ event.notes }}</div>
+          <div class="detail-clean-extra-value">
+            {{ event.notes }}
+            {% if event.importedFromChatUrl %}
+            <p class="mt-3 text-xs leading-relaxed text-slate-500">
+              Evento importado desde el
+              <a href="{{ event.importedFromChatUrl }}" target="_blank" rel="noopener noreferrer" class="font-semibold text-slate-600 underline decoration-slate-300 underline-offset-2 hover:text-brand-700 hover:decoration-brand-300">grupo de chat de Aldea Pucela</a>.
+            </p>
+            {% endif %}
+          </div>
         </div>
         {% endif %}
       </section>

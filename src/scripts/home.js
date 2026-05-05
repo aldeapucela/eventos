@@ -13,8 +13,13 @@ const resultsTitle = document.querySelector('[data-results-title]');
 const weekEmpty = document.querySelector('[data-week-empty]');
 const clearFilters = document.querySelector('[data-clear-filters]');
 const weekGroups = document.querySelector('[data-week-groups]');
+const dateModal = document.querySelector('[data-date-modal]');
 const typeModal = document.querySelector('[data-type-modal]');
-const typeSelectWrap = document.querySelector('.mobile-chip-select-wrap');
+const dateSelectButtons = Array.from(document.querySelectorAll('[data-date-modal-open]'));
+const dateSelectLabel = document.querySelector('[data-filter-date-label]');
+const drawerDateLabel = document.querySelector('[data-drawer-date-label]');
+const dateMonthSelect = document.querySelector('[data-date-month-select]');
+const typeSelectWrap = document.querySelector('.mobile-chip-type-trigger');
 const typeSelectLabel = document.querySelector('[data-filter-type-label]');
 const typeCheckboxes = Array.from(document.querySelectorAll('[data-type-checkbox]'));
 const scrollTopButton = document.querySelector('[data-scroll-top]');
@@ -35,21 +40,20 @@ const categoryGoogleLink = document.querySelector('[data-category-google]');
 const categoryAppleLink = document.querySelector('[data-category-apple]');
 const events = Array.isArray(window.__EVENTS__?.events) ? window.__EVENTS__.events : [];
 const storageKey = 'aldeapucela_saved_events';
+const DEFAULT_HORIZON_DAYS = 30;
+const DATE_MODAL_FILTERS = new Set(['Este mes', 'Próximos 3 meses', 'Este año']);
+const DATE_MONTH_PREFIX = 'Mes:';
+const TIME_FILTERS = new Set(['all', 'Hoy', 'Este finde', 'Esta semana', 'Próxima semana', ...DATE_MODAL_FILTERS]);
 let deferredInstallPrompt = null;
 initTheme();
 
 const today = new Date();
-const horizonEnd = endOfHorizon(today, 30);
-const monthEnd = endOfMonth(today);
-const weekStart = startOfWeek(today);
-const weekEnd = endOfWeek(today);
-const nextWeekStart = startOfNextWeek(today);
-const nextWeekEnd = endOfNextWeek(today);
 const initialState = getFiltersFromUrl();
 let activeTimeFilter = initialState.time;
 let activeFreeFilter = initialState.free;
 let activeTypeFilters = initialState.type;
 
+renderDateMonthOptions();
 if (weekGroups) {
   renderWeekGroups();
 }
@@ -92,6 +96,10 @@ document.addEventListener('click', async (event) => {
   const copyButton = event.target.closest('[data-copy-url]');
   const typeModalOpen = event.target.closest('[data-type-modal-open]');
   const typeModalClose = event.target.closest('[data-type-modal-close]');
+  const dateModalOpen = event.target.closest('[data-date-modal-open]');
+  const dateModalClose = event.target.closest('[data-date-modal-close]');
+  const dateFilterOption = event.target.closest('[data-date-filter-value]');
+  const dateClear = event.target.closest('[data-date-clear]');
   const typeSelectAll = event.target.closest('[data-type-select-all]');
   const typeDeselectAll = event.target.closest('[data-type-deselect-all]');
   const typeOnly = event.target.closest('[data-type-only]');
@@ -122,6 +130,13 @@ document.addEventListener('click', async (event) => {
     event.preventDefault();
     event.stopPropagation();
     const action = toggleSaved(saveButton.dataset.eventId);
+    if (action === 'added') {
+      window.trackMatomoInteractionOnce?.({
+        what: 'save',
+        context: 'home',
+        targetId: String(saveButton.dataset.eventId || '')
+      });
+    }
     if (action && typeof window.showSavedToast === 'function') {
       window.showSavedToast({ action });
     }
@@ -202,6 +217,31 @@ document.addEventListener('click', async (event) => {
     copySubscribeUrl(copyButton);
   }
 
+  if (dateModalOpen) {
+    event.preventDefault();
+    closeMenu();
+    openDateModal();
+  }
+
+  if (dateModalClose) {
+    event.preventDefault();
+    closeDateModal();
+  }
+
+  if (dateFilterOption) {
+    event.preventDefault();
+    activeTimeFilter = normalizeTimeFilter(dateFilterOption.dataset.dateFilterValue);
+    applyFilters();
+    closeDateModal();
+  }
+
+  if (dateClear) {
+    event.preventDefault();
+    activeTimeFilter = 'all';
+    applyFilters();
+    closeDateModal();
+  }
+
   if (typeModalOpen) {
     event.preventDefault();
     openTypeModal();
@@ -236,6 +276,9 @@ document.addEventListener('click', async (event) => {
 });
 
 document.addEventListener('keydown', (event) => {
+  if (event.key === 'Escape' && dateModal && !dateModal.hidden) {
+    closeDateModal();
+  }
   if (event.key === 'Escape' && addEventModal && !addEventModal.hidden) {
     closeAddEventModal();
   }
@@ -252,6 +295,9 @@ document.addEventListener('keydown', (event) => {
 
 function applyFilters(options = {}) {
   const { updateUrl = true } = options;
+  if (weekGroups) {
+    renderWeekGroups();
+  }
   filters.forEach((button) => {
     const value = button.dataset.filter;
     const isActive = (value === 'free' && activeFreeFilter) || (value !== 'free' && value === activeTimeFilter);
@@ -265,6 +311,7 @@ function applyFilters(options = {}) {
     });
     updateTypePill();
   }
+  updateDateFilterUi();
   cards.forEach((card) => {
     const category = card.dataset.category || '';
     const isFree = card.dataset.free === 'true';
@@ -356,9 +403,22 @@ function checkTimeVisible(startsAt, endsAt, filterValue) {
   }
   
   if (filterValue === 'Este mes') {
-    const monthE = endOfMonth(t);
-    const todayStart = new Date(t.getFullYear(), t.getMonth(), t.getDate(), 0, 0, 0, 0);
-    return startsAt <= monthE && actualEndsAt >= todayStart;
+    return startsAt <= endOfMonth(t) && actualEndsAt >= startOfDay(t);
+  }
+
+  if (filterValue === 'Próximos 3 meses') {
+    return startsAt <= endOfCurrentPlusMonths(t, 2) && actualEndsAt >= startOfDay(t);
+  }
+
+  if (filterValue === 'Este año') {
+    return startsAt <= endOfYear(t) && actualEndsAt >= startOfDay(t);
+  }
+
+  const monthSelection = parseDateMonthFilter(filterValue);
+  if (monthSelection) {
+    const monthStart = new Date(monthSelection.year, monthSelection.monthIndex, 1, 0, 0, 0, 0);
+    const monthEnd = endOfMonth(monthStart);
+    return startsAt <= monthEnd && actualEndsAt >= monthStart;
   }
   
   return false;
@@ -385,6 +445,10 @@ function endOfHorizon(date, days) {
   return copy;
 }
 
+function startOfDay(date) {
+  return new Date(date.getFullYear(), date.getMonth(), date.getDate(), 0, 0, 0, 0);
+}
+
 function startOfWeek(date) {
   const copy = new Date(date);
   const day = copy.getDay();
@@ -396,6 +460,14 @@ function startOfWeek(date) {
 
 function endOfMonth(date) {
   return new Date(date.getFullYear(), date.getMonth() + 1, 0, 23, 59, 59, 999);
+}
+
+function endOfCurrentPlusMonths(date, additionalMonths) {
+  return new Date(date.getFullYear(), date.getMonth() + additionalMonths + 1, 0, 23, 59, 59, 999);
+}
+
+function endOfYear(date) {
+  return new Date(date.getFullYear(), 11, 31, 23, 59, 59, 999);
 }
 
 function startOfNextWeek(date) {
@@ -473,8 +545,8 @@ function updateFilterUrl() {
 function normalizeTimeFilter(filterValue) {
   const value = String(filterValue || '').trim();
   if (!value) return 'all';
-  const allowed = new Set(['all', 'Hoy', 'Este finde', 'Esta semana', 'Próxima semana', 'Este mes']);
-  return allowed.has(value) ? value : 'all';
+  if (isDateMonthFilter(value)) return value;
+  return TIME_FILTERS.has(value) ? value : 'all';
 }
 
 function normalizeTypeFilter(filterValue) {
@@ -496,15 +568,25 @@ function getLabel(filterValue) {
       return 'Próxima semana';
     case 'Este mes':
       return 'Este mes';
+    case 'Próximos 3 meses':
+      return 'Próximos 3 meses';
+    case 'Este año':
+      return 'Este año';
     case 'free':
       return 'Gratis';
     default:
+      if (isDateMonthFilter(filterValue)) {
+        const monthSelection = parseDateMonthFilter(filterValue);
+        if (monthSelection) {
+          return new Intl.DateTimeFormat('es-ES', { month: 'long' }).format(new Date(monthSelection.year, monthSelection.monthIndex, 1));
+        }
+      }
       return filterValue || 'Todos';
   }
 }
 
 function isQuickFilter(value) {
-  return ['Hoy', 'Este finde', 'Esta semana', 'Próxima semana', 'Este mes', 'free'].includes(value);
+  return ['Hoy', 'Este finde', 'Esta semana', 'Próxima semana', 'Este mes', 'Próximos 3 meses', 'Este año', 'free'].includes(value) || isDateMonthFilter(value);
 }
 
 function getCombinedLabel() {
@@ -528,6 +610,73 @@ function updateTypePill() {
   typeSelectLabel.textContent = active && activeTypeFilters[0] !== '__NONE__' ? `Tipo (${activeTypeFilters.length})` : 'Tipo';
 }
 
+function updateDateFilterUi() {
+  const active = DATE_MODAL_FILTERS.has(activeTimeFilter) || isDateMonthFilter(activeTimeFilter);
+  if (dateSelectLabel) {
+    dateSelectLabel.textContent = active ? `Fecha · ${getLabel(activeTimeFilter)}` : 'Fecha';
+  }
+  if (drawerDateLabel) {
+    drawerDateLabel.textContent = active ? `Fecha · ${getLabel(activeTimeFilter)}` : 'Fecha';
+  }
+  dateSelectButtons.forEach((button) => {
+    button.classList.toggle('pill-active', active);
+    button.classList.toggle('mobile-chip-active', active);
+    button.setAttribute('aria-pressed', String(active));
+  });
+  document.querySelectorAll('[data-date-filter-value]').forEach((button) => {
+    const isSelected = button.dataset.dateFilterValue === activeTimeFilter;
+    button.classList.toggle('calendar-modal-action-primary', isSelected);
+    button.setAttribute('aria-pressed', String(isSelected));
+  });
+  if (dateMonthSelect) {
+    dateMonthSelect.value = isDateMonthFilter(activeTimeFilter) ? activeTimeFilter : '';
+  }
+}
+
+function renderDateMonthOptions() {
+  if (!dateMonthSelect) return;
+  const monthValues = getAvailableEventMonthsThisYear();
+  dateMonthSelect.innerHTML = ['<option value="">Opciones</option>', ...monthValues
+    .map((value) => {
+      const parsed = parseDateMonthFilter(value);
+      if (!parsed) return '';
+      const label = capitalize(new Intl.DateTimeFormat('es-ES', { month: 'long' }).format(new Date(parsed.year, parsed.monthIndex, 1)));
+      return `<option value="${value}">${label}</option>`;
+    })
+    .join('')].join('');
+}
+
+function getAvailableEventMonthsThisYear() {
+  const now = new Date();
+  const currentYear = now.getFullYear();
+  const currentMonth = now.getMonth();
+  const months = new Set();
+  events.forEach((event) => {
+    const startsAt = event?.startsAtIso ? parseDateLike(event.startsAtIso) : null;
+    if (!startsAt || Number.isNaN(startsAt.getTime())) return;
+    if (startsAt.getFullYear() !== currentYear) return;
+    const monthIndex = startsAt.getMonth();
+    if (monthIndex < currentMonth) return;
+    months.add(monthIndex);
+  });
+  return Array.from(months)
+    .sort((a, b) => a - b)
+    .map((monthIndex) => `${DATE_MONTH_PREFIX}${currentYear}-${String(monthIndex + 1).padStart(2, '0')}`);
+}
+
+function isDateMonthFilter(value) {
+  return typeof value === 'string' && value.startsWith(DATE_MONTH_PREFIX) && parseDateMonthFilter(value) !== null;
+}
+
+function parseDateMonthFilter(value) {
+  const parsed = String(value || '').match(/^Mes:(\d{4})-(\d{2})$/);
+  if (!parsed) return null;
+  const year = Number(parsed[1]);
+  const month = Number(parsed[2]);
+  if (!Number.isInteger(year) || !Number.isInteger(month) || month < 1 || month > 12) return null;
+  return { year, monthIndex: month - 1 };
+}
+
 function renderWeekGroups() {
   const formatter = new Intl.DateTimeFormat('es-ES', {
     weekday: 'short',
@@ -536,7 +685,7 @@ function renderWeekGroups() {
   });
 
   const grouped = events
-    .filter((event) => isWithinHorizon(event))
+    .filter((event) => isWithinListingWindow(event))
     .sort((a, b) => new Date(a.startsAtIso) - new Date(b.startsAtIso))
     .reduce((acc, event) => {
       const key = event.startsAtDayKey || toLocalDateKey(parseDateLike(event.startsAtIso));
@@ -547,7 +696,7 @@ function renderWeekGroups() {
 
   const keys = Object.keys(grouped);
   if (!keys.length) {
-    weekGroups.innerHTML = '<p class="text-sm leading-6 text-slate-500">No hay eventos esta semana.</p>';
+    weekGroups.innerHTML = '<p class="text-sm leading-6 text-slate-500">No hay eventos en este periodo.</p>';
     return;
   }
 
@@ -646,6 +795,18 @@ function openTypeModal() {
 function closeTypeModal() {
   if (!typeModal) return;
   typeModal.hidden = true;
+  document.body.style.overflow = '';
+}
+
+function openDateModal() {
+  if (!dateModal) return;
+  dateModal.hidden = false;
+  document.body.style.overflow = 'hidden';
+}
+
+function closeDateModal() {
+  if (!dateModal) return;
+  dateModal.hidden = true;
   document.body.style.overflow = '';
 }
 
@@ -810,13 +971,40 @@ function renderWeekItem(event) {
     `;
   }
 
-function isWithinHorizon(event) {
+function isWithinListingWindow(event) {
   if (!event?.startsAtIso) return false;
   const startsAt = new Date(event.startsAtIso);
   if (Number.isNaN(startsAt.getTime())) return false;
-  const todayStart = startOfToday(today);
-  if (startsAt < todayStart || startsAt > horizonEnd) return false;
+  const windowStart = startOfToday(today);
+  const windowEnd = getListingWindowEnd(activeTimeFilter, today);
+  if (startsAt < windowStart || startsAt > windowEnd) return false;
   return !isOngoingMultiDay(event);
+}
+
+function getListingWindowEnd(filterValue, date) {
+  const monthSelection = parseDateMonthFilter(filterValue);
+  if (monthSelection) {
+    return endOfMonth(new Date(monthSelection.year, monthSelection.monthIndex, 1, 0, 0, 0, 0));
+  }
+  switch (filterValue) {
+    case 'Hoy':
+      return endOfHorizon(date, 0);
+    case 'Este finde':
+      return endOfWeek(date);
+    case 'Esta semana':
+      return endOfWeek(date);
+    case 'Próxima semana':
+      return endOfNextWeek(date);
+    case 'Este mes':
+      return endOfMonth(date);
+    case 'Próximos 3 meses':
+      return endOfCurrentPlusMonths(date, 2);
+    case 'Este año':
+      return endOfYear(date);
+    case 'all':
+    default:
+      return endOfHorizon(date, DEFAULT_HORIZON_DAYS);
+  }
 }
 
 function isOngoingMultiDay(event) {
@@ -925,6 +1113,7 @@ async function shareEvent(url, title, button) {
   const shareUrl = withShareCampaign(url || window.location.pathname);
   const shareTitle = title || document.title;
   const shareText = `${shareTitle}\n\n${shareUrl}`;
+  const targetId = String(button?.dataset?.eventId || '');
 
   if (navigator.share) {
     try {
@@ -934,6 +1123,11 @@ async function shareEvent(url, title, button) {
         url: shareUrl
       });
       setShareSuccess(button);
+      window.trackMatomoInteractionOnce?.({
+        what: 'share',
+        context: 'home',
+        targetId
+      });
       return;
     } catch (error) {
       if (error?.name === 'AbortError') return;
@@ -943,6 +1137,11 @@ async function shareEvent(url, title, button) {
   try {
     await navigator.clipboard.writeText(shareText);
     setShareSuccess(button);
+    window.trackMatomoInteractionOnce?.({
+      what: 'share',
+      context: 'home',
+      targetId
+    });
   } catch {
     setShareFailure(button);
   }
@@ -981,6 +1180,11 @@ async function shareSite(button = shareSiteButton) {
         url: shareUrl
       });
       setShareSuccess(button);
+      window.trackMatomoInteractionOnce?.({
+        what: 'share',
+        context: 'home',
+        targetId: 'site'
+      });
       return;
     }
     throw new Error('no web share');
@@ -988,6 +1192,11 @@ async function shareSite(button = shareSiteButton) {
     try {
       await navigator.clipboard.writeText(`${message}\n\n${shareUrl}`);
       setShareSuccess(button);
+      window.trackMatomoInteractionOnce?.({
+        what: 'share',
+        context: 'home',
+        targetId: 'site'
+      });
     } catch {
       setShareFailure(button);
     }
@@ -998,4 +1207,13 @@ function withShareCampaign(url) {
   const shareUrl = new URL(url || window.location.pathname, window.location.origin);
   shareUrl.searchParams.set('mtm_campaign', 'share');
   return shareUrl.toString();
+}
+if (dateMonthSelect) {
+  dateMonthSelect.addEventListener('change', (event) => {
+    const value = String(event.target.value || '');
+    if (!value) return;
+    activeTimeFilter = normalizeTimeFilter(value);
+    applyFilters();
+    closeDateModal();
+  });
 }

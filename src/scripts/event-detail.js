@@ -1,5 +1,6 @@
 import { initTheme } from './theme.js';
 import { setupCommentsSection } from './comments.js';
+import { setupLocationLinks } from './location-link.js';
 
 const storageKey = 'aldeapucela_saved_events';
 
@@ -16,16 +17,12 @@ const lightbox = document.querySelector('[data-lightbox]');
 const lightboxImage = document.querySelector('[data-lightbox-image]');
 const lightboxOpen = document.querySelector('[data-lightbox-open]');
 const closeButtons = document.querySelectorAll('[data-lightbox-close]');
-const locationModal = document.querySelector('[data-location-modal]');
-const locationOpenButton = document.querySelector('[data-location-open]');
-const locationCloseButtons = document.querySelectorAll('[data-location-close]');
-const locationMapLinks = Array.from(document.querySelectorAll('[data-location-map]'));
 const hero = document.querySelector('.detail-clean-hero');
 const eventData = window.__EVENT_DETAIL__ || {};
 initTheme();
 
 syncSavedStates();
-setupLocationLink();
+setupLocationLinks();
 setupCommentsSection();
 
 document.addEventListener('click', async (event) => {
@@ -36,6 +33,13 @@ document.addEventListener('click', async (event) => {
     event.preventDefault();
     event.stopPropagation();
     const action = toggleSaved(saveButton.dataset.eventId);
+    if (action === 'added') {
+      window.trackMatomoInteractionOnce?.({
+        what: 'save',
+        context: 'detail',
+        targetId: String(saveButton.dataset.eventId || eventData?.id || '')
+      });
+    }
     if (action && typeof window.showSavedToast === 'function') {
       window.showSavedToast({ action });
     }
@@ -84,19 +88,6 @@ function closeCalendarModal() {
   document.body.style.overflow = '';
 }
 
-function openLocationModal() {
-  if (!locationModal) return;
-  populateLocationLinks();
-  locationModal.hidden = false;
-  document.body.style.overflow = 'hidden';
-}
-
-function closeLocationModal() {
-  if (!locationModal) return;
-  locationModal.hidden = true;
-  document.body.style.overflow = '';
-}
-
 function openComments() {
   if (!commentsSection) return;
   commentsSection.hidden = false;
@@ -116,24 +107,11 @@ document.querySelectorAll('[data-scroll-to-comments]').forEach((link) => {
 
 if (lightboxOpen) lightboxOpen.addEventListener('click', openLightbox);
 closeButtons.forEach((button) => button.addEventListener('click', closeLightbox));
-if (locationOpenButton) {
-  locationOpenButton.addEventListener('click', (event) => {
-    const isAndroid = /android/i.test(navigator.userAgent);
-    if (isAndroid) {
-      // Allow default action for Android (geo: link)
-      return;
-    }
-    event.preventDefault();
-    openLocationModal();
-  });
-}
-locationCloseButtons.forEach((button) => button.addEventListener('click', closeLocationModal));
 
 window.addEventListener('keydown', (event) => {
   if (event.key === 'Escape') {
     if (lightbox && !lightbox.hidden) closeLightbox();
     if (calendarModal && !calendarModal.hidden) closeCalendarModal();
-    if (locationModal && !locationModal.hidden) closeLocationModal();
   }
 });
 
@@ -190,58 +168,6 @@ function populateCalendarLinks() {
   if (calendarAppleLink) {
     calendarAppleLink.href = calendarIcsLink?.href || '#';
   }
-}
-
-function populateLocationLinks() {
-  const location = eventData.location || locationOpenButton?.dataset.location || '';
-  const query = normalizeLocationQuery(location);
-  const encoded = encodeURIComponent(query);
-  const isIos = isAppleMobileDevice();
-
-  locationMapLinks.forEach((link) => {
-    const provider = link.dataset.locationMap;
-    let href = '#';
-    if (provider === 'openstreetmap') {
-      href = `https://www.openstreetmap.org/search?query=${encoded}`;
-    } else if (provider === 'google') {
-      href = isIos ? `comgooglemaps://?q=${encoded}` : `https://maps.google.com/?q=${encoded}`;
-    } else if (provider === 'apple') {
-      href = `https://maps.apple.com/?q=${encoded}`;
-    } else if (provider === 'bing') {
-      href = `https://www.bing.com/maps?q=${encoded}`;
-    }
-    link.href = href;
-
-    if (provider === 'bing') {
-      link.hidden = isIos;
-      return;
-    }
-
-    link.hidden = false;
-  });
-}
-
-function setupLocationLink() {
-  if (!locationOpenButton) return;
-  const location = eventData.location || locationOpenButton?.dataset.location || '';
-  const query = normalizeLocationQuery(location);
-  if (!query) {
-    locationOpenButton.href = '#';
-    return;
-  }
-  const isAndroid = /android/i.test(navigator.userAgent);
-  if (isAndroid) {
-    locationOpenButton.href = `geo:0,0?q=${encodeURIComponent(query)}`;
-  } else {
-    locationOpenButton.href = `https://maps.google.com/?q=${encodeURIComponent(query)}`;
-  }
-}
-
-function isAppleMobileDevice() {
-  const ua = String(navigator.userAgent || '');
-  const isIphoneIpodIpad = /iphone|ipod|ipad/i.test(ua);
-  const isIpadDesktopMode = /macintosh/i.test(ua) && Number(navigator.maxTouchPoints || 0) > 1;
-  return isIphoneIpodIpad || isIpadDesktopMode;
 }
 
 function isLikelyMobileDevice() {
@@ -309,12 +235,6 @@ function slugify(value = '') {
     .replace(/^-+|-+$/g, '') || 'evento';
 }
 
-function normalizeLocationQuery(location = '') {
-  const normalized = String(location).replace(/\s+/g, ' ').trim();
-  if (!normalized) return 'Valladolid';
-  return /valladolid/i.test(normalized) ? normalized : `${normalized}, Valladolid`;
-}
-
 function parseDateLike(value) {
   const stringValue = String(value || '');
   if (/^\d{4}-\d{2}-\d{2}$/.test(stringValue)) {
@@ -372,6 +292,7 @@ async function shareEvent(url, title, button) {
   const shareUrl = withShareCampaign(url || window.location.pathname);
   const shareTitle = title || document.title;
   const shareText = `${shareTitle}\n\n${shareUrl}`;
+  const targetId = String(eventData?.id || button?.dataset?.eventId || '');
 
   if (navigator.share) {
     try {
@@ -381,6 +302,11 @@ async function shareEvent(url, title, button) {
         url: shareUrl
       });
       setShareSuccess(button);
+      window.trackMatomoInteractionOnce?.({
+        what: 'share',
+        context: 'detail',
+        targetId
+      });
       return;
     } catch (error) {
       if (error?.name === 'AbortError') return;
@@ -390,6 +316,11 @@ async function shareEvent(url, title, button) {
   try {
     await navigator.clipboard.writeText(shareText);
     setShareSuccess(button);
+    window.trackMatomoInteractionOnce?.({
+      what: 'share',
+      context: 'detail',
+      targetId
+    });
   } catch {
     setShareFailure(button);
   }

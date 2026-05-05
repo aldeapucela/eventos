@@ -25,6 +25,7 @@
     <meta name="twitter:description" content="{{ social.description or meta.description or 'Agenda cultural de Aldea Pucela' }}" />
     {% if social.image %}<meta name="twitter:image" content="{{ social.image }}" />{% endif %}
     {% endif %}
+    {% block extraHead %}{% endblock %}
     <script>
       (function () {
         const key = 'aldeapucela_theme';
@@ -111,5 +112,6 @@
       }
     </script>
     <script type="module" src="/assets/js/{{ pageJs }}?v={{ assetVersion }}" defer></script>
+    {% block extraScripts %}{% endblock %}
   </body>
 </html>

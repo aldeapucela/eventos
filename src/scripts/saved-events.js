@@ -27,6 +27,13 @@ document.addEventListener('click', (event) => {
     event.preventDefault();
     event.stopPropagation();
     const action = toggleSaved(saveButton.dataset.eventId);
+    if (action === 'added') {
+      window.trackMatomoInteractionOnce?.({
+        what: 'save',
+        context: 'saved_list',
+        targetId: String(saveButton.dataset.eventId || '')
+      });
+    }
     if (action && typeof window.showSavedToast === 'function') {
       window.showSavedToast({ action });
     }

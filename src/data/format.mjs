@@ -74,11 +74,13 @@ export function parseEventMetaFromHtml(html = '') {
   const pinMatch = String(html).match(/<p>\s*<img[^>]*alt=":round_pushpin:"[^>]*>\s*([^<]+)<\/p>/i);
   const pinnedLocation = pinMatch ? decodeHtmlEntities(pinMatch[1]).replace(/\s+/g, ' ').trim() : '';
   const locationLine = lines.find((entry) => !entry.includes(':') && isLikelyLocationLine(entry));
+  const importedFromChatUrl = extractImportedFromChatUrl(html);
   return {
     location: pick('Lugar') || pick('Ubicación') || pinnedLocation || locationLine || '',
     categoryLabel: pick('Categoría'),
     organizer: pick('Organizador'),
-    notes: pick('Notas')
+    notes: pick('Notas'),
+    importedFromChatUrl
   };
 }
 
@@ -143,6 +145,15 @@ function isBoilerplateLine(line) {
 
 function escapeRegExp(value = '') {
   return String(value).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
+function extractImportedFromChatUrl(html = '') {
+  const content = String(html);
+  const importBlockMatch = content.match(/<p>\s*<em>\s*Evento importado desde[\s\S]*?<\/em>\s*<\/p>/i);
+  if (!importBlockMatch) return '';
+  const hrefMatch = importBlockMatch[0].match(/href="([^"]+)"/i);
+  if (!hrefMatch?.[1]) return '';
+  return decodeHtmlEntities(hrefMatch[1]).trim();
 }
 
 export function parseDateLike(value) {

@@ -15,6 +15,10 @@
         <i class="fa-solid fa-house" aria-hidden="true"></i>
         <span>Inicio</span>
       </a>
+      <a class="nav-link " href="/espacios">
+        <i class="fa-solid fa-location-dot" aria-hidden="true"></i>
+        <span>Espacios</span>
+      </a>
       <a class="nav-link " href="/guardados">
         <i class="fa-regular fa-bookmark" aria-hidden="true"></i>
         <span>Mis guardados</span>
@@ -92,15 +96,15 @@
             <i class="mobile-chip-icon fa-solid fa-calendar-plus" aria-hidden="true"></i>
             <span>Próxima semana</span>
           </button>
-          <button class="mobile-chip" data-filter="Este mes">
-            <i class="mobile-chip-icon fa-regular fa-calendar-days" aria-hidden="true"></i>
-            <span>Este mes</span>
+          <button class="mobile-chip mobile-chip-select-wrap mobile-chip-date-trigger" type="button" data-date-modal-open aria-label="Filtrar por fecha">
+            <i class="mobile-chip-icon mobile-chip-leading fa-regular fa-calendar-days" aria-hidden="true"></i>
+            <span data-filter-date-label>Fecha</span>
           </button>
           <button class="mobile-chip" data-filter="free">
             <i class="mobile-chip-icon fa-solid fa-ticket" aria-hidden="true"></i>
             <span>Gratis</span>
           </button>
-          <button class="mobile-chip mobile-chip-select-wrap" type="button" data-type-modal-open aria-label="Filtrar por tipo">
+          <button class="mobile-chip mobile-chip-select-wrap mobile-chip-type-trigger" type="button" data-type-modal-open aria-label="Filtrar por tipo">
             <i class="mobile-chip-icon mobile-chip-leading fa-solid fa-filter" aria-hidden="true"></i>
             <span data-filter-type-label>Tipo</span>
           </button>
@@ -212,6 +216,10 @@
         <i class="menu-drawer-link-icon fa-solid fa-house" aria-hidden="true"></i>
         <span>Inicio</span>
       </a>
+      <a class="menu-drawer-link" href="/espacios">
+        <i class="menu-drawer-link-icon fa-solid fa-location-dot" aria-hidden="true"></i>
+        <span>Espacios</span>
+      </a>
       <a class="menu-drawer-link" href="/guardados">
         <i class="menu-drawer-link-icon fa-regular fa-bookmark" aria-hidden="true"></i>
         <span>Mis guardados</span>
@@ -263,9 +271,9 @@
         <i class="menu-drawer-pick-icon fa-solid fa-umbrella-beach" aria-hidden="true"></i>
         <span>Este finde</span>
       </button>
-      <button class="menu-drawer-pick" type="button" data-filter="Este mes">
+      <button class="menu-drawer-pick" type="button" data-date-modal-open>
         <i class="menu-drawer-pick-icon fa-regular fa-calendar-days" aria-hidden="true"></i>
-        <span>Este mes</span>
+        <span data-drawer-date-label>Fecha</span>
       </button>
       <button class="menu-drawer-pick" type="button" data-filter="free">
         <i class="menu-drawer-pick-icon fa-solid fa-ticket" aria-hidden="true"></i>
@@ -346,33 +354,77 @@
       </button>
     </div>
 
-    <div class="type-modal-actions" style="display: flex; gap: 0.5rem; padding: 1rem 1.25rem 0.5rem;">
-      <button class="calendar-modal-action" style="flex:1; justify-content:center; padding: 0.5rem; gap: 0.5rem;" type="button" data-type-select-all>
+    <div class="filter-modal-toolbar">
+      <button class="calendar-modal-action filter-modal-toolbar-action" type="button" data-type-select-all>
         <i class="fa-solid fa-check-double"></i>
         <span>Todos</span>
       </button>
-      <button class="calendar-modal-action" style="flex:1; justify-content:center; padding: 0.5rem; gap: 0.5rem;" type="button" data-type-deselect-all>
+      <button class="calendar-modal-action filter-modal-toolbar-action" type="button" data-type-deselect-all>
         <i class="fa-solid fa-xmark"></i>
         <span>Ninguno</span>
       </button>
     </div>
 
-    <section class="subscribe-section" style="margin-top: 0; border-top: 0; max-height: 45vh; overflow-y: auto; padding-bottom: 1rem;">
-      <div class="type-checkbox-list" style="display: flex; flex-direction: column; gap: 0.25rem;">
+    <section class="subscribe-section filter-modal-section filter-modal-section-compact">
+      <div class="type-checkbox-list">
         {% for category in categories %}
-        <div class="type-checkbox-row" style="display: flex; align-items: center; justify-content: space-between; padding: 0.25rem 1.25rem;">
-          <label class="type-checkbox-item" style="display: flex; align-items: center; gap: 0.75rem; flex: 1; cursor: pointer; padding: 0.25rem 0;">
-            <input type="checkbox" name="type" value="{{ category }}" data-type-checkbox checked style="width: 1.25rem; height: 1.25rem; accent-color: var(--brand-500, #6f3bb2);">
-            <span class="type-checkbox-label" style="font-size: 1rem;">{{ category }}</span>
+        <div class="type-checkbox-row">
+          <label class="type-checkbox-item">
+            <input type="checkbox" name="type" value="{{ category }}" data-type-checkbox checked class="type-checkbox-input">
+            <span class="type-checkbox-label">{{ category }}</span>
           </label>
-          <button class="type-only-btn" type="button" data-type-only="{{ category }}" style="font-size: 0.75rem; font-weight: 600; color: var(--brand-600, #6f3bb2); background: rgba(111, 59, 178, 0.08); border: 0; border-radius: 999px; padding: 0.25rem 0.75rem;">Solo</button>
+          <button class="type-only-btn" type="button" data-type-only="{{ category }}">Solo</button>
         </div>
         {% endfor %}
       </div>
     </section>
 
-    <div class="type-modal-footer" style="padding: 1rem 1.25rem; border-top: 1px solid rgba(0,0,0,0.05); position: sticky; bottom: 0; background: inherit; border-bottom-left-radius: inherit; border-bottom-right-radius: inherit;">
-      <button class="calendar-modal-action calendar-modal-action-primary" style="width: 100%; justify-content: center; padding: 0.875rem; font-weight: 700;" type="button" data-type-modal-close>Ver resultados</button>
+    <div class="filter-modal-footer">
+      <button class="calendar-modal-action calendar-modal-action-primary filter-modal-submit" type="button" data-type-modal-close>Ver resultados</button>
+    </div>
+  </aside>
+</div>
+
+<div class="calendar-modal" data-date-modal hidden>
+  <button class="calendar-modal-backdrop" type="button" data-date-modal-close aria-label="Cerrar diálogo"></button>
+  <aside class="calendar-modal-panel" role="dialog" aria-modal="true" aria-labelledby="date-modal-title">
+    <div class="calendar-modal-header">
+      <div>
+        <h2 class="calendar-modal-title" id="date-modal-title">Filtrar por fecha</h2>
+        <p class="calendar-modal-copy">Elige el horizonte temporal que quieres explorar.</p>
+      </div>
+      <button class="calendar-modal-close" type="button" data-date-modal-close aria-label="Cerrar">
+        <i class="fa-solid fa-xmark"></i>
+      </button>
+    </div>
+
+    <div class="calendar-modal-actions filter-date-actions">
+      <button class="calendar-modal-action filter-date-option" type="button" data-date-filter-value="Este mes">
+        <i class="fa-regular fa-calendar-days" aria-hidden="true"></i>
+        <span>Este mes</span>
+      </button>
+      <button class="calendar-modal-action filter-date-option" type="button" data-date-filter-value="Próximos 3 meses">
+        <i class="fa-regular fa-calendar" aria-hidden="true"></i>
+        <span>Próximos 3 meses</span>
+      </button>
+      <div class="calendar-modal-action filter-date-option filter-date-select-option">
+        <i class="fa-regular fa-calendar-plus" aria-hidden="true"></i>
+        <span class="filter-date-select-label">Seleccionar mes</span>
+        <select class="filter-date-select-control" data-date-month-select aria-label="Seleccionar mes">
+          <option value="">Opciones</option>
+        </select>
+      </div>
+      <button class="calendar-modal-action filter-date-option" type="button" data-date-filter-value="Este año">
+        <i class="fa-regular fa-calendar-check" aria-hidden="true"></i>
+        <span>Este año</span>
+      </button>
+    </div>
+
+    <div class="filter-modal-footer">
+      <button class="calendar-modal-action filter-modal-submit" type="button" data-date-clear>
+        <i class="fa-solid fa-rotate-left" aria-hidden="true"></i>
+        <span>Quitar filtro de fecha</span>
+      </button>
     </div>
   </aside>
 </div>
