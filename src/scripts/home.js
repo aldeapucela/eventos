@@ -38,13 +38,15 @@ const categorySelect = document.querySelector('[data-category-select]');
 const categoryUrlInput = document.querySelector('[data-category-url]');
 const categoryGoogleLink = document.querySelector('[data-category-google]');
 const categoryAppleLink = document.querySelector('[data-category-apple]');
-const events = Array.isArray(window.__EVENTS__?.events) ? window.__EVENTS__.events : [];
+let events = Array.isArray(window.__EVENTS__?.events) ? window.__EVENTS__.events : [];
+let availableFilters = Array.isArray(window.__FILTERS__) ? window.__FILTERS__.map(String) : [];
 const storageKey = 'aldeapucela_saved_events';
 const DEFAULT_HORIZON_DAYS = 30;
 const DATE_MODAL_FILTERS = new Set(['Este mes', 'Próximos 3 meses', 'Este año']);
 const DATE_MONTH_PREFIX = 'Mes:';
 const TIME_FILTERS = new Set(['all', 'Hoy', 'Este finde', 'Esta semana', 'Próxima semana', ...DATE_MODAL_FILTERS]);
 let deferredInstallPrompt = null;
+let siteDataPromise = null;
 initTheme();
 
 const today = new Date();
@@ -53,31 +55,11 @@ let activeTimeFilter = initialState.time;
 let activeFreeFilter = initialState.free;
 let activeTypeFilters = initialState.type;
 
-renderDateMonthOptions();
-if (weekGroups) {
-  renderWeekGroups();
-}
-
-syncSavedStates();
-updateCards();
-applyFilters({ updateUrl: false });
-if (typeCheckboxes.length) {
-  typeCheckboxes.forEach(cb => {
-    cb.checked = activeTypeFilters.length === 0 || activeTypeFilters.includes(cb.value);
-    cb.addEventListener('change', () => {
-      activeTypeFilters = typeCheckboxes.filter(c => c.checked).map(c => c.value);
-      if (activeTypeFilters.length === typeCheckboxes.length) {
-        activeTypeFilters = [];
-      }
-      applyFilters();
-    });
-  });
-  updateTypePill();
-}
-
 setupScrollTopButton();
 setupCategoryPicker();
 setupInstallPrompt();
+setupTypeCheckboxes();
+void initializeSiteData();
 
 document.addEventListener('click', async (event) => {
   const saveButton = event.target.closest('[data-save-event]');
@@ -552,7 +534,7 @@ function normalizeTimeFilter(filterValue) {
 function normalizeTypeFilter(filterValue) {
   const value = String(filterValue || '').trim();
   if (!value || value === 'all' || isQuickFilter(value) || value === 'free') return 'all';
-  const categories = new Set((Array.isArray(window.__FILTERS__) ? window.__FILTERS__ : []).map(String));
+  const categories = new Set(availableFilters);
   return categories.has(value) ? value : 'all';
 }
 
@@ -644,6 +626,58 @@ function renderDateMonthOptions() {
       return `<option value="${value}">${label}</option>`;
     })
     .join('')].join('');
+}
+
+function setupTypeCheckboxes() {
+  if (!typeCheckboxes.length) return;
+  typeCheckboxes.forEach((cb) => {
+    cb.checked = activeTypeFilters.length === 0 || activeTypeFilters.includes(cb.value);
+    cb.addEventListener('change', () => {
+      activeTypeFilters = typeCheckboxes.filter((checkbox) => checkbox.checked).map((checkbox) => checkbox.value);
+      if (activeTypeFilters.length === typeCheckboxes.length) {
+        activeTypeFilters = [];
+      }
+      applyFilters();
+    });
+  });
+  updateTypePill();
+}
+
+async function initializeSiteData() {
+  const siteData = await loadSiteData();
+  events = siteData.events;
+  availableFilters = siteData.filters;
+  renderDateMonthOptions();
+  if (weekGroups) {
+    renderWeekGroups();
+  }
+  syncSavedStates();
+  updateCards();
+  applyFilters({ updateUrl: false });
+}
+
+async function loadSiteData() {
+  if (events.length && availableFilters.length) {
+    return { events, filters: availableFilters };
+  }
+  if (!siteDataPromise) {
+    siteDataPromise = fetch('/site-data.json')
+      .then(async (response) => {
+        if (!response.ok) {
+          throw new Error(`Failed to load site data: ${response.status}`);
+        }
+        return response.json();
+      })
+      .then((payload) => ({
+        events: Array.isArray(payload?.events) ? payload.events : [],
+        filters: Array.isArray(payload?.filters) ? payload.filters.map(String) : []
+      }))
+      .catch((error) => {
+        console.error(error);
+        return { events: [], filters: [] };
+      });
+  }
+  return siteDataPromise;
 }
 
 function getAvailableEventMonthsThisYear() {

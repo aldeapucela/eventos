@@ -65,8 +65,10 @@
       </p>
     </div>
     <script>
+      {% if includeSiteData %}
       window.__EVENTS__ = {{ eventsJson | safe }};
       window.__FILTERS__ = {{ filtersJson | safe }};
+      {% endif %}
       (function () {
         const toast = document.querySelector('[data-saved-toast]');
         if (!toast) return;

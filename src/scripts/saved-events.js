@@ -6,12 +6,12 @@ const groupsRoot = document.querySelector('[data-saved-groups]');
 const emptyState = document.querySelector('[data-saved-empty]');
 const scrollTopButton = document.querySelector('[data-scroll-top]');
 const subscribeModal = document.querySelector('[data-subscribe-modal]');
-const events = Array.isArray(window.__EVENTS__?.events) ? window.__EVENTS__.events : [];
+let events = Array.isArray(window.__EVENTS__?.events) ? window.__EVENTS__.events : [];
+let siteDataPromise = null;
 initTheme();
 
-renderSavedGroups();
-syncSavedStates();
 syncScrollTopButton();
+void initializeSavedEvents();
 
 window.addEventListener('scroll', syncScrollTopButton, { passive: true });
 
@@ -37,8 +37,7 @@ document.addEventListener('click', (event) => {
     if (action && typeof window.showSavedToast === 'function') {
       window.showSavedToast({ action });
     }
-    renderSavedGroups();
-    syncSavedStates();
+    void refreshSavedGroups();
   }
 
   if (menuOpen) {
@@ -73,6 +72,17 @@ document.addEventListener('click', (event) => {
   }
 });
 
+async function initializeSavedEvents() {
+  await refreshSavedGroups();
+  syncSavedStates();
+}
+
+async function refreshSavedGroups() {
+  events = await loadSavedEventsData();
+  renderSavedGroups();
+  syncSavedStates();
+}
+
 document.addEventListener('keydown', (event) => {
   if (event.key === 'Escape' && subscribeModal && !subscribeModal.hidden) {
     closeSubscribeModal();
@@ -83,6 +93,25 @@ function syncScrollTopButton() {
   if (!scrollTopButton) return;
   const shouldShow = window.scrollY > 280;
   scrollTopButton.classList.toggle('is-hidden', !shouldShow);
+}
+
+async function loadSavedEventsData() {
+  if (events.length) return events;
+  if (!siteDataPromise) {
+    siteDataPromise = fetch('/site-data.json')
+      .then(async (response) => {
+        if (!response.ok) {
+          throw new Error(`Failed to load site data: ${response.status}`);
+        }
+        return response.json();
+      })
+      .then((payload) => (Array.isArray(payload?.events) ? payload.events : []))
+      .catch((error) => {
+        console.error(error);
+        return [];
+      });
+  }
+  return siteDataPromise;
 }
 
 function renderSavedGroups() {

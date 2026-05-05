@@ -40,7 +40,10 @@ async function copyStaticAssets() {
 async function copyFontAwesome() {
   const source = path.join(root, 'node_modules', '@fortawesome', 'fontawesome-free');
   const target = path.join(assetsDir, 'fontawesome');
-  await fs.cp(source, target, { recursive: true });
+  await fs.mkdir(path.join(target, 'css'), { recursive: true });
+  await fs.mkdir(path.join(target, 'webfonts'), { recursive: true });
+  await fs.copyFile(path.join(source, 'css', 'all.min.css'), path.join(target, 'css', 'all.min.css'));
+  await fs.cp(path.join(source, 'webfonts'), path.join(target, 'webfonts'), { recursive: true });
 }
 
 async function compileCss(inputFile, outputFile) {
@@ -253,9 +256,10 @@ function formatInMadrid(_date, options) {
   return new Intl.DateTimeFormat('es-ES', { ...options, timeZone: DISPLAY_TIMEZONE });
 }
 
-function siteDataPayload(events) {
+function siteDataPayload(events, filters = deriveFilters(events)) {
   const enriched = events.map(enrichEvent);
   return JSON.stringify({
+    filters,
     events: enriched.map((event) => ({
       ...event,
       startsAtIso: event.startsAt,
@@ -298,14 +302,22 @@ async function computeAssetVersion() {
 }
 
 async function buildSite(events) {
+  const timings = new Map();
+  const mark = (label) => timings.set(label, process.hrtime.bigint());
+  const elapsedMs = (label) => Number(process.hrtime.bigint() - (timings.get(label) || process.hrtime.bigint())) / 1e6;
+
+  mark('total');
   await fs.rm(dist, { recursive: true, force: true });
+  mark('assets');
   await ensureDirs();
   await copyStaticAssets();
   await copyFontAwesome();
   await compileCss(path.join(root, 'src', 'styles', 'home.css'), path.join(cssDir, 'home.css'));
   await compileCss(path.join(root, 'src', 'styles', 'event-detail.css'), path.join(cssDir, 'event-detail.css'));
   await copyJs();
+  console.log(`build: assets ${elapsedMs('assets').toFixed(1)}ms`);
 
+  mark('data');
   const sorted = sortEvents(events).map(enrichEvent);
   const filters = deriveFilters(events);
   const { featured, week, ongoing, today } = splitFeatured(events);
@@ -313,6 +325,8 @@ async function buildSite(events) {
   const venueCatalog = await enrichVenueCatalog(groupedSpaces);
   const spaces = mergeSpacesWithVenueCatalog(groupedSpaces, venueCatalog);
   const assetVersion = await computeAssetVersion();
+  const eventsPayload = siteDataPayload(events, filters);
+  console.log(`build: data ${elapsedMs('data').toFixed(1)}ms`);
   const categoryFeeds = filters.map((category) => ({
     label: category,
     slug: slugify(category),
@@ -323,12 +337,13 @@ async function buildSite(events) {
 
   const sharedContext = {
     filtersJson: JSON.stringify(filters),
-    eventsJson: siteDataPayload(events),
+    eventsJson: eventsPayload,
     filters,
     categoryFeeds,
     assetVersion
   };
 
+  mark('pages');
   await writeFile('index.html', render('home.njk', {
     title: 'Qué hacer en Valladolid | Aldea Pucela',
     meta: { description: 'Agenda cultural de Valladolid alimentada desde el foro de Aldea Pucela.' },
@@ -347,6 +362,7 @@ async function buildSite(events) {
     today: today.map(enrichEvent),
     todayCount: today.length,
     categories: filters,
+    includeSiteData: true,
     ...sharedContext
   }));
 
@@ -362,6 +378,7 @@ async function buildSite(events) {
     },
     pageCss: 'home.css',
     pageJs: 'saved-events.js',
+    includeSiteData: true,
     ...sharedContext
   }));
 
@@ -381,6 +398,7 @@ async function buildSite(events) {
     pageCss: 'home.css',
     pageJs: 'home.js',
     groups,
+    includeSiteData: true,
     ...sharedContext
   }));
 
@@ -399,6 +417,7 @@ async function buildSite(events) {
     spaces,
     spacesCount: spaces.length,
     futureEventsCount: spaces.reduce((total, space) => total + space.count, 0),
+    includeSiteData: true,
     spacesDataJson: JSON.stringify(spaces.map((space) => ({
       slug: space.slug,
       name: space.name,
@@ -438,10 +457,13 @@ async function buildSite(events) {
         image: event.image || `${publicBaseUrl}/img/logo-web.jpg`,
         url: `${publicBaseUrl}/e/${event.id}/${event.slug}`
       },
+      includeSiteData: false,
       ...sharedContext
     }));
   }
+  console.log(`build: pages ${elapsedMs('pages').toFixed(1)}ms`);
 
+  mark('feeds');
   await writeFile('site-data.json', siteDataPayload(events));
   await writeFile('rss.xml', buildRssXml(events));
   await writeFile('calendar.ics', buildCalendarIcs(events));
@@ -492,6 +514,8 @@ async function buildSite(events) {
     '});',
     ''
   ].join('\n'));
+  console.log(`build: feeds ${elapsedMs('feeds').toFixed(1)}ms`);
+  console.log(`build: total ${elapsedMs('total').toFixed(1)}ms`);
 }
 
 async function main() {
