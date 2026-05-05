@@ -137,7 +137,7 @@ function buildRssXml(events) {
     '<?xml version="1.0" encoding="UTF-8"?>',
     '<rss version="2.0">',
     '  <channel>',
-    '    <title>Aldea Pucela Eventos</title>',
+    '    <title>Eventos Valladolid - Aldea Pucela</title>',
     '    <link>https://eventos.aldeapucela.org/</link>',
     '    <description>Feed RSS de eventos publicados en Aldea Pucela.</description>',
     '    <language>es-es</language>',
@@ -150,14 +150,14 @@ function buildRssXml(events) {
 }
 
 function buildCalendarIcs(events, options = {}) {
-  const calendarName = options.name || 'Aldea Pucela Eventos';
+  const calendarName = options.name || 'Eventos Valladolid - Aldea Pucela';
   const now = new Date();
   const dtstamp = formatUtcIcsDate(now);
   const sorted = sortEvents(events);
   const rows = [
     'BEGIN:VCALENDAR',
     'VERSION:2.0',
-    'PRODID:-//Aldea Pucela//Eventos//ES',
+    'PRODID:-//Eventos Valladolid - Aldea Pucela//Eventos//ES',
     'CALSCALE:GREGORIAN',
     'METHOD:PUBLISH',
     `X-WR-CALNAME:${escapeIcs(calendarName)}`,
@@ -343,11 +343,11 @@ async function buildSite(events) {
   }));
 
   await writeFile('guardados/index.html', render('saved-events.njk', {
-    title: 'Mis guardados | Aldea Pucela Eventos',
+    title: 'Mis guardados - Eventos Valladolid - Aldea Pucela',
     meta: { description: 'Tus eventos guardados en Aldea Pucela Eventos.' },
     social: {
       type: 'website',
-      title: 'Mis guardados | Aldea Pucela Eventos',
+      title: 'Mis guardados - Eventos Valladolid - Aldea Pucela',
       description: 'Tus eventos guardados en Aldea Pucela Eventos.',
       image: `${publicBaseUrl}/assets/social-preview.jpg`,
       url: `${publicBaseUrl}/guardados`
@@ -361,11 +361,11 @@ async function buildSite(events) {
   const groups = groupEventsByMonth(pastEvents);
 
   await writeFile('archivo/index.html', render('archivo.njk', {
-    title: 'Archivo de eventos | Aldea Pucela',
+    title: 'Archivo de eventos - Eventos Valladolid - Aldea Pucela',
     meta: { description: 'Histórico de eventos culturales pasados en Valladolid.' },
     social: {
       type: 'website',
-      title: 'Archivo de eventos | Aldea Pucela',
+      title: 'Archivo de eventos - Eventos Valladolid - Aldea Pucela',
       description: 'Histórico de eventos culturales pasados en Valladolid.',
       image: `${publicBaseUrl}/assets/social-preview.jpg`,
       url: `${publicBaseUrl}/archivo`
@@ -382,7 +382,7 @@ async function buildSite(events) {
       : [];
 
     await writeFile(path.join('e', String(event.id), event.slug, 'index.html'), render('event-detail.njk', {
-      title: `${event.title} | Aldea Pucela Eventos`,
+      title: `${event.title} - Eventos Valladolid - Aldea Pucela`,
       meta: { description: event.excerpt },
       pageCss: 'event-detail.css',
       pageJs: 'event-detail.js',
@@ -414,11 +414,11 @@ async function buildSite(events) {
     const filteredEvents = events.filter((event) => event.categoryLabel === feed.label);
     await writeFile(
       path.join('calendar', `${feed.slug}.ics`),
-      buildCalendarIcs(filteredEvents, { name: `Aldea Pucela Eventos · ${feed.label}` })
+      buildCalendarIcs(filteredEvents, { name: `Eventos Valladolid - ${feed.label}` })
     );
   }
   await writeFile('manifest.webmanifest', JSON.stringify({
-    name: 'Aldea Pucela Eventos',
+    name: 'Eventos Valladolid',
     short_name: 'Eventos',
     description: 'Agenda cultural de Valladolid alimentada por la comunidad de Aldea Pucela.',
     start_url: '/',
