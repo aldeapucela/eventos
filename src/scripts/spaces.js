@@ -15,11 +15,21 @@ if (mapNode && window.L && spaces.length) {
       scrollWheelZoom: true
     }).setView(VALLADOLID_CENTER, VALLADOLID_METRO_ZOOM);
 
-    L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
-      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
-      subdomains: 'abcd',
-      maxZoom: 20
-    }).addTo(map);
+    let tileLayer = createBaseTileLayer();
+    tileLayer.addTo(map);
+
+    const themeObserver = new MutationObserver(() => {
+      const nextUrl = getTileLayerUrl();
+      if (tileLayer?._url === nextUrl) return;
+      map.removeLayer(tileLayer);
+      tileLayer = createBaseTileLayer();
+      tileLayer.addTo(map);
+    });
+
+    themeObserver.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ['class']
+    });
 
     for (const space of points) {
       const eventLabel = space.count === 1 ? '1 EVENTO' : `${space.count} EVENTOS`;
@@ -47,6 +57,21 @@ if (mapNode && window.L && spaces.length) {
       window.setTimeout(() => target.classList.remove('spaces-card-highlight'), 1800);
     });
   }
+}
+
+function createBaseTileLayer() {
+  return L.tileLayer(getTileLayerUrl(), {
+    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
+    subdomains: 'abcd',
+    maxZoom: 20
+  });
+}
+
+function getTileLayerUrl() {
+  const isDark = document.documentElement.classList.contains('dark');
+  return isDark
+    ? 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png'
+    : 'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png';
 }
 
 function createVenueIcon() {

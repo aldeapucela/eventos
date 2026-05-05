@@ -583,6 +583,20 @@
     color: #e5e7eb;
   }
 
+  html.dark .spaces-map-marker-pin {
+    background: linear-gradient(180deg, #8f7ac6, #6a57a4);
+    border-color: rgba(241, 245, 249, 0.88);
+    box-shadow: 0 16px 28px -16px rgba(8, 11, 16, 0.84);
+  }
+
+  html.dark .spaces-map-marker-pin::after {
+    background: #6a57a4;
+  }
+
+  html.dark .spaces-map-marker-core {
+    background: rgba(255, 255, 255, 0.98);
+  }
+
   .custom-popup-class .leaflet-popup-content-wrapper {
     padding: 0;
     overflow: hidden;
