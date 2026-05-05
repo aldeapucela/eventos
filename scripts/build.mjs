@@ -144,7 +144,7 @@ function buildRssXml(events) {
   const items = sortedByPublishedDesc.map((event) => {
     const eventUrl = toAbsoluteUrl(`/e/${event.id}/${event.slug}`);
     const title = escapeHtml(event.title || 'Evento');
-    const description = escapeHtml(event.summary || event.excerpt || '');
+    const description = buildRssItemDescription(event, eventUrl);
     const pubDate = toRfc2822(event.publishedAt || event.updatedAt || event.startsAt);
     return [
       '    <item>',
@@ -152,7 +152,7 @@ function buildRssXml(events) {
       `      <link>${eventUrl}</link>`,
       `      <guid isPermaLink="true">${eventUrl}</guid>`,
       `      <pubDate>${pubDate}</pubDate>`,
-      `      <description>${description}</description>`,
+      `      <description><![CDATA[${description}]]></description>`,
       '    </item>'
     ].join('\n');
   }).join('\n');
@@ -171,6 +171,30 @@ function buildRssXml(events) {
     '</rss>',
     ''
   ].join('\n');
+}
+
+function buildRssItemDescription(event, eventUrl) {
+  const dateLabel = event.startsAt ? formatDateTime(event.startsAt) : '';
+  const location = String(event.location || '').trim();
+  const summary = String(event.summary || event.excerpt || '').trim();
+  const image = event.image ? toAbsoluteUrl(event.image) : '';
+  const parts = [];
+
+  if (image) {
+    parts.push(`<p><img src="${escapeHtml(image)}" alt="${escapeHtml(event.title || 'Evento')}" /></p>`);
+  }
+  if (dateLabel) {
+    parts.push(`<p><strong>Fecha:</strong> ${escapeHtml(dateLabel)}</p>`);
+  }
+  if (location) {
+    parts.push(`<p><strong>Ubicación:</strong> ${escapeHtml(location)}</p>`);
+  }
+  if (summary) {
+    parts.push(`<p>${escapeHtml(summary)}</p>`);
+  }
+  parts.push(`<p><a href="${escapeHtml(eventUrl)}">Ver evento</a></p>`);
+
+  return parts.join('').replaceAll(']]>', ']]&gt;');
 }
 
 function buildCalendarIcs(events, options = {}) {
@@ -197,6 +221,8 @@ function buildCalendarIcs(events, options = {}) {
       : new Date(startDate.getTime() + 60 * 60 * 1000);
     const eventUrl = toAbsoluteUrl(`/e/${event.id}/${event.slug}`);
     const uid = `${event.id}@eventos.aldeapucela.org`;
+    const description = String(event.summary || event.excerpt || '').trim();
+    const attachment = event.image ? `ATTACH;FMTTYPE=image/jpeg:${escapeIcs(event.image)}` : null;
     rows.push(
       'BEGIN:VEVENT',
       `UID:${escapeIcs(uid)}`,
@@ -204,9 +230,10 @@ function buildCalendarIcs(events, options = {}) {
       `DTSTART:${formatUtcIcsDate(startDate)}`,
       `DTEND:${formatUtcIcsDate(endDate)}`,
       `SUMMARY:${escapeIcs(event.title || 'Evento')}`,
-      `DESCRIPTION:${escapeIcs(`${event.summary || event.excerpt || ''}\n\n${eventUrl}`)}`,
+      `DESCRIPTION:${escapeIcs(description)}`,
       `LOCATION:${escapeIcs(event.location || '')}`,
       `URL:${escapeIcs(eventUrl)}`,
+      ...(attachment ? [attachment] : []),
       'END:VEVENT'
     );
   }

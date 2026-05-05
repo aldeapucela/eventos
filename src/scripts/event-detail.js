@@ -129,7 +129,8 @@ function populateCalendarLinks() {
     location,
     startDate,
     endDate,
-    url: window.location.href
+    url: window.location.href,
+    imageUrl: eventData.image || ''
   });
 
   if (calendarIcsLink) {
@@ -183,9 +184,10 @@ function isLikelyMobileDevice() {
   return narrowScreen && (coarsePointer || noHover || touchCapable);
 }
 
-function buildIcs({ title, description, location, startDate, endDate, url }) {
+function buildIcs({ title, description, location, startDate, endDate, url, imageUrl }) {
   const stamp = toUtc(new Date());
-  return [
+  const cleanDescription = String(description || '').trim();
+  const rows = [
     'BEGIN:VCALENDAR',
     'VERSION:2.0',
     'PRODID:-//Aldea Pucela//Eventos//ES',
@@ -197,12 +199,13 @@ function buildIcs({ title, description, location, startDate, endDate, url }) {
     `DTSTART:${toUtc(startDate)}`,
     `DTEND:${toUtc(endDate)}`,
     `SUMMARY:${escapeIcs(title)}`,
-    `DESCRIPTION:${escapeIcs(`${description}\n\n${url}`)}`,
+    `DESCRIPTION:${escapeIcs(cleanDescription)}`,
     `LOCATION:${escapeIcs(location)}`,
-    `URL:${escapeIcs(url)}`,
-    'END:VEVENT',
-    'END:VCALENDAR'
-  ].join('\r\n');
+    `URL:${escapeIcs(url)}`
+  ];
+  if (imageUrl) rows.push(`ATTACH;FMTTYPE=image/jpeg:${escapeIcs(imageUrl)}`);
+  rows.push('END:VEVENT', 'END:VCALENDAR');
+  return rows.join('\r\n');
 }
 
 function toUtc(date) {
