@@ -4,8 +4,14 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="description" content="{{ meta.description or 'Agenda cultural de Aldea Pucela' }}" />
+    <meta name="theme-color" content="#6f59a8" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+    <meta name="apple-mobile-web-app-title" content="Eventos" />
     <title>{{ title or 'Aldea Pucela Eventos' }}</title>
     <link rel="icon" type="image/png" href="/assets/favicon.png" />
+    <link rel="apple-touch-icon" href="/assets/favicon.png" />
+    <link rel="manifest" href="/manifest.webmanifest" />
     <link rel="alternate" type="application/rss+xml" title="Aldea Pucela Eventos RSS" href="https://eventos.aldeapucela.org/rss.xml" />
     <link rel="alternate" type="text/calendar" title="Aldea Pucela Eventos Calendario" href="https://eventos.aldeapucela.org/calendar.ics" />
     {% if social %}
@@ -97,6 +103,13 @@
       }());
     </script>
     <script src="/assets/js/matomo.js?v={{ assetVersion }}"></script>
+    <script>
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+          navigator.serviceWorker.register('/service-worker.js').catch(() => {});
+        });
+      }
+    </script>
     <script type="module" src="/assets/js/{{ pageJs }}?v={{ assetVersion }}" defer></script>
   </body>
 </html>

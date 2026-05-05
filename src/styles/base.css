@@ -887,6 +887,51 @@
     @apply mt-3 grid gap-3 sm:grid-cols-2;
   }
 
+  .subscribe-category-picker {
+    @apply mt-4 rounded-[1.5rem] border border-line bg-paper/70 p-4;
+  }
+
+  .subscribe-category-field {
+    @apply block;
+  }
+
+  .subscribe-category-field-label {
+    @apply mb-2 block text-sm font-semibold tracking-[0.12em] text-slate-700;
+  }
+
+  .subscribe-category-select {
+    @apply min-h-12 w-full rounded-2xl border border-line bg-white px-4 text-base text-ink shadow-sm outline-none transition focus:border-brand-400;
+  }
+
+  .subscribe-links-grid-tight {
+    @apply sm:grid-cols-1;
+  }
+
+  .subscribe-help-note {
+    @apply mt-3 rounded-2xl border border-line bg-white/80 px-4 py-3 text-sm leading-6 text-slate-600;
+  }
+
+  .install-app-modal-body {
+    @apply mt-5 grid gap-4;
+  }
+
+  .install-app-steps {
+    @apply m-0 grid gap-3 pl-0 text-sm leading-6 text-slate-600;
+    list-style: none;
+  }
+
+  .install-app-step {
+    @apply flex items-start gap-3 rounded-2xl border border-line bg-white/70 px-4 py-3;
+  }
+
+  .install-app-step-number {
+    @apply inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-brand-500 text-sm font-bold text-white;
+  }
+
+  .install-app-modal-button {
+    @apply w-full;
+  }
+
   .detail-lightbox {
     @apply fixed inset-0 z-[60] flex items-center justify-center p-4;
   }
@@ -1981,6 +2026,33 @@ html.dark .site-footer-copy a {
   html.dark .subscribe-url-input {
     border-color: var(--border-light);
     background: var(--bg-body);
+    color: var(--text-main);
+  }
+
+  html.dark .subscribe-category-picker {
+    background: color-mix(in srgb, var(--bg-card) 86%, transparent);
+    border-color: var(--border-light);
+  }
+
+  html.dark .subscribe-category-field-label,
+  html.dark .install-app-steps {
+    color: var(--text-main);
+  }
+
+  html.dark .install-app-step {
+    border-color: var(--border-light);
+    background: color-mix(in srgb, var(--bg-card) 88%, transparent);
+  }
+
+  html.dark .subscribe-category-select {
+    border-color: var(--border-light);
+    background: var(--bg-card);
+    color: var(--text-main);
+  }
+
+  html.dark .subscribe-help-note {
+    border-color: var(--border-light);
+    background: color-mix(in srgb, var(--bg-card) 88%, transparent);
     color: var(--text-main);
   }
 

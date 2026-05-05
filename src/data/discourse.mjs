@@ -122,6 +122,7 @@ export function normalizeDiscourseTopic(topic, detail) {
     notes,
     isSticky: Boolean(topic.pinned || topic.pinned_globally || topic.featured_link),
     isFree: detectIsFree(`${summary} ${notes} ${rawHtml}`),
+    publishedAt: topic.created_at || detailPost?.created_at || detail?.created_at || '',
     updatedAt: topic.last_posted_at || detailPost?.updated_at || topic.created_at || ''
   };
 }

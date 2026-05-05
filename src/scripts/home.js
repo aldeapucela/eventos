@@ -23,8 +23,19 @@ const menuDrawer = document.querySelector('[data-menu-drawer]');
 const addEventOpenButton = document.querySelector('[data-add-event-open]');
 const addEventModal = document.querySelector('[data-add-event-modal]');
 const subscribeModal = document.querySelector('[data-subscribe-modal]');
+const installModal = document.querySelector('[data-install-modal]');
+const installAppCopy = document.querySelector('[data-install-app-copy]');
+const installAppSteps = document.querySelector('[data-install-app-steps]');
+const installAppConfirmButton = document.querySelector('[data-install-app-confirm]');
+const installAppTriggers = Array.from(document.querySelectorAll('[data-install-app-open]'));
+const categoryPicker = document.querySelector('[data-category-picker]');
+const categorySelect = document.querySelector('[data-category-select]');
+const categoryUrlInput = document.querySelector('[data-category-url]');
+const categoryGoogleLink = document.querySelector('[data-category-google]');
+const categoryAppleLink = document.querySelector('[data-category-apple]');
 const events = Array.isArray(window.__EVENTS__?.events) ? window.__EVENTS__.events : [];
 const storageKey = 'aldeapucela_saved_events';
+let deferredInstallPrompt = null;
 initTheme();
 
 const today = new Date();
@@ -61,6 +72,8 @@ if (typeCheckboxes.length) {
 }
 
 setupScrollTopButton();
+setupCategoryPicker();
+setupInstallPrompt();
 
 document.addEventListener('click', async (event) => {
   const saveButton = event.target.closest('[data-save-event]');
@@ -73,6 +86,10 @@ document.addEventListener('click', async (event) => {
   const addEventClose = event.target.closest('[data-add-event-close]');
   const subscribeOpen = event.target.closest('[data-subscribe-open]');
   const subscribeClose = event.target.closest('[data-subscribe-close]');
+  const installOpen = event.target.closest('[data-install-app-open]');
+  const installClose = event.target.closest('[data-install-app-close]');
+  const installConfirm = event.target.closest('[data-install-app-confirm]');
+  const outlookHelp = event.target.closest('[data-outlook-help]');
   const copyButton = event.target.closest('[data-copy-url]');
   const typeModalOpen = event.target.closest('[data-type-modal-open]');
   const typeModalClose = event.target.closest('[data-type-modal-close]');
@@ -158,12 +175,32 @@ document.addEventListener('click', async (event) => {
   if (subscribeOpen) {
     event.preventDefault();
     closeMenu();
-    openSubscribeModal();
+    openSubscribeModal(subscribeOpen.dataset.subscribeOpen || 'calendar');
   }
 
   if (subscribeClose) {
     event.preventDefault();
     closeSubscribeModal();
+  }
+
+  if (installOpen) {
+    event.preventDefault();
+    await handleInstallAction();
+  }
+
+  if (installClose) {
+    event.preventDefault();
+    closeInstallModal();
+  }
+
+  if (installConfirm) {
+    event.preventDefault();
+    await confirmInstallAction();
+  }
+
+  if (outlookHelp) {
+    event.preventDefault();
+    toggleOutlookHelp(outlookHelp.dataset.outlookHelp);
   }
 
   if (copyButton) {
@@ -210,6 +247,9 @@ document.addEventListener('keydown', (event) => {
   }
   if (event.key === 'Escape' && subscribeModal && !subscribeModal.hidden) {
     closeSubscribeModal();
+  }
+  if (event.key === 'Escape' && installModal && !installModal.hidden) {
+    closeInstallModal();
   }
   if (event.key === 'Escape' && typeModal && !typeModal.hidden) {
     closeTypeModal();
@@ -571,16 +611,35 @@ function openAddEventModal() {
   document.body.style.overflow = 'hidden';
 }
 
-function openSubscribeModal() {
+function openSubscribeModal(section = 'calendar') {
   if (!subscribeModal) return;
   subscribeModal.hidden = false;
   document.body.style.overflow = 'hidden';
+  const targetSection = subscribeModal.querySelector(`[data-subscribe-section="${section}"]`);
+  if (targetSection) {
+    targetSection.scrollIntoView({ block: 'start', behavior: 'instant' });
+  } else {
+    subscribeModal.scrollTop = 0;
+  }
   subscribeModal.querySelector('[data-subscribe-close]')?.focus();
 }
 
 function closeSubscribeModal() {
   if (!subscribeModal) return;
   subscribeModal.hidden = true;
+  document.body.style.overflow = '';
+}
+
+function openInstallModal() {
+  if (!installModal) return;
+  installModal.hidden = false;
+  document.body.style.overflow = 'hidden';
+  installModal.querySelector('[data-install-app-close]')?.focus();
+}
+
+function closeInstallModal() {
+  if (!installModal) return;
+  installModal.hidden = true;
   document.body.style.overflow = '';
 }
 
@@ -619,6 +678,115 @@ async function copySubscribeUrl(button) {
   } catch {
     input.focus();
     input.select();
+  }
+}
+
+function setupCategoryPicker() {
+  if (!categoryPicker || !categorySelect || !categoryUrlInput) return;
+  let feeds = [];
+  try {
+    feeds = JSON.parse(categoryPicker.dataset.feeds || '[]');
+  } catch {
+    feeds = [];
+  }
+  const syncFeed = () => {
+    const selected = feeds.find((feed) => feed.slug === categorySelect.value) || feeds[0];
+    if (!selected) return;
+    categoryUrlInput.value = selected.url;
+    categoryUrlInput.setAttribute('value', selected.url);
+    if (categoryGoogleLink) {
+      categoryGoogleLink.href = `https://calendar.google.com/calendar/u/0/r/settings/addbyurl?url=${encodeURIComponent(selected.url)}`;
+    }
+    if (categoryAppleLink) {
+      categoryAppleLink.href = selected.webcalUrl;
+    }
+  };
+  categorySelect.addEventListener('change', syncFeed);
+  syncFeed();
+}
+
+function toggleOutlookHelp(scope) {
+  document.querySelectorAll('[data-outlook-help-copy]').forEach((note) => {
+    const shouldShow = note.dataset.outlookHelpCopy === scope;
+    note.classList.toggle('hidden', !shouldShow);
+  });
+}
+
+function setupInstallPrompt() {
+  window.addEventListener('beforeinstallprompt', (event) => {
+    event.preventDefault();
+    deferredInstallPrompt = event;
+    syncInstallTriggerVisibility();
+    updateInstallModalCopy();
+  });
+  window.addEventListener('appinstalled', () => {
+    deferredInstallPrompt = null;
+    closeInstallModal();
+  });
+  syncInstallTriggerVisibility();
+  updateInstallModalCopy();
+}
+
+function isIosLike() {
+  const ua = window.navigator.userAgent || '';
+  return /iPhone|iPad|iPod/i.test(ua) || (window.navigator.platform === 'MacIntel' && window.navigator.maxTouchPoints > 1);
+}
+
+function updateInstallModalCopy() {
+  if (!installAppCopy || !installAppSteps || !installAppConfirmButton) return;
+  if (deferredInstallPrompt) {
+    installAppCopy.textContent = 'Instala la agenda como app para abrirla más rápido desde tu móvil.';
+    installAppSteps.innerHTML = [
+      '<li class="install-app-step"><span class="install-app-step-number">1</span><span>Se abrirá el diálogo del navegador para instalar la app.</span></li>',
+      '<li class="install-app-step"><span class="install-app-step-number">2</span><span>Confirma la instalación y la tendrás en tu pantalla de inicio.</span></li>'
+    ].join('');
+    installAppConfirmButton.hidden = false;
+    installAppConfirmButton.textContent = 'Instalar app';
+    return;
+  }
+  if (isIosLike()) {
+    installAppCopy.textContent = 'En iPhone o iPad puedes guardarla como app desde el menú de compartir de Safari.';
+    installAppSteps.innerHTML = [
+      '<li class="install-app-step"><span class="install-app-step-number">1</span><span>Abre esta página en Safari y toca el botón de compartir.</span></li>',
+      '<li class="install-app-step"><span class="install-app-step-number">2</span><span>Elige <strong>Añadir a pantalla de inicio</strong> y confirma.</span></li>'
+    ].join('');
+    installAppConfirmButton.hidden = true;
+    return;
+  }
+  installAppCopy.textContent = 'Tu navegador no está mostrando el instalador automático ahora mismo, pero la web ya es instalable cuando el navegador lo permita.';
+  installAppSteps.innerHTML = [
+    '<li class="install-app-step"><span class="install-app-step-number">1</span><span>Abre el menú del navegador.</span></li>',
+    '<li class="install-app-step"><span class="install-app-step-number">2</span><span>Busca la opción para instalar la app o añadirla a la pantalla de inicio.</span></li>'
+  ].join('');
+  installAppConfirmButton.hidden = true;
+}
+
+function syncInstallTriggerVisibility() {
+  const shouldShow = isIosLike() || Boolean(deferredInstallPrompt);
+  installAppTriggers.forEach((button) => {
+    button.classList.toggle('hidden', !shouldShow);
+  });
+}
+
+async function handleInstallAction() {
+  if (deferredInstallPrompt) {
+    openInstallModal();
+    return;
+  }
+  openInstallModal();
+}
+
+async function confirmInstallAction() {
+  if (!deferredInstallPrompt) {
+    closeInstallModal();
+    return;
+  }
+  const promptEvent = deferredInstallPrompt;
+  deferredInstallPrompt = null;
+  closeInstallModal();
+  await promptEvent.prompt();
+  if (promptEvent.userChoice) {
+    await promptEvent.userChoice.catch(() => {});
   }
 }
 

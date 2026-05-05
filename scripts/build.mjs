@@ -61,6 +61,17 @@ async function copyJs() {
   await fs.copyFile(path.join(root, 'src', 'scripts', 'matomo.js'), path.join(jsDir, 'matomo.js'));
 }
 
+function slugify(value = '') {
+  return String(value)
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase()
+    .trim()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '')
+    || 'categoria';
+}
+
 function render(template, context) {
   return env.render(template, context);
 }
@@ -98,19 +109,19 @@ function escapeIcs(value = '') {
 }
 
 function buildRssXml(events) {
-  const sortedByUpdatedDesc = [...events].sort((a, b) => {
-    const aTime = parseDateLike(a.updatedAt || a.startsAt || 0).getTime();
-    const bTime = parseDateLike(b.updatedAt || b.startsAt || 0).getTime();
+  const sortedByPublishedDesc = [...events].sort((a, b) => {
+    const aTime = parseDateLike(a.publishedAt || a.updatedAt || a.startsAt || 0).getTime();
+    const bTime = parseDateLike(b.publishedAt || b.updatedAt || b.startsAt || 0).getTime();
     return bTime - aTime;
   });
-  const lastBuildDate = sortedByUpdatedDesc.length
-    ? toRfc2822(sortedByUpdatedDesc[0].updatedAt || sortedByUpdatedDesc[0].startsAt)
+  const lastBuildDate = sortedByPublishedDesc.length
+    ? toRfc2822(sortedByPublishedDesc[0].publishedAt || sortedByPublishedDesc[0].updatedAt || sortedByPublishedDesc[0].startsAt)
     : new Date().toUTCString();
-  const items = sortedByUpdatedDesc.map((event) => {
+  const items = sortedByPublishedDesc.map((event) => {
     const eventUrl = toAbsoluteUrl(`/e/${event.id}/${event.slug}`);
     const title = escapeHtml(event.title || 'Evento');
     const description = escapeHtml(event.summary || event.excerpt || '');
-    const pubDate = toRfc2822(event.updatedAt || event.startsAt);
+    const pubDate = toRfc2822(event.publishedAt || event.updatedAt || event.startsAt);
     return [
       '    <item>',
       `      <title>${title}</title>`,
@@ -138,7 +149,8 @@ function buildRssXml(events) {
   ].join('\n');
 }
 
-function buildCalendarIcs(events) {
+function buildCalendarIcs(events, options = {}) {
+  const calendarName = options.name || 'Aldea Pucela Eventos';
   const now = new Date();
   const dtstamp = formatUtcIcsDate(now);
   const sorted = sortEvents(events);
@@ -148,7 +160,7 @@ function buildCalendarIcs(events) {
     'PRODID:-//Aldea Pucela//Eventos//ES',
     'CALSCALE:GREGORIAN',
     'METHOD:PUBLISH',
-    `X-WR-CALNAME:${escapeIcs('Aldea Pucela Eventos')}`,
+    `X-WR-CALNAME:${escapeIcs(calendarName)}`,
     `X-WR-TIMEZONE:${DISPLAY_TIMEZONE}`
   ];
 
@@ -270,7 +282,8 @@ async function computeAssetVersion() {
     path.join(root, 'src', 'scripts', 'event-detail.js'),
     path.join(root, 'src', 'scripts', 'comments.js'),
     path.join(root, 'src', 'scripts', 'theme.js'),
-    path.join(root, 'src', 'scripts', 'matomo.js')
+    path.join(root, 'src', 'scripts', 'matomo.js'),
+    path.join(root, 'src', 'templates', 'layout.njk')
   ];
   const hash = createHash('sha1');
   for (const file of files) {
@@ -292,11 +305,19 @@ async function buildSite(events) {
   const filters = deriveFilters(events);
   const { featured, week, ongoing, today } = splitFeatured(events);
   const assetVersion = await computeAssetVersion();
+  const categoryFeeds = filters.map((category) => ({
+    label: category,
+    slug: slugify(category),
+    path: `/calendar/${slugify(category)}.ics`,
+    url: toAbsoluteUrl(`/calendar/${slugify(category)}.ics`),
+    webcalUrl: `webcal://eventos.aldeapucela.org/calendar/${slugify(category)}.ics`
+  }));
 
   const sharedContext = {
     filtersJson: JSON.stringify(filters),
     eventsJson: siteDataPayload(events),
     filters,
+    categoryFeeds,
     assetVersion
   };
 
@@ -389,6 +410,53 @@ async function buildSite(events) {
   await writeFile('site-data.json', siteDataPayload(events));
   await writeFile('rss.xml', buildRssXml(events));
   await writeFile('calendar.ics', buildCalendarIcs(events));
+  for (const feed of categoryFeeds) {
+    const filteredEvents = events.filter((event) => event.categoryLabel === feed.label);
+    await writeFile(
+      path.join('calendar', `${feed.slug}.ics`),
+      buildCalendarIcs(filteredEvents, { name: `Aldea Pucela Eventos · ${feed.label}` })
+    );
+  }
+  await writeFile('manifest.webmanifest', JSON.stringify({
+    name: 'Aldea Pucela Eventos',
+    short_name: 'Eventos',
+    description: 'Agenda cultural de Valladolid alimentada por la comunidad de Aldea Pucela.',
+    start_url: '/',
+    scope: '/',
+    display: 'standalone',
+    background_color: '#f5f1ea',
+    theme_color: '#6f59a8',
+    icons: [
+      {
+        src: '/assets/favicon.png',
+        sizes: '192x192',
+        type: 'image/png',
+        purpose: 'any'
+      },
+      {
+        src: '/assets/favicon.png',
+        sizes: '512x512',
+        type: 'image/png',
+        purpose: 'any'
+      }
+    ]
+  }, null, 2));
+  await writeFile('service-worker.js', [
+    "self.addEventListener('install', () => {",
+    '  self.skipWaiting();',
+    '});',
+    '',
+    "self.addEventListener('activate', (event) => {",
+    '  event.waitUntil(self.clients.claim());',
+    '});',
+    '',
+    "self.addEventListener('fetch', (event) => {",
+    "  if (event.request.method !== 'GET') return;",
+    "  if (!event.request.url.startsWith(self.location.origin)) return;",
+    '  event.respondWith(fetch(event.request));',
+    '});',
+    ''
+  ].join('\n'));
 }
 
 async function main() {

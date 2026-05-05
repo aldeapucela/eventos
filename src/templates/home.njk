@@ -145,9 +145,9 @@
             </button>
           </div>
         </div>
-        <div id="ongoing-carousel" class="flex overflow-x-auto gap-4 snap-x pb-4 -mx-4 px-4 sm:mx-0 sm:px-0" style="scrollbar-width: none;">
+        <div id="ongoing-carousel" class="flex items-stretch overflow-x-auto gap-4 snap-x pb-4 -mx-4 px-4 sm:mx-0 sm:px-0" style="scrollbar-width: none;">
           {% for event in ongoing %}
-          <article class="event-compact event-compact-featured flex-none w-[46%] md:w-[23%] snap-start" data-category="{{ event.categoryLabel }}" data-free="{{ 'true' if event.isFree else 'false' }}" data-starts-at="{{ event.startsAt }}" data-ends-at="{{ event.endsAt }}">
+          <article class="event-compact event-compact-featured event-compact-ongoing flex-none w-[43%] md:w-[23%] snap-start" data-category="{{ event.categoryLabel }}" data-free="{{ 'true' if event.isFree else 'false' }}" data-starts-at="{{ event.startsAt }}" data-ends-at="{{ event.endsAt }}">
             <a href="{{ event.urlPath }}" class="event-compact-link">
               <div class="event-compact-image" style="background-image:url('{{ event.image or '/assets/placeholder-event.svg' }}')"></div>
               <div class="event-compact-copy">
@@ -170,6 +170,17 @@
         </div>
       </section>
       {% endif %}
+
+      <section class="calendar-cta-strip" aria-label="Acciones de calendario">
+        <button class="calendar-cta-chip calendar-cta-chip-primary" type="button" data-subscribe-open>
+          <i class="fa-regular fa-calendar-plus" aria-hidden="true"></i>
+          <span>Calendario</span>
+        </button>
+        <button class="calendar-cta-chip hidden" type="button" data-install-app-open>
+          <i class="fa-solid fa-mobile-screen-button" aria-hidden="true"></i>
+          <span>Añadir a pantalla de inicio</span>
+        </button>
+      </section>
 
       <section class="space-y-3" id="results">
         <div class="section-mobile-head">
@@ -209,9 +220,17 @@
         <i class="menu-drawer-link-icon fa-solid fa-box-archive" aria-hidden="true"></i>
         <span>Archivo</span>
       </a>
-      <button class="menu-drawer-link" type="button" data-subscribe-open>
+      <button class="menu-drawer-link" type="button" data-subscribe-open="rss">
         <i class="menu-drawer-link-icon fa-solid fa-rss" aria-hidden="true"></i>
         <span>Suscribirse</span>
+      </button>
+      <button class="menu-drawer-link" type="button" data-subscribe-open="calendar">
+        <i class="menu-drawer-link-icon fa-regular fa-calendar-plus" aria-hidden="true"></i>
+        <span>Calendario</span>
+      </button>
+      <button class="menu-drawer-link hidden" type="button" data-install-app-open>
+        <i class="menu-drawer-link-icon fa-solid fa-mobile-screen-button" aria-hidden="true"></i>
+        <span>Añadir a pantalla de inicio</span>
       </button>
       <a class="menu-drawer-link" href="https://aldeapucela.org" target="_blank" rel="noopener noreferrer">
         <i class="menu-drawer-link-icon fa-solid fa-people-group" aria-hidden="true"></i>
@@ -290,46 +309,27 @@
   </aside>
 </div>
 
-<div class="calendar-modal" data-subscribe-modal hidden>
-  <button class="calendar-modal-backdrop" type="button" data-subscribe-close aria-label="Cerrar diálogo"></button>
-  <aside class="calendar-modal-panel subscribe-modal-panel" role="dialog" aria-modal="true" aria-labelledby="subscribe-modal-title">
+{% include "partials/subscribe-modal.njk" %}
+
+<div class="calendar-modal" data-install-modal hidden>
+  <button class="calendar-modal-backdrop" type="button" data-install-app-close aria-label="Cerrar diálogo"></button>
+  <aside class="calendar-modal-panel install-app-modal-panel" role="dialog" aria-modal="true" aria-labelledby="install-app-title">
     <div class="calendar-modal-header">
       <div>
-        <h2 class="calendar-modal-title" id="subscribe-modal-title">Suscribirse</h2>
-        <p class="calendar-modal-copy">Copia las URL o abre tus apps favoritas para seguir los eventos y novedades.</p>
+        <h2 class="calendar-modal-title" id="install-app-title">Añadir a pantalla de inicio</h2>
+        <p class="calendar-modal-copy" data-install-app-copy>Instala la agenda como app para abrirla más rápido desde tu móvil.</p>
       </div>
-      <button class="calendar-modal-close" type="button" data-subscribe-close aria-label="Cerrar">
+      <button class="calendar-modal-close" type="button" data-install-app-close aria-label="Cerrar">
         <i class="fa-solid fa-xmark"></i>
       </button>
     </div>
-
-    <section class="subscribe-section">
-      <h3 class="subscribe-section-title"><i class="fa-regular fa-calendar"></i><span>Calendario</span></h3>
-      <p class="subscribe-section-copy">Suscríbete al calendario completo (incluye próximos e históricos).</p>
-      <div class="subscribe-url-row">
-        <input class="subscribe-url-input" type="text" value="https://eventos.aldeapucela.org/calendar.ics" readonly data-copy-source="calendar" />
-        <button class="calendar-modal-action calendar-modal-action-primary subscribe-copy-btn" type="button" data-copy-url="calendar">Copiar</button>
-      </div>
-      <div class="subscribe-links-grid">
-        <a class="calendar-modal-action" href="https://calendar.google.com/calendar/u/0/r/settings/addbyurl?url=https%3A%2F%2Feventos.aldeapucela.org%2Fcalendar.ics" target="_blank" rel="noopener noreferrer"><i class="fa-brands fa-google" aria-hidden="true"></i><span>Google Calendar</span></a>
-        <a class="calendar-modal-action" href="webcal://eventos.aldeapucela.org/calendar.ics"><i class="fa-brands fa-apple" aria-hidden="true"></i><span>Apple Calendar</span></a>
-        <a class="calendar-modal-action" href="https://outlook.live.com/calendar/0/addcalendar?url=https%3A%2F%2Feventos.aldeapucela.org%2Fcalendar.ics&name=Aldea%20Pucela%20Eventos" target="_blank" rel="noopener noreferrer"><i class="fa-brands fa-microsoft" aria-hidden="true"></i><span>Outlook</span></a>
-      </div>
-    </section>
-
-    <section class="subscribe-section">
-      <h3 class="subscribe-section-title"><i class="fa-solid fa-rss"></i><span>RSS</span></h3>
-      <p class="subscribe-section-copy">Recibe nuevas publicaciones en tu lector favorito.</p>
-      <div class="subscribe-url-row">
-        <input class="subscribe-url-input" type="text" value="https://eventos.aldeapucela.org/rss.xml" readonly data-copy-source="rss" />
-        <button class="calendar-modal-action calendar-modal-action-primary subscribe-copy-btn" type="button" data-copy-url="rss">Copiar</button>
-      </div>
-      <div class="subscribe-links-grid">
-        <a class="calendar-modal-action" href="https://feedly.com/i/subscription/feed/https%3A%2F%2Feventos.aldeapucela.org%2Frss.xml" target="_blank" rel="noopener noreferrer"><i class="fa-brands fa-feedly" aria-hidden="true"></i><span>Feedly</span></a>
-        <a class="calendar-modal-action" href="https://www.inoreader.com/?add_feed=https%3A%2F%2Feventos.aldeapucela.org%2Frss.xml" target="_blank" rel="noopener noreferrer"><i class="fa-solid fa-rss" aria-hidden="true"></i><span>Inoreader</span></a>
-        <a class="calendar-modal-action" href="https://theoldreader.com/feeds/subscribe?url=https%3A%2F%2Feventos.aldeapucela.org%2Frss.xml" target="_blank" rel="noopener noreferrer"><i class="fa-solid fa-rss" aria-hidden="true"></i><span>The Old Reader</span></a>
-      </div>
-    </section>
+    <div class="install-app-modal-body">
+      <ol class="install-app-steps" data-install-app-steps>
+        <li class="install-app-step"><span class="install-app-step-number">1</span><span>En Safari, toca el botón de compartir.</span></li>
+        <li class="install-app-step"><span class="install-app-step-number">2</span><span>Elige <strong>Añadir a pantalla de inicio</strong> y confirma.</span></li>
+      </ol>
+      <button class="calendar-modal-action calendar-modal-action-primary install-app-modal-button" type="button" data-install-app-confirm>Instalar app</button>
+    </div>
   </aside>
 </div>
 
