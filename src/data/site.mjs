@@ -163,8 +163,11 @@ export function groupFutureEventsByVenue(events, options = {}) {
   for (const event of sortEvents(events)) {
     if (!event.startsAt) continue;
     const startsAt = new Date(event.startsAt);
-    if (Number.isNaN(startsAt.getTime()) || startsAt < now) continue;
+    if (Number.isNaN(startsAt.getTime())) continue;
+    const endsAt = event.endsAt ? new Date(event.endsAt) : startsAt;
+    const referenceEnd = Number.isNaN(endsAt.getTime()) ? startsAt : endsAt;
     if (startsAt > horizonEnd) continue;
+    if (referenceEnd < now) continue;
     if (!event.venue) continue;
 
     const canonicalVenue = canonicalizeVenue(event.venue);

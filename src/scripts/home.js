@@ -1136,10 +1136,11 @@ function isWithinListingWindow(event) {
   if (!event?.startsAtIso) return false;
   const startsAt = new Date(event.startsAtIso);
   if (Number.isNaN(startsAt.getTime())) return false;
+  const endsAt = event?.endsAtIso ? new Date(event.endsAtIso) : startsAt;
+  const referenceEnd = Number.isNaN(endsAt.getTime()) ? startsAt : endsAt;
   const windowStart = startOfToday(today);
   const windowEnd = getListingWindowEnd(activeTimeFilter, today);
-  if (startsAt < windowStart || startsAt > windowEnd) return false;
-  return !isOngoingMultiDay(event);
+  return startsAt <= windowEnd && referenceEnd >= windowStart;
 }
 
 function getListingWindowEnd(filterValue, date) {

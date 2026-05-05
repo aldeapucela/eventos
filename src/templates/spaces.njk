@@ -65,7 +65,7 @@
   <section class="home-layout space-y-7 lg:space-y-9">
     <section class="spaces-hero-copy">
       <h1 class="spaces-page-title">Espacios</h1>
-      <p class="spaces-hero-text">Eventos en los próximos seis meses agrupados por espacio</p>
+      <p class="spaces-hero-text">Eventos próximos y en curso durante los próximos seis meses agrupados por espacio</p>
     </section>
 
     <div class="spaces-hero-stats" aria-label="Resumen de espacios">
@@ -75,7 +75,7 @@
       </article>
       <article class="spaces-stat-card">
         <span class="spaces-stat-value">{{ futureEventsCount }}</span>
-        <span class="spaces-stat-label">eventos futuros</span>
+        <span class="spaces-stat-label">eventos vigentes</span>
       </article>
     </div>
 
@@ -84,8 +84,8 @@
       <div class="saved-empty-icon" aria-hidden="true">
         <i class="fa-solid fa-location-dot"></i>
       </div>
-      <p class="saved-empty-copy">No hay espacios con eventos próximos</p>
-      <p class="saved-empty-subcopy">Cuando entren nuevos eventos en los próximos seis meses con venue detectado, aparecerán aquí agrupados.</p>
+      <p class="saved-empty-copy">No hay espacios con eventos vigentes</p>
+      <p class="saved-empty-subcopy">Cuando entren nuevos eventos próximos o en curso en los próximos seis meses con venue detectado, aparecerán aquí agrupados.</p>
     </div>
     {% else %}
     <div class="spaces-map-frame">
@@ -99,7 +99,7 @@
           <div class="spaces-card-copy">
             <h2 class="spaces-card-title">{{ space.name }}</h2>
             <div class="spaces-card-meta">
-              <span><i class="fa-regular fa-calendar" aria-hidden="true"></i>{{ space.count }} {% if space.count == 1 %}próximo{% else %}próximos{% endif %}</span>
+              <span><i class="fa-regular fa-calendar" aria-hidden="true"></i>{{ space.count }} {% if space.count == 1 %}evento{% else %}eventos{% endif %}</span>
               {% if space.address or space.name %}
               <a class="spaces-card-location" data-location-open data-location="{{ space.address or space.name }}" href="#">
                 <i class="fa-solid fa-location-dot" aria-hidden="true"></i><span class="spaces-card-location-text">{{ space.address or space.name }}</span>
