@@ -10,6 +10,7 @@ import { loadCachedEvents } from '../src/data/store.mjs';
 import { deriveFilters, sortEvents, splitFeatured, getPastEvents, groupEventsByMonth, groupFutureEventsByVenue } from '../src/data/site.mjs';
 import { DISPLAY_TIMEZONE, escapeHtml, formatDateRange, formatDateTime, parseDateLike } from '../src/data/format.mjs';
 import { enrichVenueCatalog, mergeSpacesWithVenueCatalog } from '../src/data/venues.mjs';
+import { VENUE_CANONICAL_MAP } from '../src/data/venue-aliases.mjs';
 import { syncEvents } from './sync-lib.mjs';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -76,6 +77,23 @@ function slugify(value = '') {
     .replace(/[^a-z0-9]+/g, '-')
     .replace(/^-+|-+$/g, '')
     || 'categoria';
+}
+
+function normalizeVenueKey(value = '') {
+  return String(value)
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase()
+    .replace(/\b(sala|espacio|centro|teatro|bar|csa|club)\b/g, ' ')
+    .replace(/[^a-z0-9]+/g, ' ')
+    .replace(/\s+/g, ' ');
+}
+
+function canonicalizeVenue(value = '') {
+  const raw = String(value || '').trim();
+  if (!raw) return '';
+  const normalizedKey = normalizeVenueKey(raw);
+  return VENUE_CANONICAL_MAP[raw.toLowerCase()] || VENUE_CANONICAL_MAP[normalizedKey] || raw;
 }
 
 function render(template, context) {
@@ -256,12 +274,21 @@ function formatInMadrid(_date, options) {
   return new Intl.DateTimeFormat('es-ES', { ...options, timeZone: DISPLAY_TIMEZONE });
 }
 
-function siteDataPayload(events, filters = deriveFilters(events)) {
+function siteDataPayload(events, filters = deriveFilters(events), options = {}) {
+  const spaceNameByVenueKey = options.spaceNameByVenueKey instanceof Map ? options.spaceNameByVenueKey : new Map();
+  const spaces = Array.isArray(options.spaces) ? options.spaces : [];
   const enriched = events.map(enrichEvent);
   return JSON.stringify({
     filters,
+    spaces: spaces.map((space) => ({
+      slug: space.slug,
+      name: space.name,
+      canonicalVenue: space.canonicalVenue
+    })),
     events: enriched.map((event) => ({
       ...event,
+      venueKey: normalizeVenueKey(canonicalizeVenue(event.venue || event.location || '')),
+      venueLabel: spaceNameByVenueKey.get(normalizeVenueKey(canonicalizeVenue(event.venue || event.location || ''))) || '',
       startsAtIso: event.startsAt,
       endsAtIso: event.endsAt
     }))
@@ -324,8 +351,18 @@ async function buildSite(events) {
   const groupedSpaces = groupFutureEventsByVenue(sorted, { horizonMonths: 6 });
   const venueCatalog = await enrichVenueCatalog(groupedSpaces);
   const spaces = mergeSpacesWithVenueCatalog(groupedSpaces, venueCatalog);
+  const spaceSlugByVenueKey = new Map(
+    spaces
+      .filter((space) => space?.name && space?.slug)
+      .map((space) => [normalizeVenueKey(canonicalizeVenue(space.name)), space.slug])
+  );
+  const spaceNameByVenueKey = new Map(
+    spaces
+      .filter((space) => space?.name)
+      .map((space) => [normalizeVenueKey(canonicalizeVenue(space.name)), space.name])
+  );
   const assetVersion = await computeAssetVersion();
-  const eventsPayload = siteDataPayload(events, filters);
+  const eventsPayload = siteDataPayload(events, filters, { spaces, spaceNameByVenueKey });
   console.log(`build: data ${elapsedMs('data').toFixed(1)}ms`);
   const categoryFeeds = filters.map((category) => ({
     label: category,
@@ -434,6 +471,17 @@ async function buildSite(events) {
     const relatedEvents = event.categoryLabel
       ? sorted.filter((e) => e.id !== event.id && e.categoryLabel === event.categoryLabel && !e.hasEnded).slice(0, 4)
       : [];
+    const eventVenueKey = normalizeVenueKey(canonicalizeVenue(event.venue || ''));
+    const moreInVenueEvents = eventVenueKey
+      ? sorted.filter((e) => (
+        e.id !== event.id &&
+        !e.hasEnded &&
+        normalizeVenueKey(canonicalizeVenue(e.venue || '')) === eventVenueKey
+      )).slice(0, 4)
+      : [];
+    const moreInVenueTitle = canonicalizeVenue(event.venue || '') || event.venue || '';
+    const venueSlug = eventVenueKey ? spaceSlugByVenueKey.get(eventVenueKey) : '';
+    const moreInVenueHref = venueSlug ? `/espacios#${venueSlug}` : '/espacios';
 
     await writeFile(path.join('e', String(event.id), event.slug, 'index.html'), render('event-detail.njk', {
       title: `${event.title} - Eventos Valladolid - Aldea Pucela`,
@@ -442,6 +490,9 @@ async function buildSite(events) {
       pageJs: 'event-detail.js',
       event,
       relatedEvents,
+      moreInVenueEvents,
+      moreInVenueTitle,
+      moreInVenueHref,
       eventDetailJson: JSON.stringify({
         title: event.title,
         summary: event.summary || event.excerpt,
@@ -464,7 +515,7 @@ async function buildSite(events) {
   console.log(`build: pages ${elapsedMs('pages').toFixed(1)}ms`);
 
   mark('feeds');
-  await writeFile('site-data.json', siteDataPayload(events));
+  await writeFile('site-data.json', siteDataPayload(events, filters, { spaces, spaceNameByVenueKey }));
   await writeFile('rss.xml', buildRssXml(events));
   await writeFile('calendar.ics', buildCalendarIcs(events));
   for (const feed of categoryFeeds) {

@@ -815,6 +815,14 @@
     @apply mt-4 h-[520px] w-full rounded-2xl border border-line bg-white;
   }
 
+  .detail-comments-empty-title {
+    @apply text-slate-900;
+  }
+
+  .detail-comments-empty-copy {
+    @apply text-slate-700;
+  }
+
   .calendar-modal {
     @apply fixed inset-0 z-[60] flex items-center justify-center p-3 sm:p-6;
   }
@@ -829,6 +837,8 @@
 
   .calendar-modal-panel {
     @apply relative z-10 w-full max-w-xl rounded-[2rem] border border-line bg-white p-5 shadow-2xl sm:p-6;
+    max-height: min(86vh, 52rem);
+    overflow-y: auto;
   }
 
   .calendar-modal-header {
@@ -940,6 +950,22 @@
   .filter-date-actions .calendar-modal-action {
     justify-content: flex-start;
     text-align: left;
+  }
+
+  .filter-venue-actions {
+    max-height: min(52vh, 28rem);
+    overflow-y: auto;
+    padding-right: 0.25rem;
+  }
+
+  .filter-venue-option {
+    align-items: flex-start;
+  }
+
+  .filter-venue-option span {
+    min-width: 0;
+    overflow-wrap: anywhere;
+    word-break: break-word;
   }
 
   .filter-date-select-option {
@@ -1988,6 +2014,14 @@ html.dark .site-footer-copy a {
   }
 
   html.dark .saved-empty-subcopy {
+    color: var(--text-secondary);
+  }
+
+  html.dark .detail-comments-empty-title {
+    color: var(--text-header);
+  }
+
+  html.dark .detail-comments-empty-copy {
     color: var(--text-secondary);
   }
 

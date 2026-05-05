@@ -108,6 +108,10 @@
             <i class="mobile-chip-icon mobile-chip-leading fa-solid fa-filter" aria-hidden="true"></i>
             <span data-filter-type-label>Tipo</span>
           </button>
+          <button class="mobile-chip mobile-chip-select-wrap mobile-chip-venue-trigger" type="button" data-venue-modal-open aria-label="Filtrar por espacio">
+            <i class="mobile-chip-icon mobile-chip-leading fa-solid fa-location-dot" aria-hidden="true"></i>
+            <span data-filter-venue-label>Espacio</span>
+          </button>
         </div>
       </section>
 
@@ -151,7 +155,7 @@
         </div>
         <div id="ongoing-carousel" class="flex items-stretch overflow-x-auto gap-4 snap-x pb-4 -mx-4 px-4 sm:mx-0 sm:px-0" style="scrollbar-width: none;">
           {% for event in ongoing %}
-          <article class="event-compact event-compact-featured event-compact-ongoing flex-none w-[43%] md:w-[23%] snap-start" data-category="{{ event.categoryLabel }}" data-free="{{ 'true' if event.isFree else 'false' }}" data-starts-at="{{ event.startsAt }}" data-ends-at="{{ event.endsAt }}">
+          <article class="event-compact event-compact-featured event-compact-ongoing flex-none w-[43%] md:w-[23%] snap-start" data-category="{{ event.categoryLabel }}" data-free="{{ 'true' if event.isFree else 'false' }}" data-venue="{{ event.venueLabel or event.location or '' }}" data-venue-key="{{ event.venueKey or '' }}" data-starts-at="{{ event.startsAt }}" data-ends-at="{{ event.endsAt }}">
             <a href="{{ event.urlPath }}" class="event-compact-link">
               <div class="event-compact-image" style="background-image:url('{{ event.image or '/assets/placeholder-event.svg' }}')"></div>
               <div class="event-compact-copy">
@@ -381,6 +385,30 @@
 
     <div class="filter-modal-footer">
       <button class="calendar-modal-action calendar-modal-action-primary filter-modal-submit" type="button" data-type-modal-close>Ver resultados</button>
+    </div>
+  </aside>
+</div>
+
+<div class="calendar-modal" data-venue-modal hidden>
+  <button class="calendar-modal-backdrop" type="button" data-venue-modal-close aria-label="Cerrar diálogo"></button>
+  <aside class="calendar-modal-panel subscribe-modal-panel" role="dialog" aria-modal="true" aria-labelledby="venue-modal-title">
+    <div class="calendar-modal-header">
+      <div>
+        <h2 class="calendar-modal-title" id="venue-modal-title">Espacios</h2>
+        <p class="calendar-modal-copy">Selecciona el espacio que deseas ver.</p>
+      </div>
+      <button class="calendar-modal-close" type="button" data-venue-modal-close aria-label="Cerrar">
+        <i class="fa-solid fa-xmark"></i>
+      </button>
+    </div>
+
+    <div class="calendar-modal-actions filter-date-actions filter-venue-actions" data-venue-options></div>
+
+    <div class="filter-modal-footer">
+      <button class="calendar-modal-action filter-modal-submit" type="button" data-venue-clear>
+        <i class="fa-solid fa-rotate-left" aria-hidden="true"></i>
+        <span>Quitar filtro de espacio</span>
+      </button>
     </div>
   </aside>
 </div>

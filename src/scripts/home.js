@@ -15,6 +15,7 @@ const clearFilters = document.querySelector('[data-clear-filters]');
 const weekGroups = document.querySelector('[data-week-groups]');
 const dateModal = document.querySelector('[data-date-modal]');
 const typeModal = document.querySelector('[data-type-modal]');
+const venueModal = document.querySelector('[data-venue-modal]');
 const dateSelectButtons = Array.from(document.querySelectorAll('[data-date-modal-open]'));
 const dateSelectLabel = document.querySelector('[data-filter-date-label]');
 const drawerDateLabel = document.querySelector('[data-drawer-date-label]');
@@ -22,6 +23,9 @@ const dateMonthSelect = document.querySelector('[data-date-month-select]');
 const typeSelectWrap = document.querySelector('.mobile-chip-type-trigger');
 const typeSelectLabel = document.querySelector('[data-filter-type-label]');
 const typeCheckboxes = Array.from(document.querySelectorAll('[data-type-checkbox]'));
+const venueSelectWrap = document.querySelector('.mobile-chip-venue-trigger');
+const venueSelectLabel = document.querySelector('[data-filter-venue-label]');
+const venueOptions = document.querySelector('[data-venue-options]');
 const scrollTopButton = document.querySelector('[data-scroll-top]');
 const shareSiteButton = document.querySelector('[data-share-site]');
 const menuDrawer = document.querySelector('[data-menu-drawer]');
@@ -40,6 +44,8 @@ const categoryGoogleLink = document.querySelector('[data-category-google]');
 const categoryAppleLink = document.querySelector('[data-category-apple]');
 let events = Array.isArray(window.__EVENTS__?.events) ? window.__EVENTS__.events : [];
 let availableFilters = Array.isArray(window.__FILTERS__) ? window.__FILTERS__.map(String) : [];
+let availableSpaces = Array.isArray(window.__EVENTS__?.spaces) ? window.__EVENTS__.spaces : [];
+let availableVenues = [];
 const storageKey = 'aldeapucela_saved_events';
 const DEFAULT_HORIZON_DAYS = 30;
 const DATE_MODAL_FILTERS = new Set(['Este mes', 'Próximos 3 meses', 'Este año']);
@@ -54,6 +60,7 @@ const initialState = getFiltersFromUrl();
 let activeTimeFilter = initialState.time;
 let activeFreeFilter = initialState.free;
 let activeTypeFilters = initialState.type;
+let activeVenueFilter = initialState.venue;
 
 setupScrollTopButton();
 setupCategoryPicker();
@@ -87,6 +94,10 @@ document.addEventListener('click', async (event) => {
   const typeOnly = event.target.closest('[data-type-only]');
   const carouselPrev = event.target.closest('[data-carousel-prev]');
   const carouselNext = event.target.closest('[data-carousel-next]');
+  const venueModalOpen = event.target.closest('[data-venue-modal-open]');
+  const venueModalClose = event.target.closest('[data-venue-modal-close]');
+  const venueFilterOption = event.target.closest('[data-venue-filter-value]');
+  const venueClear = event.target.closest('[data-venue-clear]');
 
   if (carouselPrev) {
     event.preventDefault();
@@ -255,6 +266,28 @@ document.addEventListener('click', async (event) => {
     activeTypeFilters = [value];
     applyFilters();
   }
+  if (venueModalOpen) {
+    event.preventDefault();
+    closeMenu();
+    openVenueModal();
+  }
+  if (venueModalClose) {
+    event.preventDefault();
+    closeVenueModal();
+  }
+  if (venueFilterOption) {
+    event.preventDefault();
+    const value = normalizeVenueFilter(venueFilterOption.dataset.venueFilterValue);
+    activeVenueFilter = activeVenueFilter === value ? 'all' : value;
+    applyFilters();
+    closeVenueModal();
+  }
+  if (venueClear) {
+    event.preventDefault();
+    activeVenueFilter = 'all';
+    applyFilters();
+    closeVenueModal();
+  }
 });
 
 document.addEventListener('keydown', (event) => {
@@ -272,6 +305,9 @@ document.addEventListener('keydown', (event) => {
   }
   if (event.key === 'Escape' && typeModal && !typeModal.hidden) {
     closeTypeModal();
+  }
+  if (event.key === 'Escape' && venueModal && !venueModal.hidden) {
+    closeVenueModal();
   }
 });
 
@@ -293,6 +329,8 @@ function applyFilters(options = {}) {
     });
     updateTypePill();
   }
+  updateVenuePill();
+  renderVenueOptions();
   updateDateFilterUi();
   cards.forEach((card) => {
     const category = card.dataset.category || '';
@@ -302,7 +340,9 @@ function applyFilters(options = {}) {
     const timeVisible = checkTimeVisible(startsAt, endsAt, activeTimeFilter);
     const freeVisible = !activeFreeFilter || isFree;
     const typeVisible = activeTypeFilters.length === 0 || activeTypeFilters.includes(category);
-    const visible = timeVisible && freeVisible && typeVisible;
+    const venue = normalizeVenueKey(card.dataset.venueKey || card.dataset.venue || '');
+    const venueVisible = activeVenueFilter === 'all' || venue === activeVenueFilter;
+    const visible = timeVisible && freeVisible && typeVisible && venueVisible;
     card.style.display = visible ? '' : 'none';
   });
   
@@ -321,7 +361,7 @@ function applyFilters(options = {}) {
     resultsTitle.textContent = getCombinedLabel();
   }
   if (clearFilters) {
-    clearFilters.classList.toggle('hidden', activeTimeFilter === 'all' && !activeFreeFilter && activeTypeFilters.length === 0);
+    clearFilters.classList.toggle('hidden', activeTimeFilter === 'all' && !activeFreeFilter && activeTypeFilters.length === 0 && activeVenueFilter === 'all');
     clearFilters.href = '/';
   }
   if (updateUrl) {
@@ -345,6 +385,7 @@ if (clearFilters) {
     activeTimeFilter = 'all';
     activeFreeFilter = false;
     activeTypeFilters = [];
+    activeVenueFilter = 'all';
     applyFilters();
   });
 }
@@ -498,7 +539,8 @@ function getFiltersFromUrl() {
   const free = params.get('free') === '1' || normalizeTimeFilter(params.get('filter')) === 'free';
   const typeParam = params.get('type') || params.get('filter') || '';
   const type = typeParam ? typeParam.split(',').map(normalizeTypeFilter).filter(t => t !== 'all') : [];
-  return { time, free, type };
+  const venue = normalizeVenueFilter(params.get('venue'));
+  return { time, free, type, venue };
 }
 
 function updateFilterUrl() {
@@ -518,7 +560,12 @@ function updateFilterUrl() {
   } else {
     url.searchParams.set('type', activeTypeFilters.join(','));
   }
-  if (activeTimeFilter === 'all' && !activeFreeFilter && activeTypeFilters.length === 0) {
+  if (activeVenueFilter === 'all') {
+    url.searchParams.delete('venue');
+  } else {
+    url.searchParams.set('venue', activeVenueFilter);
+  }
+  if (activeTimeFilter === 'all' && !activeFreeFilter && activeTypeFilters.length === 0 && activeVenueFilter === 'all') {
     url.searchParams.delete('filter');
   }
   window.history.replaceState({}, '', `${url.pathname}${url.search}${url.hash}`);
@@ -536,6 +583,24 @@ function normalizeTypeFilter(filterValue) {
   if (!value || value === 'all' || isQuickFilter(value) || value === 'free') return 'all';
   const categories = new Set(availableFilters);
   return categories.has(value) ? value : 'all';
+}
+function normalizeVenueText(value) {
+  return String(value || '').trim().replace(/\s+/g, ' ').toLowerCase();
+}
+function normalizeVenueKey(value) {
+  return normalizeVenueText(value)
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/\b(sala|espacio|centro|teatro|bar|csa|club)\b/g, ' ')
+    .replace(/[^a-z0-9]+/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+function normalizeVenueFilter(filterValue) {
+  const value = normalizeVenueKey(filterValue);
+  if (!value || value === 'all') return 'all';
+  const venues = new Set(availableVenues.map((venue) => normalizeVenueKey(venue)));
+  return venues.has(value) ? value : 'all';
 }
 
 function getLabel(filterValue) {
@@ -582,7 +647,17 @@ function getCombinedLabel() {
       parts.push(`Varios tipos (${activeTypeFilters.length})`);
     }
   }
+  if (activeVenueFilter !== 'all') {
+    const activeVenueLabel = availableVenues.find((venue) => normalizeVenueKey(venue) === activeVenueFilter) || 'Espacio';
+    parts.push(activeVenueLabel);
+  }
   return parts.length ? parts.join(' · ') : 'Próximos eventos';
+}
+
+function truncateVenueChipLabel(value, maxLength = 22) {
+  const label = String(value || '').trim();
+  if (label.length <= maxLength) return label;
+  return `${label.slice(0, Math.max(0, maxLength - 1)).trimEnd()}…`;
 }
 
 function updateTypePill() {
@@ -613,6 +688,35 @@ function updateDateFilterUi() {
   if (dateMonthSelect) {
     dateMonthSelect.value = isDateMonthFilter(activeTimeFilter) ? activeTimeFilter : '';
   }
+}
+function updateVenuePill() {
+  if (!venueSelectWrap || !venueSelectLabel) return;
+  const active = activeVenueFilter !== 'all';
+  venueSelectWrap.classList.toggle('mobile-chip-active', active);
+  venueSelectWrap.setAttribute('aria-pressed', String(active));
+  if (!active) {
+    venueSelectLabel.textContent = 'Espacio';
+    venueSelectWrap.setAttribute('aria-label', 'Filtrar por espacio');
+    venueSelectWrap.removeAttribute('title');
+    return;
+  }
+  const selectedLabel = availableVenues.find((venue) => normalizeVenueKey(venue) === activeVenueFilter) || 'Espacio';
+  const visibleLabel = truncateVenueChipLabel(selectedLabel);
+  venueSelectLabel.textContent = `Espacio · ${visibleLabel}`;
+  venueSelectWrap.setAttribute('aria-label', `Filtrar por espacio. Activo: ${selectedLabel}`);
+  venueSelectWrap.setAttribute('title', selectedLabel);
+}
+function renderVenueOptions() {
+  if (!venueOptions) return;
+  const buttons = [
+    `<button class="calendar-modal-action filter-date-option ${activeVenueFilter === 'all' ? 'calendar-modal-action-primary' : ''}" type="button" data-venue-filter-value="all" aria-pressed="${String(activeVenueFilter === 'all')}"><i class="fa-solid fa-check"></i><span>Todos</span></button>`,
+    ...availableVenues.map((venue) => {
+      const normalized = normalizeVenueKey(venue);
+      const selected = activeVenueFilter === normalized;
+      return `<button class="calendar-modal-action filter-date-option filter-venue-option ${selected ? 'calendar-modal-action-primary' : ''}" type="button" data-venue-filter-value="${venue}" aria-pressed="${String(selected)}"><i class="fa-solid fa-location-dot"></i><span>${venue}</span></button>`;
+    })
+  ];
+  venueOptions.innerHTML = buttons.join('');
 }
 
 function renderDateMonthOptions() {
@@ -647,7 +751,12 @@ async function initializeSiteData() {
   const siteData = await loadSiteData();
   events = siteData.events;
   availableFilters = siteData.filters;
+  availableSpaces = siteData.spaces;
+  availableVenues = getAvailableVenues(availableSpaces);
+  activeVenueFilter = normalizeVenueFilter(activeVenueFilter);
   renderDateMonthOptions();
+  renderVenueOptions();
+  updateVenuePill();
   if (weekGroups) {
     renderWeekGroups();
   }
@@ -658,7 +767,7 @@ async function initializeSiteData() {
 
 async function loadSiteData() {
   if (events.length && availableFilters.length) {
-    return { events, filters: availableFilters };
+    return { events, filters: availableFilters, spaces: availableSpaces };
   }
   if (!siteDataPromise) {
     siteDataPromise = fetch('/site-data.json')
@@ -670,11 +779,12 @@ async function loadSiteData() {
       })
       .then((payload) => ({
         events: Array.isArray(payload?.events) ? payload.events : [],
-        filters: Array.isArray(payload?.filters) ? payload.filters.map(String) : []
+        filters: Array.isArray(payload?.filters) ? payload.filters.map(String) : [],
+        spaces: Array.isArray(payload?.spaces) ? payload.spaces : []
       }))
       .catch((error) => {
         console.error(error);
-        return { events: [], filters: [] };
+        return { events: [], filters: [], spaces: [] };
       });
   }
   return siteDataPromise;
@@ -709,6 +819,12 @@ function parseDateMonthFilter(value) {
   const month = Number(parsed[2]);
   if (!Number.isInteger(year) || !Number.isInteger(month) || month < 1 || month > 12) return null;
   return { year, monthIndex: month - 1 };
+}
+function getAvailableVenues(items) {
+  return items
+    .map((space) => String(space?.name || '').trim().replace(/\s+/g, ' '))
+    .filter(Boolean)
+    .sort((a, b) => a.localeCompare(b, 'es-ES'));
 }
 
 function renderWeekGroups() {
@@ -829,6 +945,17 @@ function openTypeModal() {
 function closeTypeModal() {
   if (!typeModal) return;
   typeModal.hidden = true;
+  document.body.style.overflow = '';
+}
+function openVenueModal() {
+  if (!venueModal) return;
+  renderVenueOptions();
+  venueModal.hidden = false;
+  document.body.style.overflow = 'hidden';
+}
+function closeVenueModal() {
+  if (!venueModal) return;
+  venueModal.hidden = true;
   document.body.style.overflow = '';
 }
 
@@ -981,7 +1108,7 @@ function closeAddEventModal() {
 
 function renderWeekItem(event) {
     return `
-      <article class="event-compact" data-category="${event.categoryLabel || ''}" data-free="${event.isFree ? 'true' : 'false'}" data-starts-at="${event.startsAtIso || ''}" data-ends-at="${event.endsAtIso || ''}">
+      <article class="event-compact" data-category="${event.categoryLabel || ''}" data-free="${event.isFree ? 'true' : 'false'}" data-venue="${event.venueLabel || event.location || ''}" data-venue-key="${event.venueKey || ''}" data-starts-at="${event.startsAtIso || ''}" data-ends-at="${event.endsAtIso || ''}">
         <a href="${event.urlPath}" class="event-compact-link">
           <div class="event-compact-image" style="background-image:url('${event.image || '/assets/placeholder-event.svg'}')"></div>
           <div class="event-compact-copy">
@@ -1066,7 +1193,9 @@ function filterWeekGroups() {
       const timeVisible = checkTimeVisible(startsAt, endsAt, activeTimeFilter);
       const freeVisible = !activeFreeFilter || isFree;
       const typeVisible = activeTypeFilters.length === 0 || activeTypeFilters.includes(category);
-      const visible = timeVisible && freeVisible && typeVisible;
+      const venue = normalizeVenueKey(item.dataset.venueKey || item.dataset.venue || '');
+      const venueVisible = activeVenueFilter === 'all' || venue === activeVenueFilter;
+      const visible = timeVisible && freeVisible && typeVisible && venueVisible;
     item.style.display = visible ? '' : 'none';
   });
 
