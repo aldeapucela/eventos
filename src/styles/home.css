@@ -638,6 +638,28 @@
     background: #1f232a;
   }
 
+  html.dark .leaflet-container .leaflet-control-attribution {
+    background: rgba(15, 23, 42, 0.78);
+    color: #cbd5e1;
+  }
+
+  html.dark .leaflet-container .leaflet-control-attribution a {
+    color: #93c5fd;
+  }
+
+  @media (max-width: 767px) {
+    .spaces-map-frame {
+      margin-inline: -1rem;
+      border-radius: 0;
+      border-left: 0;
+      border-right: 0;
+    }
+
+    .spaces-map-canvas {
+      border-radius: 0;
+    }
+  }
+
   @media (min-width: 768px) {
     .event-compact-ongoing .event-compact-image {
       aspect-ratio: 0.9;
