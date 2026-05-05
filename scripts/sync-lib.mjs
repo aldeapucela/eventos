@@ -12,9 +12,11 @@ export async function syncEvents({ rebuild = false } = {}) {
   const topics = await fetchCategoryTopics();
   const nextIndex = { topics: {} };
   const normalized = [];
+  const seenIds = new Set();
 
   for (const topic of topics) {
     if (shouldSkipTopic(topic)) continue;
+    seenIds.add(String(topic.id));
     const signature = topicSignature(topic);
     const cached = index.topics?.[topic.id];
     const unchanged = !rebuild && cached && cached.signature === signature;
@@ -39,6 +41,22 @@ export async function syncEvents({ rebuild = false } = {}) {
       detailPath: `/t/${topic.slug}/${topic.id}.json`,
       normalizedPath: `/cache/data/${topic.id}.json`
     };
+  }
+
+  // Preserve cached topics that are no longer present in the paginated category listing.
+  // The forum listing does not guarantee a full historical window, so dropping unseen ids
+  // here would silently shrink the local dataset on incremental syncs.
+  for (const [topicId, cachedRecord] of Object.entries(index.topics || {})) {
+    if (seenIds.has(String(topicId))) continue;
+
+    const cachedPath = path.join(root, 'cache', 'data', `${topicId}.json`);
+    try {
+      const cachedData = JSON.parse(await fs.readFile(cachedPath, 'utf8'));
+      normalized.push(cachedData);
+      nextIndex.topics[topicId] = cachedRecord;
+    } catch {
+      // Ignore orphaned index entries if the normalized file is missing.
+    }
   }
 
   await writeIndex(nextIndex);

@@ -72,11 +72,21 @@ jobs:
           restore-keys: |
             events-data-${{ runner.os }}-
 
+      - name: Snapshot restored cache index
+        run: |
+          mkdir -p .ci-state
+          if [ -f cache/index.json ]; then
+            cp cache/index.json .ci-state/cache-index-before.json
+          fi
+
       - name: Install dependencies
         run: npm ci
 
       - name: Build static site
         run: npm run build
+
+      - name: Validate cache health
+        run: node scripts/check-cache-health.mjs .ci-state/cache-index-before.json cache/index.json
 
       - name: Setup Pages
         uses: actions/configure-pages@v5
