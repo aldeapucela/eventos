@@ -89,7 +89,6 @@ document.addEventListener('click', async (event) => {
   const installOpen = event.target.closest('[data-install-app-open]');
   const installClose = event.target.closest('[data-install-app-close]');
   const installConfirm = event.target.closest('[data-install-app-confirm]');
-  const outlookHelp = event.target.closest('[data-outlook-help]');
   const copyButton = event.target.closest('[data-copy-url]');
   const typeModalOpen = event.target.closest('[data-type-modal-open]');
   const typeModalClose = event.target.closest('[data-type-modal-close]');
@@ -196,11 +195,6 @@ document.addEventListener('click', async (event) => {
   if (installConfirm) {
     event.preventDefault();
     await confirmInstallAction();
-  }
-
-  if (outlookHelp) {
-    event.preventDefault();
-    toggleOutlookHelp(outlookHelp.dataset.outlookHelp);
   }
 
   if (copyButton) {
@@ -695,7 +689,7 @@ function setupCategoryPicker() {
     categoryUrlInput.value = selected.url;
     categoryUrlInput.setAttribute('value', selected.url);
     if (categoryGoogleLink) {
-      categoryGoogleLink.href = `https://calendar.google.com/calendar/u/0/r/settings/addbyurl?url=${encodeURIComponent(selected.url)}`;
+      categoryGoogleLink.href = `https://calendar.google.com/calendar/r?cid=${encodeURIComponent(selected.webcalUrl)}`;
     }
     if (categoryAppleLink) {
       categoryAppleLink.href = selected.webcalUrl;
@@ -703,13 +697,6 @@ function setupCategoryPicker() {
   };
   categorySelect.addEventListener('change', syncFeed);
   syncFeed();
-}
-
-function toggleOutlookHelp(scope) {
-  document.querySelectorAll('[data-outlook-help-copy]').forEach((note) => {
-    const shouldShow = note.dataset.outlookHelpCopy === scope;
-    note.classList.toggle('hidden', !shouldShow);
-  });
 }
 
 function setupInstallPrompt() {

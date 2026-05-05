@@ -176,7 +176,16 @@ function populateCalendarLinks() {
     calendarGoogleLink.href = `https://calendar.google.com/calendar/render?${params.toString()}`;
   }
   if (calendarOutlookLink) {
-    calendarOutlookLink.href = `https://outlook.live.com/calendar/0/deeplink/compose?subject=${encodeURIComponent(title)}&body=${encodeURIComponent(details)}&startdt=${encodeURIComponent(startDate.toISOString())}&enddt=${encodeURIComponent(endDate.toISOString())}`;
+    const params = new URLSearchParams({
+      path: '/calendar/action/compose',
+      rru: 'addevent',
+      subject: title,
+      body: details,
+      location,
+      startdt: startDate.toISOString(),
+      enddt: endDate.toISOString()
+    });
+    calendarOutlookLink.href = `https://outlook.live.com/calendar/deeplink/compose?${params.toString()}`;
   }
   if (calendarAppleLink) {
     calendarAppleLink.href = calendarIcsLink?.href || '#';

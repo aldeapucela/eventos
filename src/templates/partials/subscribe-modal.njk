@@ -19,11 +19,10 @@
         <button class="calendar-modal-action calendar-modal-action-primary subscribe-copy-btn" type="button" data-copy-url="calendar">Copiar</button>
       </div>
       <div class="subscribe-links-grid">
-        <a class="calendar-modal-action" href="https://calendar.google.com/calendar/u/0/r/settings/addbyurl?url=https%3A%2F%2Feventos.aldeapucela.org%2Fcalendar.ics" target="_blank" rel="noopener noreferrer"><i class="fa-brands fa-google" aria-hidden="true"></i><span>Google Calendar</span></a>
+        <a class="calendar-modal-action" href="https://calendar.google.com/calendar/r?cid={{ 'webcal://eventos.aldeapucela.org/calendar.ics' | urlencode }}" target="_blank" rel="noopener noreferrer"><i class="fa-brands fa-google" aria-hidden="true"></i><span>Google Calendar</span></a>
         <a class="calendar-modal-action" href="webcal://eventos.aldeapucela.org/calendar.ics"><i class="fa-brands fa-apple" aria-hidden="true"></i><span>Apple Calendar</span></a>
-        <button class="calendar-modal-action" type="button" data-outlook-help="calendar"><i class="fa-brands fa-microsoft" aria-hidden="true"></i><span>Cómo añadir en Outlook</span></button>
+        <a class="calendar-modal-action" href="webcal://eventos.aldeapucela.org/calendar.ics"><i class="fa-solid fa-globe" aria-hidden="true"></i><span>Otros calendarios</span></a>
       </div>
-      <p class="subscribe-help-note hidden" data-outlook-help-copy="calendar">En Outlook, abre Calendario, usa <strong>Agregar calendario</strong> y después <strong>Suscribirse desde la web</strong>; pega la URL copiada y confirma.</p>
     </section>
 
     {% if categoryFeeds and categoryFeeds.length %}
@@ -44,11 +43,10 @@
           <button class="calendar-modal-action calendar-modal-action-primary subscribe-copy-btn" type="button" data-copy-url="category-selected">Copiar</button>
         </div>
         <div class="subscribe-links-grid subscribe-links-grid-tight">
-          <a class="calendar-modal-action" href="https://calendar.google.com/calendar/u/0/r/settings/addbyurl?url={{ categoryFeeds[0].url | urlencode }}" target="_blank" rel="noopener noreferrer" data-category-google><i class="fa-brands fa-google" aria-hidden="true"></i><span>Google Calendar</span></a>
+          <a class="calendar-modal-action" href="https://calendar.google.com/calendar/r?cid={{ categoryFeeds[0].webcalUrl | urlencode }}" target="_blank" rel="noopener noreferrer" data-category-google><i class="fa-brands fa-google" aria-hidden="true"></i><span>Google Calendar</span></a>
           <a class="calendar-modal-action" href="{{ categoryFeeds[0].webcalUrl }}" data-category-apple><i class="fa-brands fa-apple" aria-hidden="true"></i><span>Apple Calendar</span></a>
-          <button class="calendar-modal-action" type="button" data-outlook-help="category"><i class="fa-brands fa-microsoft" aria-hidden="true"></i><span>Cómo añadir en Outlook</span></button>
+          <a class="calendar-modal-action" href="{{ categoryFeeds[0].webcalUrl }}" data-category-other><i class="fa-solid fa-globe" aria-hidden="true"></i><span>Otros calendarios</span></a>
         </div>
-        <p class="subscribe-help-note hidden" data-outlook-help-copy="category">En Outlook, abre Calendario, usa <strong>Agregar calendario</strong> y después <strong>Suscribirse desde la web</strong>; pega la URL de esta categoría y confirma.</p>
       </div>
     </section>
     {% endif %}
