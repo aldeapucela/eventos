@@ -1136,6 +1136,7 @@ function isWithinListingWindow(event) {
   if (!event?.startsAtIso) return false;
   const startsAt = new Date(event.startsAtIso);
   if (Number.isNaN(startsAt.getTime())) return false;
+  if (shouldHideFromUpcomingList(event, startsAt)) return false;
   const endsAt = event?.endsAtIso ? new Date(event.endsAtIso) : startsAt;
   const referenceEnd = Number.isNaN(endsAt.getTime()) ? startsAt : endsAt;
   const windowStart = startOfToday(today);
@@ -1176,6 +1177,13 @@ function isOngoingMultiDay(event) {
   if (Number.isNaN(startsAt.getTime()) || Number.isNaN(endsAt.getTime())) return false;
   if (sameDay(startsAt, endsAt)) return false;
   return startsAt <= today && endsAt >= today;
+}
+
+function shouldHideFromUpcomingList(event, startsAt = null) {
+  if (!isOngoingMultiDay(event)) return false;
+  const eventStartsAt = startsAt instanceof Date ? startsAt : new Date(event.startsAtIso);
+  if (Number.isNaN(eventStartsAt.getTime())) return false;
+  return !sameDay(eventStartsAt, today);
 }
 
 function startOfToday(value) {
