@@ -9,6 +9,7 @@ function updateCards() {
   weekCards = Array.from(document.querySelectorAll('[data-week-groups] [data-category]'));
 }
 const filterHint = document.querySelector('.mobile-filter-hint');
+const mobileFilterRow = document.querySelector('.mobile-chip-row');
 const resultsTitle = document.querySelector('[data-results-title]');
 const weekEmpty = document.querySelector('[data-week-empty]');
 const clearFilters = document.querySelector('[data-clear-filters]');
@@ -51,8 +52,10 @@ const DEFAULT_HORIZON_DAYS = 30;
 const DATE_MODAL_FILTERS = new Set(['Este mes', 'Próximos 3 meses', 'Este año']);
 const DATE_MONTH_PREFIX = 'Mes:';
 const TIME_FILTERS = new Set(['all', 'Hoy', 'Este finde', 'Esta semana', 'Próxima semana', ...DATE_MODAL_FILTERS]);
+const MOBILE_AUTO_SCROLL_FILTERS = new Set(['Hoy', 'Este finde', 'Esta semana', 'Próxima semana']);
 let deferredInstallPrompt = null;
 let siteDataPromise = null;
+let didInitialFilterRowScroll = false;
 initTheme();
 
 const today = new Date();
@@ -539,7 +542,8 @@ function getFiltersFromUrl() {
   const free = params.get('free') === '1' || normalizeTimeFilter(params.get('filter')) === 'free';
   const typeParam = params.get('type') || params.get('filter') || '';
   const type = typeParam ? typeParam.split(',').map(normalizeTypeFilter).filter(t => t !== 'all') : [];
-  const venue = normalizeVenueFilter(params.get('venue'));
+  const venueFromUrl = normalizeVenueKey(params.get('venue'));
+  const venue = venueFromUrl && venueFromUrl !== 'all' ? venueFromUrl : 'all';
   return { time, free, type, venue };
 }
 
@@ -763,6 +767,27 @@ async function initializeSiteData() {
   syncSavedStates();
   updateCards();
   applyFilters({ updateUrl: false });
+  maybeScrollToFiltersOnInitialLoad();
+}
+
+function maybeScrollToFiltersOnInitialLoad() {
+  if (didInitialFilterRowScroll || !isMobileViewport() || !mobileFilterRow) return;
+  if (!hasFiltersInUrl() || !hasAnyActiveFilter()) return;
+  didInitialFilterRowScroll = true;
+  window.requestAnimationFrame(() => {
+    const offset = 76;
+    const top = mobileFilterRow.getBoundingClientRect().top + window.scrollY - offset;
+    window.scrollTo({ top: Math.max(0, top), behavior: 'smooth' });
+  });
+}
+
+function hasFiltersInUrl() {
+  const params = new URLSearchParams(window.location.search);
+  return ['time', 'free', 'type', 'venue', 'filter'].some((key) => params.has(key));
+}
+
+function hasAnyActiveFilter() {
+  return activeTimeFilter !== 'all' || activeFreeFilter || activeTypeFilters.length > 0 || activeVenueFilter !== 'all';
 }
 
 async function loadSiteData() {
@@ -1226,7 +1251,48 @@ function toggleQuickFilter(filterValue) {
   }
   const normalized = normalizeTimeFilter(filterValue);
   activeTimeFilter = activeTimeFilter === normalized ? 'all' : normalized;
+  const shouldAutoScroll = shouldAutoScrollToFirstVisibleBlock(activeTimeFilter);
   applyFilters();
+  if (shouldAutoScroll) {
+    scrollToFirstVisibleResultsBlock();
+  }
+}
+
+function shouldAutoScrollToFirstVisibleBlock(filterValue) {
+  return isMobileViewport() && MOBILE_AUTO_SCROLL_FILTERS.has(String(filterValue || '').trim());
+}
+
+function isMobileViewport() {
+  return window.matchMedia('(max-width: 767px)').matches;
+}
+
+function scrollToFirstVisibleResultsBlock() {
+  window.requestAnimationFrame(() => {
+    const target = getFirstVisibleResultsBlock();
+    if (!target) return;
+    const offset = 88;
+    const top = target.getBoundingClientRect().top + window.scrollY - offset;
+    window.scrollTo({ top: Math.max(0, top), behavior: 'smooth' });
+  });
+}
+
+function getFirstVisibleResultsBlock() {
+  const ongoingSection = document.querySelector('[data-ongoing-section]');
+  if (ongoingSection && ongoingSection.style.display !== 'none') {
+    return ongoingSection;
+  }
+
+  const firstVisibleWeekGroup = Array.from(document.querySelectorAll('[data-week-day-group]'))
+    .find((group) => group.style.display !== 'none');
+  if (firstVisibleWeekGroup) {
+    return firstVisibleWeekGroup;
+  }
+
+  if (weekEmpty && !weekEmpty.classList.contains('hidden')) {
+    return weekEmpty;
+  }
+
+  return resultsTitle;
 }
 
 function toLocalDateKey(date) {
