@@ -57,9 +57,9 @@
     </nav>
     <div class="detail-topbar-actions flex items-center gap-3 text-slate-500">
       <button class="detail-topbar-mobile-action inline-flex items-center justify-center md:hidden" type="button" data-save-event data-event-id="{{ event.id }}" aria-label="Guardar"><i class="fa-regular fa-bookmark"></i></button>
-      <button class="detail-topbar-mobile-action inline-flex items-center justify-center md:hidden" type="button" data-share-event data-event-url="{{ event.urlPath }}" data-event-title="{{ event.title }}" aria-label="Compartir"><i class="fa-solid fa-share-nodes"></i></button>
+      <button class="detail-topbar-mobile-action inline-flex items-center justify-center md:hidden" type="button" data-share-event data-event-id="{{ event.id }}" data-event-url="{{ event.urlPath }}" data-event-title="{{ event.title }}" aria-label="Compartir"><i class="fa-solid fa-share-nodes"></i></button>
       <button class="hidden md:inline-flex h-11 w-11 items-center justify-center rounded-full text-slate-500 transition hover:bg-slate-100 hover:text-brand-700" type="button" data-save-event data-event-id="{{ event.id }}" aria-label="Guardar"><i class="fa-regular fa-bookmark"></i></button>
-      <button class="hidden md:inline-flex h-11 w-11 items-center justify-center rounded-full text-slate-500 transition hover:bg-slate-100 hover:text-brand-700" type="button" data-share-event data-event-url="{{ event.urlPath }}" data-event-title="{{ event.title }}" aria-label="Compartir"><i class="fa-solid fa-share-nodes"></i></button>
+      <button class="hidden md:inline-flex h-11 w-11 items-center justify-center rounded-full text-slate-500 transition hover:bg-slate-100 hover:text-brand-700" type="button" data-share-event data-event-id="{{ event.id }}" data-event-url="{{ event.urlPath }}" data-event-title="{{ event.title }}" aria-label="Compartir"><i class="fa-solid fa-share-nodes"></i></button>
     </div>
   </div>
 </header>
@@ -122,7 +122,7 @@
           <span class="js-comment-count-number hidden font-semibold text-sm"></span>
           <span class="js-comment-label">Comentar</span>
         </button>
-        <button class="detail-clean-action detail-clean-action-icon-only" type="button" data-share aria-label="Compartir">
+        <button class="detail-clean-action detail-clean-action-icon-only" type="button" data-share data-event-id="{{ event.id }}" aria-label="Compartir">
           <i class="fa-solid fa-share-nodes"></i>
           <span>Compartir</span>
         </button>

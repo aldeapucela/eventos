@@ -128,9 +128,9 @@ document.addEventListener('click', async (event) => {
     const action = toggleSaved(saveButton.dataset.eventId);
     if (action === 'added') {
       window.trackMatomoInteractionOnce?.({
-        what: 'save',
-        context: 'home',
-        targetId: String(saveButton.dataset.eventId || '')
+        origin: 'home',
+        action: 'save',
+        eventId: String(saveButton.dataset.eventId || '')
       });
     }
     if (action && typeof window.showSavedToast === 'function') {
@@ -1362,9 +1362,9 @@ async function shareEvent(url, title, button) {
       });
       setShareSuccess(button);
       window.trackMatomoInteractionOnce?.({
-        what: 'share',
-        context: 'home',
-        targetId
+        origin: 'home',
+        action: 'share',
+        eventId: targetId
       });
       return;
     } catch (error) {
@@ -1376,9 +1376,9 @@ async function shareEvent(url, title, button) {
     await navigator.clipboard.writeText(shareText);
     setShareSuccess(button);
     window.trackMatomoInteractionOnce?.({
-      what: 'share',
-      context: 'home',
-      targetId
+      origin: 'home',
+      action: 'share',
+      eventId: targetId
     });
   } catch {
     setShareFailure(button);
@@ -1418,11 +1418,6 @@ async function shareSite(button = shareSiteButton) {
         url: shareUrl
       });
       setShareSuccess(button);
-      window.trackMatomoInteractionOnce?.({
-        what: 'share',
-        context: 'home',
-        targetId: 'site'
-      });
       return;
     }
     throw new Error('no web share');
@@ -1430,11 +1425,6 @@ async function shareSite(button = shareSiteButton) {
     try {
       await navigator.clipboard.writeText(`${message}\n\n${shareUrl}`);
       setShareSuccess(button);
-      window.trackMatomoInteractionOnce?.({
-        what: 'share',
-        context: 'home',
-        targetId: 'site'
-      });
     } catch {
       setShareFailure(button);
     }

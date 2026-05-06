@@ -35,9 +35,9 @@ document.addEventListener('click', async (event) => {
     const action = toggleSaved(saveButton.dataset.eventId);
     if (action === 'added') {
       window.trackMatomoInteractionOnce?.({
-        what: 'save',
-        context: 'detail',
-        targetId: String(saveButton.dataset.eventId || eventData?.id || '')
+        origin: 'detail',
+        action: 'save',
+        eventId: String(saveButton.dataset.eventId || eventData?.id || '')
       });
     }
     if (action && typeof window.showSavedToast === 'function') {
@@ -306,9 +306,9 @@ async function shareEvent(url, title, button) {
       });
       setShareSuccess(button);
       window.trackMatomoInteractionOnce?.({
-        what: 'share',
-        context: 'detail',
-        targetId
+        origin: 'detail',
+        action: 'share',
+        eventId: targetId
       });
       return;
     } catch (error) {
@@ -320,9 +320,9 @@ async function shareEvent(url, title, button) {
     await navigator.clipboard.writeText(shareText);
     setShareSuccess(button);
     window.trackMatomoInteractionOnce?.({
-      what: 'share',
-      context: 'detail',
-      targetId
+      origin: 'detail',
+      action: 'share',
+      eventId: targetId
     });
   } catch {
     setShareFailure(button);

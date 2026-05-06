@@ -4,6 +4,9 @@ window._paq.push(['trackPageView']);
 window._paq.push(['enableLinkTracking']);
 
 const MATOMO_ONCE_KEY = 'aldeapucela_matomo_once_v1';
+const MATOMO_EVENT_CATEGORY = 'event_interaction';
+const VALID_ORIGINS = new Set(['home', 'detail']);
+const VALID_ACTIONS = new Set(['save', 'share']);
 
 function getTrackedInteractions() {
   try {
@@ -18,23 +21,42 @@ function setTrackedInteractions(values) {
   window.localStorage.setItem(MATOMO_ONCE_KEY, JSON.stringify(Array.from(values)));
 }
 
-function normalizeToken(value, fallback = 'other') {
+function normalizeToken(value, fallback = '') {
   const token = String(value || '').trim();
   return token || fallback;
 }
 
-window.trackMatomoInteractionOnce = function trackMatomoInteractionOnce({ what, context, targetId }) {
+window.trackMatomoInteractionOnce = function trackMatomoInteractionOnce({ origin, action, eventId }) {
   if (!window._paq || typeof window._paq.push !== 'function') return false;
 
-  const normalizedWhat = normalizeToken(what, 'interaction');
-  const normalizedContext = normalizeToken(context, 'other');
-  const normalizedTargetId = normalizeToken(targetId, 'unknown');
-  const dedupeKey = `${normalizedWhat}:${normalizedTargetId}`;
+  const normalizedOrigin = normalizeToken(origin);
+  const normalizedAction = normalizeToken(action);
+  const normalizedEventId = normalizeToken(eventId);
+
+  if (!VALID_ORIGINS.has(normalizedOrigin)) {
+    console.warn('[matomo] Skipping interaction with invalid origin:', origin);
+    return false;
+  }
+
+  if (!VALID_ACTIONS.has(normalizedAction)) {
+    console.warn('[matomo] Skipping interaction with invalid action:', action);
+    return false;
+  }
+
+  if (!normalizedEventId) {
+    console.warn('[matomo] Skipping interaction without eventId:', {
+      origin: normalizedOrigin,
+      action: normalizedAction
+    });
+    return false;
+  }
+
+  const dedupeKey = `${normalizedOrigin}:${normalizedAction}:${normalizedEventId}`;
   const tracked = getTrackedInteractions();
 
   if (tracked.has(dedupeKey)) return false;
 
-  window._paq.push(['trackEvent', 'engagement', normalizedWhat, `${normalizedContext}:${normalizedTargetId}`]);
+  window._paq.push(['trackEvent', MATOMO_EVENT_CATEGORY, normalizedOrigin, normalizedAction, normalizedEventId]);
   tracked.add(dedupeKey);
   setTrackedInteractions(tracked);
   return true;
