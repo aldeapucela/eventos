@@ -250,18 +250,27 @@ function getRelativeDatePrefix(dateIso) {
   const date = parseDateLike(dateIso);
   if (Number.isNaN(date.getTime())) return '';
   const now = new Date();
-  const todayStr = now.toLocaleDateString('sv-SE');
+  const todayStr = toLocalDateKey(now);
   const tomorrow = new Date(now.getTime() + 24 * 60 * 60 * 1000);
-  const tomorrowStr = tomorrow.toLocaleDateString('sv-SE');
-  const dateStr = date.toLocaleDateString('sv-SE');
+  const tomorrowStr = toLocalDateKey(tomorrow);
+  const dateStr = toLocalDateKey(date);
   if (dateStr === todayStr) return 'Hoy';
   if (dateStr === tomorrowStr) return 'Mañana';
   return '';
 }
 
 function toLocalDateKey(date) {
-  const pad = (n) => String(n).padStart(2, '0');
-  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`;
+  const formatter = new Intl.DateTimeFormat('en-CA', {
+    timeZone: 'Europe/Madrid',
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit'
+  });
+  const parts = formatter.formatToParts(date);
+  const year = parts.find((part) => part.type === 'year')?.value;
+  const month = parts.find((part) => part.type === 'month')?.value;
+  const day = parts.find((part) => part.type === 'day')?.value;
+  return `${year}-${month}-${day}`;
 }
 
 function capitalize(value) {

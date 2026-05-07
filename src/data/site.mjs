@@ -1,8 +1,9 @@
 import { VENUE_CANONICAL_MAP, VENUE_SLUG_MAP } from './venue-aliases.mjs';
+import { isSameMadridDay, toMadridDateKey } from './format.mjs';
 
 export function groupByDate(events) {
   return events.reduce((acc, event) => {
-    const dateKey = event.startsAt ? new Date(event.startsAt).toISOString().slice(0, 10) : 'sin-fecha';
+    const dateKey = event.startsAt ? toMadridDateKey(event.startsAt) : 'sin-fecha';
     if (!acc[dateKey]) acc[dateKey] = [];
     acc[dateKey].push(event);
     return acc;
@@ -60,16 +61,11 @@ export function splitFeatured(events) {
 }
 
 function sameDate(value, now) {
-  const date = new Date(value);
-  return date.getFullYear() === now.getFullYear() &&
-    date.getMonth() === now.getMonth() &&
-    date.getDate() === now.getDate();
+  return isSameMadridDay(value, now);
 }
 
 function sameDay(a, b) {
-  return a.getFullYear() === b.getFullYear() &&
-    a.getMonth() === b.getMonth() &&
-    a.getDate() === b.getDate();
+  return isSameMadridDay(a, b);
 }
 
 function spansMultipleDays(starts, ends) {

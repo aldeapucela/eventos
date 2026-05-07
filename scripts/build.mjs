@@ -8,7 +8,7 @@ import autoprefixer from 'autoprefixer';
 import { fileURLToPath } from 'node:url';
 import { loadCachedEvents } from '../src/data/store.mjs';
 import { deriveFilters, sortEvents, splitFeatured, getPastEvents, groupEventsByMonth, groupFutureEventsByVenue } from '../src/data/site.mjs';
-import { DISPLAY_TIMEZONE, escapeHtml, formatDateRange, formatDateTime, parseDateLike } from '../src/data/format.mjs';
+import { DISPLAY_TIMEZONE, escapeHtml, formatDateRange, formatDateTime, isSameMadridDay, parseDateLike, toMadridDateKey } from '../src/data/format.mjs';
 import { enrichVenueCatalog, mergeSpacesWithVenueCatalog } from '../src/data/venues.mjs';
 import { VENUE_CANONICAL_MAP } from '../src/data/venue-aliases.mjs';
 import { syncEvents } from './sync-lib.mjs';
@@ -323,14 +323,11 @@ function siteDataPayload(events, filters = deriveFilters(events), options = {}) 
 }
 
 function sameDay(a, b) {
-  return a.getFullYear() === b.getFullYear() &&
-    a.getMonth() === b.getMonth() &&
-    a.getDate() === b.getDate();
+  return isSameMadridDay(a, b);
 }
 
 function toLocalDateKey(date) {
-  const pad = (n) => String(n).padStart(2, '0');
-  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`;
+  return toMadridDateKey(date);
 }
 
 async function computeAssetVersion() {

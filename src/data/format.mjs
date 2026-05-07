@@ -35,6 +35,36 @@ export function toSlug(value = '') {
 
 export const DISPLAY_TIMEZONE = 'Europe/Madrid';
 
+export function getMadridDateParts(value) {
+  const date = value instanceof Date ? value : parseDateLike(value);
+  if (!(date instanceof Date) || Number.isNaN(date.getTime())) return null;
+  const formatter = new Intl.DateTimeFormat('en-CA', {
+    timeZone: DISPLAY_TIMEZONE,
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit'
+  });
+  const parts = formatter.formatToParts(date);
+  const year = Number(parts.find((part) => part.type === 'year')?.value);
+  const month = Number(parts.find((part) => part.type === 'month')?.value);
+  const day = Number(parts.find((part) => part.type === 'day')?.value);
+  if (!Number.isFinite(year) || !Number.isFinite(month) || !Number.isFinite(day)) return null;
+  return { year, month, day };
+}
+
+export function toMadridDateKey(value) {
+  const parts = getMadridDateParts(value);
+  if (!parts) return '';
+  const pad = (n) => String(n).padStart(2, '0');
+  return `${parts.year}-${pad(parts.month)}-${pad(parts.day)}`;
+}
+
+export function isSameMadridDay(a, b) {
+  const aKey = toMadridDateKey(a);
+  const bKey = toMadridDateKey(b);
+  return Boolean(aKey && bKey && aKey === bKey);
+}
+
 export function formatDateTime(value, locale = 'es-ES') {
   if (!value) return '';
   const date = parseDateLike(value);
