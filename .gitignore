@@ -1,6 +1,8 @@
 node_modules/
 dist/
 cache/
+.cache/
+scratch/posters/
 
 .DS_Store
 

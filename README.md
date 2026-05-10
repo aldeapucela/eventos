@@ -38,6 +38,50 @@ npm run dev       # Flujo de desarrollo local
 npm run clean     # Elimina dist/
 ```
 
+## Poster social automatizado
+
+Hay un script auxiliar en [scripts/generate_events_poster.py](/Users/ruben/bin/aldeapucela/eventos/scripts/generate_events_poster.py) para componer un poster de Instagram a partir de una base visual y los proximos eventos publicados.
+
+Lee por defecto `https://eventos.aldeapucela.org/site-data.json`, filtra los proximos `3` dias en horario de Madrid, elige hasta `6` eventos y coloca sus carteles sobre la imagen base.
+
+Tiene dos modos de seleccion:
+
+- `next-days`: reparte hasta `6` eventos entre los proximos dias para evitar que salgan todos del mismo dia.
+- `next-weekend`: busca hasta `6` eventos variados del siguiente fin de semana, tomando como ventana desde el viernes a las `15:00` hasta el domingo a las `23:59` en horario de Madrid.
+
+Bases por defecto segun el modo:
+
+- `next-days`: `src/assets/social-base-story.png` y `src/assets/social-base-post.png`
+- `next-weekend`: `src/assets/social-base-finde-story.png` y `src/assets/social-base-finde-post.png`
+
+Salidas por defecto segun el modo:
+
+- `next-days`: `scratch/posters/proximos-story.png` y `scratch/posters/proximos-post.png`
+- `next-weekend`: `scratch/posters/proximos-weekend-story.png` y `scratch/posters/proximos-weekend-post.png`
+
+Las imagenes generadas deben escribirse en `scratch/posters/`. La cache temporal de carteles descargados se guarda por defecto en `.cache/poster-images/`.
+
+Ejemplo generando story y post en una sola ejecucion:
+
+```bash
+python3 scripts/generate_events_poster.py
+```
+
+Ejemplo para el siguiente fin de semana:
+
+```bash
+python3 scripts/generate_events_poster.py --mode next-weekend
+```
+
+Opciones utiles:
+
+- `--days 4` para ampliar la ventana de eventos.
+- `--limit 6` para ajustar el numero maximo de carteles.
+- `--mode next-days` o `--mode next-weekend` para cambiar la logica de seleccion.
+- `--story-output ...` o `--post-output ...` si quieres sobrescribir solo un destino.
+- `--keep-cache` si alguna vez quieres conservar la cache temporal de imagenes descargadas.
+- `--endpoint ...` para usar otro JSON compatible.
+
 ## Arquitectura y flujo de datos
 
 El proyecto sigue una arquitectura estática:
