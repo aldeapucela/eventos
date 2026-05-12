@@ -111,6 +111,14 @@
         {% endif %}
       </section>
       {% endif %}
+      {% if not event.isFree %}
+      <div class="detail-ticket-search-mobile md:hidden">
+        <button class="detail-clean-action" type="button" data-ticket-search-open aria-label="Buscar entradas">
+          <i class="fa-solid fa-ticket"></i>
+          <span>Buscar entradas</span>
+        </button>
+      </div>
+      {% endif %}
 
       <div class="detail-clean-actions detail-clean-actions-sticky">
         <button class="detail-clean-action detail-clean-action-primary" type="button" data-calendar-open>
@@ -122,6 +130,12 @@
           <span class="js-comment-count-number hidden font-semibold text-sm"></span>
           <span class="js-comment-label">Comentar</span>
         </button>
+        {% if not event.isFree %}
+        <button class="hidden md:flex detail-clean-action detail-clean-action-icon-only" type="button" data-ticket-search-open aria-label="Buscar entradas">
+          <i class="fa-solid fa-ticket"></i>
+          <span>Entradas</span>
+        </button>
+        {% endif %}
         <button class="detail-clean-action detail-clean-action-icon-only" type="button" data-share data-event-id="{{ event.id }}" aria-label="Compartir">
           <i class="fa-solid fa-share-nodes"></i>
           <span>Compartir</span>
@@ -291,6 +305,34 @@
     <button class="detail-lightbox-close" type="button" data-lightbox-close aria-label="Cerrar">
       <i class="fa-solid fa-xmark"></i>
     </button>
+  </div>
+</div>
+
+<div class="calendar-modal" data-ticket-search-modal hidden>
+  <button class="calendar-modal-backdrop" type="button" data-ticket-search-close aria-label="Cerrar"></button>
+  <div class="calendar-modal-panel" role="dialog" aria-modal="true" aria-labelledby="ticket-search-modal-title">
+    <div class="calendar-modal-header">
+      <h2 class="calendar-modal-title" id="ticket-search-modal-title">Antes de continuar</h2>
+      <button class="calendar-modal-close" type="button" data-ticket-search-close aria-label="Cerrar">
+        <i class="fa-solid fa-xmark"></i>
+      </button>
+    </div>
+    <p class="calendar-modal-copy">
+      Se te va a redirigir a la búsqueda de Perplexity para
+      <strong>buscar el sitio oficial de entradas</strong>.
+    </p>
+    <ul class="calendar-modal-copy-list">
+      <li>Verifica siempre el sitio antes de pagar.</li>
+      <li>Comprueba que la web es oficial o parte del promotor o artista.</li>
+      <li>Desconfía de precios inusualmente bajos o webs sin datos del organizador.</li>
+      <li>Esta web no se hace responsable de compras realizadas en sitios no oficiales ni de posibles fraudes derivados.</li>
+    </ul>
+    <div class="calendar-modal-actions">
+      <button class="calendar-modal-action calendar-modal-action-primary" type="button" data-ticket-search-confirm>
+        <i class="fa-solid fa-arrow-up-right-from-square"></i>
+        <span>Entendido, continuar</span>
+      </button>
+    </div>
   </div>
 </div>
 

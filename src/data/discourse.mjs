@@ -174,7 +174,8 @@ function detectIsFree(text = '') {
   const explicitFree = /\bgratis\b|\bgratuit[oa]s?\b|\bentrada libre\b|\blibre acceso\b/i.test(content);
   if (explicitFree) return true;
 
-  const explicitPaid = /\b(precio|coste|costo|taquilla|ticket|abono|pago|venta de entradas?)\b/i.test(content) ||
+  const explicitPaid = /\b(precio|coste|costo|taquilla|ticket|abono|pago|venta de entradas?|entradas?)\b/i.test(content) ||
+    /\b(enterticket|wegow|dice|ticketmaster|elcorteingles|notikumi)\b/i.test(content) ||
     /(\d+[\.,]?\d*)\s?(€|euros?)\b/i.test(content) ||
     /(€)\s?(\d+[\.,]?\d*)\b/i.test(content);
   if (explicitPaid) return false;
