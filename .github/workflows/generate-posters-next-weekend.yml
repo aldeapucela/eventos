@@ -1,0 +1,91 @@
+name: Generar posters next-weekend
+
+on:
+  workflow_dispatch:
+    inputs:
+      limit:
+        description: Numero maximo de carteles
+        required: false
+        default: '6'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: github-pages-posters-next-weekend
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Restore events data cache
+        uses: actions/cache/restore@v4
+        with:
+          path: cache
+          key: events-data-${{ runner.os }}-${{ github.run_id }}
+          restore-keys: |
+            events-data-${{ runner.os }}-
+
+      - name: Install Node dependencies
+        run: npm ci
+
+      - name: Install Python dependencies
+        run: python -m pip install --upgrade pip pillow
+
+      - name: Build static site
+        run: npm run build
+
+      - name: Generate posters
+        run: >
+          python scripts/generate_events_poster.py
+          --mode next-weekend
+          --limit "${{ inputs.limit }}"
+          --story-output scratch/posters/proximos-weekend-story.png
+          --post-output scratch/posters/proximos-weekend-post.png
+
+      - name: Update versioned poster assets
+        run: |
+          mkdir -p src/posters
+          cp scratch/posters/proximos-weekend-story.png src/posters/proximos-weekend-story.png
+          cp scratch/posters/proximos-weekend-post.png src/posters/proximos-weekend-post.png
+          node scripts/write-poster-metadata.mjs \
+            --mode next-weekend \
+            --output src/posters/proximos-weekend.json \
+            --story-path /posters/proximos-weekend-story.png \
+            --post-path /posters/proximos-weekend-post.png
+
+      - name: Commit updated posters
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add src/posters/proximos-weekend-story.png src/posters/proximos-weekend-post.png src/posters/proximos-weekend.json
+          if git diff --cached --quiet; then
+            echo "No poster changes to commit."
+            exit 0
+          fi
+          git commit -m "chore: update next-weekend posters"
+          git push
+
+      - name: Save events data cache
+        uses: actions/cache/save@v4
+        with:
+          path: cache
+          key: events-data-${{ runner.os }}-${{ github.run_id }}

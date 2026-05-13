@@ -17,6 +17,7 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const root = path.resolve(__dirname, '..');
 const dist = path.join(root, 'dist');
 const assetsDir = path.join(dist, 'assets');
+const postersDir = path.join(dist, 'posters');
 const cssDir = path.join(assetsDir, 'css');
 const jsDir = path.join(assetsDir, 'js');
 const publicBaseUrl = 'https://eventos.aldeapucela.org';
@@ -31,11 +32,22 @@ const env = nunjucks.configure(path.join(root, 'src', 'templates'), {
 async function ensureDirs() {
   await fs.mkdir(cssDir, { recursive: true });
   await fs.mkdir(jsDir, { recursive: true });
+  await fs.mkdir(postersDir, { recursive: true });
   await fs.mkdir(path.join(assetsDir, 'fontawesome'), { recursive: true });
 }
 
 async function copyStaticAssets() {
   await fs.cp(path.join(root, 'src', 'assets'), assetsDir, { recursive: true });
+}
+
+async function copyVersionedPosters() {
+  const source = path.join(root, 'src', 'posters');
+  try {
+    await fs.access(source);
+  } catch {
+    return;
+  }
+  await fs.cp(source, postersDir, { recursive: true });
 }
 
 async function copyFontAwesome() {
@@ -362,6 +374,7 @@ async function buildSite(events) {
   mark('assets');
   await ensureDirs();
   await copyStaticAssets();
+  await copyVersionedPosters();
   await copyFontAwesome();
   await compileCss(path.join(root, 'src', 'styles', 'home.css'), path.join(cssDir, 'home.css'));
   await compileCss(path.join(root, 'src', 'styles', 'event-detail.css'), path.join(cssDir, 'event-detail.css'));

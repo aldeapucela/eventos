@@ -82,6 +82,39 @@ Opciones utiles:
 - `--keep-cache` si alguna vez quieres conservar la cache temporal de imagenes descargadas.
 - `--endpoint ...` para usar otro JSON compatible.
 
+### Publicacion manual en GitHub Pages
+
+El repositorio incluye dos workflows manuales para publicar posters en GitHub Pages:
+
+- `generate-posters-next-days.yml`
+- `generate-posters-next-weekend.yml`
+
+Cada workflow:
+
+- genera los PNG en `scratch/posters/`
+- actualiza los posters versionados en `src/posters/`
+- escribe un JSON minimo de metadata para automatizaciones externas
+- hace commit automatico al repositorio para que el deploy normal de Pages los publique
+
+Metadata publica disponible:
+
+- `https://eventos.aldeapucela.org/posters/proximos.json`
+- `https://eventos.aldeapucela.org/posters/proximos-weekend.json`
+
+Formato esperado:
+
+```json
+{
+  "mode": "next-days",
+  "generatedAt": "2026-05-17T18:31:12Z",
+  "success": true,
+  "storyUrl": "https://eventos.aldeapucela.org/posters/proximos-story.png",
+  "postUrl": "https://eventos.aldeapucela.org/posters/proximos-post.png"
+}
+```
+
+La idea es que n8n consulte ese JSON y valide que la generacion es reciente antes de reutilizar la imagen.
+
 ## Arquitectura y flujo de datos
 
 El proyecto sigue una arquitectura estática:
