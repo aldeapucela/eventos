@@ -39,11 +39,19 @@ async function main() {
   const output = requiredArg(args, 'output');
   const storyPath = requiredArg(args, 'story-path');
   const postPath = requiredArg(args, 'post-path');
+  const hasEvents = requiredArg(args, 'has-events') === 'true';
+  const eventCount = Number(requiredArg(args, 'event-count'));
+
+  if (!Number.isFinite(eventCount) || eventCount < 0) {
+    throw new Error('Invalid --event-count value');
+  }
 
   const payload = {
     mode,
     generatedAt: new Date().toISOString(),
     success: true,
+    hasEvents,
+    eventCount,
     storyUrl: toAbsoluteUrl(storyPath),
     postUrl: toAbsoluteUrl(postPath),
   };

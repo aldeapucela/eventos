@@ -42,6 +42,13 @@ class Event:
     url: str
 
 
+@dataclass
+class PosterJob:
+    base_path: Path
+    output_path: Path
+    label: str
+
+
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
         description="Genera un poster de eventos sobre una imagen base."
@@ -272,6 +279,7 @@ def get_grid_geometry(size: tuple[int, int]) -> dict[str, int]:
 
     return {
         "top": top,
+        "bottom": bottom,
         "side": side,
         "h_gap": h_gap,
         "v_gap": v_gap,
@@ -284,14 +292,43 @@ def get_grid_geometry(size: tuple[int, int]) -> dict[str, int]:
     }
 
 
-def card_boxes(size: tuple[int, int]) -> list[tuple[int, int, int, int]]:
+def layout_counts(event_count: int) -> list[int]:
+    if event_count <= 0:
+        return []
+    if event_count == 1:
+        return [1]
+    if event_count == 2:
+        return [2]
+    if event_count == 3:
+        return [3]
+    if event_count == 4:
+        return [2, 2]
+    if event_count == 5:
+        return [3, 2]
+    return [3, 3]
+
+
+def card_boxes(size: tuple[int, int], event_count: int) -> list[tuple[int, int, int, int]]:
     grid = get_grid_geometry(size)
+    counts = layout_counts(event_count)
+    if not counts:
+        return []
+
+    rows = len(counts)
+    max_cols = max(counts)
+    available_h = grid["bottom"] - grid["top"] - grid["v_gap"] * max(rows - 1, 0)
+    card_h = available_h // rows
+    available_w = size[0] - grid["side"] * 2 - grid["h_gap"] * max(max_cols - 1, 0)
+    card_w = available_w // max_cols
+
     boxes: list[tuple[int, int, int, int]] = []
-    for row in range(grid["rows"]):
-        y = grid["top"] + row * (grid["card_h"] + grid["v_gap"])
-        for col in range(grid["cols"]):
-            x = grid["side"] + col * (grid["card_w"] + grid["h_gap"])
-            boxes.append((x, y, x + grid["card_w"], y + grid["card_h"]))
+    for row, cols_in_row in enumerate(counts):
+        row_width = cols_in_row * card_w + max(cols_in_row - 1, 0) * grid["h_gap"]
+        start_x = round((size[0] - row_width) / 2)
+        y = grid["top"] + row * (card_h + grid["v_gap"])
+        for col in range(cols_in_row):
+            x = start_x + col * (card_w + grid["h_gap"])
+            boxes.append((x, y, x + card_w, y + card_h))
     return boxes
 
 
@@ -320,32 +357,32 @@ def paste_card(base: Image.Image, photo: Image.Image, box: tuple[int, int, int, 
     base.alpha_composite(border_layer)
 
 
-def compose_poster(base_path: Path, output_path: Path, events: Iterable[Event], cache_dir: Path) -> int:
+def compose_poster(base_path: Path, output_path: Path, events: list[Event], cache_dir: Path) -> int:
     base = Image.open(base_path).convert("RGBA")
-    boxes = card_boxes(base.size)
-    grid = get_grid_geometry(base.size)
+    boxes = card_boxes(base.size, len(events))
+    if not boxes:
+        return 0
+
+    min_dimension = min(boxes[0][2] - boxes[0][0], boxes[0][3] - boxes[0][1])
+    radius = max(18, round(min_dimension * 0.06))
+    stroke = max(4, round((boxes[0][2] - boxes[0][0]) * 0.014))
 
     count = 0
     for event, box in zip(events, boxes):
         try:
             photo = download_image(event.image_url, cache_dir)
-            paste_card(base, photo, box, grid["radius"], grid["stroke"])
+            paste_card(base, photo, box, radius, stroke)
             count += 1
         except (HTTPError, URLError, OSError):
-            draw_empty_slot(base, box, grid["radius"], grid["stroke"])
-
-    for box in boxes[count:]:
-        draw_empty_slot(base, box, grid["radius"], grid["stroke"])
+            continue
 
     output_path.parent.mkdir(parents=True, exist_ok=True)
     base.convert("RGB").save(output_path, format="PNG")
     return count
 
 
-def main() -> int:
-    args = parse_args()
-    cache_dir = Path(args.cache_dir)
-    jobs: list[tuple[Path, Path, str]] = []
+def build_jobs(args: argparse.Namespace) -> list[PosterJob]:
+    jobs: list[PosterJob] = []
     default_story_base = (
         DEFAULT_WEEKEND_STORY_BASE if args.mode == "next-weekend" else DEFAULT_STORY_BASE
     )
@@ -362,8 +399,8 @@ def main() -> int:
     if args.base or args.output:
         if not args.base or not args.output:
             print("Si usas --base tambien debes indicar --output.", file=sys.stderr)
-            return 1
-        jobs.append((Path(args.base), Path(args.output), "single"))
+            raise SystemExit(1)
+        jobs.append(PosterJob(Path(args.base), Path(args.output), "single"))
 
     wants_story = bool(args.story_base or args.story_output)
     wants_post = bool(args.post_base or args.post_output)
@@ -373,16 +410,33 @@ def main() -> int:
         wants_post = True
 
     if wants_story:
-        story_base = args.story_base or default_story_base
-        story_output = args.story_output or default_story_output
-        jobs.append((Path(story_base), Path(story_output), "story"))
+        jobs.append(
+            PosterJob(
+                Path(args.story_base or default_story_base),
+                Path(args.story_output or default_story_output),
+                "story",
+            )
+        )
 
     if wants_post:
-        post_base = args.post_base or default_post_base
-        post_output = args.post_output or default_post_output
-        jobs.append((Path(post_base), Path(post_output), "post"))
+        jobs.append(
+            PosterJob(
+                Path(args.post_base or default_post_base),
+                Path(args.post_output or default_post_output),
+                "post",
+            )
+        )
 
-    for _, output_path, _ in jobs:
+    return jobs
+
+
+def main() -> int:
+    args = parse_args()
+    cache_dir = Path(args.cache_dir)
+    jobs = build_jobs(args)
+
+    for job in jobs:
+        output_path = job.output_path
         if not (
             str(output_path).startswith("scratch/posters/")
             or str(output_path).startswith("./scratch/posters/")
@@ -393,9 +447,9 @@ def main() -> int:
             )
             return 1
 
-    for base_path, _, label in jobs:
-        if not base_path.exists():
-            print(f"No existe la imagen base para {label}: {base_path}", file=sys.stderr)
+    for job in jobs:
+        if not job.base_path.exists():
+            print(f"No existe la imagen base para {job.label}: {job.base_path}", file=sys.stderr)
             return 1
 
     try:
@@ -405,26 +459,31 @@ def main() -> int:
         return 1
 
     events = select_events(payload, args.days, args.limit, args.mode)
-    if not events:
-        print("No hay eventos futuros en la ventana solicitada.", file=sys.stderr)
-        return 1
+    result: dict[str, object] = {
+        "mode": args.mode,
+        "days": args.days,
+        "eventsRequested": args.limit,
+        "eventCount": len(events),
+        "hasEvents": bool(events),
+        "assets": [],
+    }
 
     try:
-        results = []
-        for base_path, output_path, label in jobs:
-            rendered = compose_poster(base_path, output_path, events, cache_dir)
-            results.append(
+        assets: list[dict[str, object]] = []
+        for job in jobs:
+            rendered = 0
+            if events:
+                rendered = compose_poster(job.base_path, job.output_path, events, cache_dir)
+            assets.append(
                 {
-                    "label": label,
-                    "base": str(base_path),
-                    "output": str(output_path),
-                    "events_requested": args.limit,
-                    "events_rendered": rendered,
-                    "days": args.days,
-                    "mode": args.mode,
+                    "label": job.label,
+                    "base": str(job.base_path),
+                    "output": str(job.output_path),
+                    "eventsRendered": rendered,
                 }
             )
-        print(json.dumps(results, ensure_ascii=True))
+        result["assets"] = assets
+        print(json.dumps(result, ensure_ascii=True))
         return 0
     finally:
         if not args.keep_cache:

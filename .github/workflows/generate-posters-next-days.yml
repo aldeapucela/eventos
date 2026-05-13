@@ -13,6 +13,7 @@ on:
         default: '6'
 
 permissions:
+  actions: write
   contents: write
 
 concurrency:
@@ -58,6 +59,7 @@ jobs:
         run: npm run build
 
       - name: Generate posters
+        id: generate_posters
         run: >
           python scripts/generate_events_poster.py
           --mode next-days
@@ -65,29 +67,57 @@ jobs:
           --limit "${{ inputs.limit }}"
           --story-output scratch/posters/proximos-story.png
           --post-output scratch/posters/proximos-post.png
+          > poster-result.json
+
+      - name: Read poster result
+        id: poster_result
+        run: |
+          python - <<'PY'
+          import json
+          import os
+          from pathlib import Path
+
+          payload = json.loads(Path("poster-result.json").read_text())
+          with Path(os.environ["GITHUB_OUTPUT"]).open("a", encoding="utf-8") as handle:
+              handle.write(f"has_events={'true' if payload['hasEvents'] else 'false'}\n")
+              handle.write(f"event_count={payload['eventCount']}\n")
+          PY
 
       - name: Update versioned poster assets
         run: |
           mkdir -p src/posters
-          cp scratch/posters/proximos-story.png src/posters/proximos-story.png
-          cp scratch/posters/proximos-post.png src/posters/proximos-post.png
+          if [ "${{ steps.poster_result.outputs.has_events }}" = "true" ]; then
+            cp scratch/posters/proximos-story.png src/posters/proximos-story.png
+            cp scratch/posters/proximos-post.png src/posters/proximos-post.png
+          fi
           node scripts/write-poster-metadata.mjs \
             --mode next-days \
             --output src/posters/proximos.json \
+            --has-events "${{ steps.poster_result.outputs.has_events }}" \
+            --event-count "${{ steps.poster_result.outputs.event_count }}" \
             --story-path /posters/proximos-story.png \
             --post-path /posters/proximos-post.png
 
       - name: Commit updated posters
+        id: commit_posters
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add src/posters/proximos-story.png src/posters/proximos-post.png src/posters/proximos.json
+          git add src/posters
           if git diff --cached --quiet; then
             echo "No poster changes to commit."
+            echo "pushed=false" >> "$GITHUB_OUTPUT"
             exit 0
           fi
           git commit -m "chore: update next-days posters"
           git push
+          echo "pushed=true" >> "$GITHUB_OUTPUT"
+
+      - name: Trigger Pages deploy
+        if: steps.commit_posters.outputs.pushed == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh workflow run deploy-pages.yml --ref main
 
       - name: Save events data cache
         uses: actions/cache/save@v4

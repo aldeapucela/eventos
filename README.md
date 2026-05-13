@@ -108,12 +108,15 @@ Formato esperado:
   "mode": "next-days",
   "generatedAt": "2026-05-17T18:31:12Z",
   "success": true,
+  "hasEvents": true,
+  "eventCount": 4,
   "storyUrl": "https://eventos.aldeapucela.org/posters/proximos-story.png",
   "postUrl": "https://eventos.aldeapucela.org/posters/proximos-post.png"
 }
 ```
 
 La idea es que n8n consulte ese JSON y valide que la generacion es reciente antes de reutilizar la imagen.
+Si `hasEvents` es `false`, el workflow solo actualiza la metadata y conserva los ultimos PNG versionados.
 
 ## Arquitectura y flujo de datos
 
