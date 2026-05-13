@@ -1,9 +1,9 @@
 {
   "mode": "next-days",
-  "generatedAt": "2026-05-13T18:49:54.347Z",
+  "generatedAt": "2026-05-13T18:51:54.523Z",
   "success": true,
-  "hasEvents": false,
-  "eventCount": 0,
+  "hasEvents": true,
+  "eventCount": 2,
   "storyUrl": "https://eventos.aldeapucela.org/posters/proximos-story.png",
   "postUrl": "https://eventos.aldeapucela.org/posters/proximos-post.png"
 }
