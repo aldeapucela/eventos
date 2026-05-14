@@ -6,6 +6,26 @@ import { ensureCacheDirs, readIndex, writeCachedTopic, writeIndex } from '../src
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const CACHE_SCHEMA_VERSION = 1;
+const cacheDataDir = path.join(root, 'cache', 'data');
+const cacheRawDir = path.join(root, 'cache', 'raw');
+
+async function removeOrphanedCacheFiles(knownTopicIds) {
+  for (const dir of [cacheDataDir, cacheRawDir]) {
+    let entries = [];
+    try {
+      entries = await fs.readdir(dir, { withFileTypes: true });
+    } catch {
+      continue;
+    }
+
+    for (const entry of entries) {
+      if (!entry.isFile() || !entry.name.endsWith('.json')) continue;
+      const topicId = entry.name.slice(0, -5);
+      if (knownTopicIds.has(topicId)) continue;
+      await fs.rm(path.join(dir, entry.name), { force: true });
+    }
+  }
+}
 
 export async function syncEvents({ rebuild = false } = {}) {
   await ensureCacheDirs();
@@ -48,22 +68,20 @@ export async function syncEvents({ rebuild = false } = {}) {
     };
   }
 
-  // Preserve cached topics that are no longer present in the paginated category listing.
-  // The forum listing does not guarantee a full historical window, so dropping unseen ids
-  // here would silently shrink the local dataset on incremental syncs.
+  // Remove cached topics that are no longer present in the category listing.
+  // If they disappear from the forum, they should also disappear from the web.
   for (const [topicId, cachedRecord] of Object.entries(index.topics || {})) {
     if (seenIds.has(String(topicId))) continue;
 
-    const cachedPath = path.join(root, 'cache', 'data', `${topicId}.json`);
     try {
-      const cachedData = JSON.parse(await fs.readFile(cachedPath, 'utf8'));
-      normalized.push(cachedData);
-      nextIndex.topics[topicId] = cachedRecord;
+      await fs.rm(path.join(cacheDataDir, `${topicId}.json`), { force: true });
+      await fs.rm(path.join(cacheRawDir, `${topicId}.json`), { force: true });
     } catch {
-      // Ignore orphaned index entries if the normalized file is missing.
+      // Ignore cleanup errors for orphaned cache files.
     }
   }
 
+  await removeOrphanedCacheFiles(new Set(Object.keys(nextIndex.topics || {})));
   await writeIndex(nextIndex);
   return normalized;
 }
