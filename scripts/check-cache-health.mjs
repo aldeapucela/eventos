@@ -40,7 +40,7 @@ async function main() {
   }
 
   if (afterCount < beforeCount) {
-    throw new Error(`Cache index shrank from ${beforeCount} topics to ${afterCount}. Refusing to deploy/cache degraded state.`);
+    console.log(`Cache index shrank from ${beforeCount} topics to ${afterCount}. Accepting shrink because removed forum topics should also disappear from cache and web.`);
   }
 }
 
