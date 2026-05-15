@@ -49,13 +49,17 @@ export function splitFeatured(events) {
   }).sort((a, b) => {
     const aEnd = a.endsAt ? new Date(a.endsAt).getTime() : Number.MAX_SAFE_INTEGER;
     const bEnd = b.endsAt ? new Date(b.endsAt).getTime() : Number.MAX_SAFE_INTEGER;
-    return aEnd - bEnd;
+    if (aEnd !== bEnd) return aEnd - bEnd;
+
+    const aStart = a.startsAt ? new Date(a.startsAt).getTime() : 0;
+    const bStart = b.startsAt ? new Date(b.startsAt).getTime() : 0;
+    return bStart - aStart;
   });
 
   return {
     featured: featuredCandidates[0] || null,
     week: featuredCandidates.length ? base.filter((event) => !event.isSticky) : base,
-    ongoing: ongoing.slice(0, 12),
+    ongoing,
     today: daily
   };
 }
