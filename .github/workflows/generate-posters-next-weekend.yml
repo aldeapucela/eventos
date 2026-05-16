@@ -73,9 +73,11 @@ jobs:
           from pathlib import Path
 
           payload = json.loads(Path("poster-result.json").read_text())
+          caption = str(payload.get("caption") or "").replace("\n", " ").strip()
           with Path(os.environ["GITHUB_OUTPUT"]).open("a", encoding="utf-8") as handle:
               handle.write(f"has_events={'true' if payload['hasEvents'] else 'false'}\n")
               handle.write(f"event_count={payload['eventCount']}\n")
+              handle.write(f"caption={caption}\n")
           PY
 
       - name: Update versioned poster assets
@@ -90,6 +92,7 @@ jobs:
             --output src/posters/proximos-weekend.json \
             --has-events "${{ steps.poster_result.outputs.has_events }}" \
             --event-count "${{ steps.poster_result.outputs.event_count }}" \
+            --caption "${{ steps.poster_result.outputs.caption }}" \
             --story-path /posters/proximos-weekend-story.png \
             --post-path /posters/proximos-weekend-post.png
 

@@ -15,6 +15,8 @@ from urllib.request import Request, urlopen
 from zoneinfo import ZoneInfo
 
 from PIL import Image, ImageDraw, ImageFilter, ImageOps
+from PIL import ImageFont
+from PIL.ImageFont import FreeTypeFont
 
 
 MADRID_TZ = ZoneInfo("Europe/Madrid")
@@ -31,6 +33,20 @@ DEFAULT_STORY_OUTPUT = "scratch/posters/proximos-story.png"
 DEFAULT_POST_OUTPUT = "scratch/posters/proximos-post.png"
 DEFAULT_WEEKEND_STORY_OUTPUT = "scratch/posters/proximos-weekend-story.png"
 DEFAULT_WEEKEND_POST_OUTPUT = "scratch/posters/proximos-weekend-post.png"
+SPANISH_MONTHS = (
+    "ENERO",
+    "FEBRERO",
+    "MARZO",
+    "ABRIL",
+    "MAYO",
+    "JUNIO",
+    "JULIO",
+    "AGOSTO",
+    "SEPTIEMBRE",
+    "OCTUBRE",
+    "NOVIEMBRE",
+    "DICIEMBRE",
+)
 
 
 @dataclass
@@ -47,6 +63,30 @@ class PosterJob:
     base_path: Path
     output_path: Path
     label: str
+
+
+def load_font(size: int) -> ImageFont.ImageFont | FreeTypeFont:
+    for font_name in ("DejaVuSans-Bold.ttf", "Arial Bold.ttf", "Arial.ttf"):
+        try:
+            return ImageFont.truetype(font_name, size=size)
+        except OSError:
+            continue
+    return ImageFont.load_default()
+
+
+def format_spanish_date_range(events: list[Event]) -> str:
+    if not events:
+        return ""
+    dates = sorted(event.starts_at.astimezone(MADRID_TZ).date() for event in events)
+    start = dates[0]
+    end = dates[-1]
+    start_month = SPANISH_MONTHS[start.month - 1]
+    end_month = SPANISH_MONTHS[end.month - 1]
+    if start == end:
+        return f"{start.day} {start_month}"
+    if start.month == end.month and start.year == end.year:
+        return f"{start.day} - {end.day} {end_month}"
+    return f"{start.day} {start_month} - {end.day} {end_month}"
 
 
 def parse_args() -> argparse.Namespace:
@@ -376,6 +416,35 @@ def compose_poster(base_path: Path, output_path: Path, events: list[Event], cach
         except (HTTPError, URLError, OSError):
             continue
 
+    date_range = format_spanish_date_range(events)
+    if date_range:
+        draw = ImageDraw.Draw(base)
+        width, height = base.size
+        text_size = max(28, round(width * 0.045))
+        font = load_font(text_size)
+        bbox = draw.textbbox((0, 0), date_range, font=font)
+        text_w = bbox[2] - bbox[0]
+        text_h = bbox[3] - bbox[1]
+        text_x = round((width - text_w) / 2)
+        grid = get_grid_geometry(base.size)
+        text_y = min(round(height * 0.93), grid["bottom"] + round(height * 0.045))
+        is_story = height / width > 1.6
+        if not is_story:
+            text_x += round(width * 0.01)
+            text_y -= round(height * 0.018)
+        # Sombra muy sutil para mejorar legibilidad sin efecto de reborde.
+        shadow_layer = Image.new("RGBA", base.size, (0, 0, 0, 0))
+        shadow_draw = ImageDraw.Draw(shadow_layer)
+        shadow_draw.text(
+            (text_x, text_y + max(1, round(text_size * 0.03))),
+            date_range,
+            font=font,
+            fill=(184, 188, 198, 78),
+        )
+        shadow_layer = shadow_layer.filter(ImageFilter.GaussianBlur(radius=max(1, round(text_size * 0.08))))
+        base.alpha_composite(shadow_layer)
+        draw.text((text_x, text_y), date_range, font=font, fill=(64, 68, 80, 248))
+
     output_path.parent.mkdir(parents=True, exist_ok=True)
     base.convert("RGB").save(output_path, format="PNG")
     return count
@@ -465,6 +534,7 @@ def main() -> int:
         "eventsRequested": args.limit,
         "eventCount": len(events),
         "hasEvents": bool(events),
+        "caption": format_spanish_date_range(events),
         "assets": [],
     }
 

@@ -41,6 +41,7 @@ async function main() {
   const postPath = requiredArg(args, 'post-path');
   const hasEvents = requiredArg(args, 'has-events') === 'true';
   const eventCount = Number(requiredArg(args, 'event-count'));
+  const caption = String(args.caption || '').trim();
 
   if (!Number.isFinite(eventCount) || eventCount < 0) {
     throw new Error('Invalid --event-count value');
@@ -52,6 +53,7 @@ async function main() {
     success: true,
     hasEvents,
     eventCount,
+    caption,
     storyUrl: toAbsoluteUrl(storyPath),
     postUrl: toAbsoluteUrl(postPath),
   };
