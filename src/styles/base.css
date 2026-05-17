@@ -260,14 +260,15 @@
 
   .hero-mobile-image {
     @apply absolute inset-0 block h-full w-full object-cover;
+    object-position: center 28%;
   }
 
   .hero-mobile-visual {
-    @apply relative min-h-[590px] overflow-hidden rounded-[1.8rem] border border-[#ece8e4] bg-[#f8f7f6] shadow-sm;
+    @apply relative min-h-[322px] overflow-hidden rounded-[1.8rem] border border-[#ece8e4] bg-[#f8f7f6] shadow-sm;
   }
 
   .hero-mobile-overlay {
-    @apply relative z-10 flex min-h-[590px] flex-col justify-start px-8 pb-12 pt-10;
+    @apply relative z-10 flex min-h-[322px] flex-col justify-start px-8 pb-9 pt-8;
   }
 
   .hero-mobile-text-panel {
@@ -1283,12 +1284,12 @@
     }
 
     .hero-mobile-visual {
-      min-height: 620px;
+      min-height: 364px;
     }
 
     .hero-mobile-overlay {
-      min-height: 620px;
-      @apply px-14 pb-16 pt-10;
+      min-height: 364px;
+      @apply px-14 pb-10 pt-8;
     }
 
     .hero-mobile-search {
@@ -1342,11 +1343,11 @@
 
   @media (min-width: 1440px) {
     .hero-mobile-visual {
-      min-height: 560px;
+      min-height: 350px;
     }
 
     .hero-mobile-overlay {
-      min-height: 560px;
+      min-height: 350px;
     }
   }
 
@@ -1523,14 +1524,14 @@ html.dark .site-footer-copy a {
   }
 
   .hero-mobile-visual {
-    min-height: 590px;
+    min-height: 322px;
     @apply mx-0 rounded-none border-x-0 border-t-0;
     margin-top: 0 !important;
   }
 
   .hero-mobile-overlay {
-    min-height: 590px;
-    @apply px-6 pb-10 pt-10;
+    min-height: 322px;
+    @apply px-6 pb-8 pt-8;
   }
 
   .mobile-chip-row {
