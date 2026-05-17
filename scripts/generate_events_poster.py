@@ -21,7 +21,7 @@ from PIL.ImageFont import FreeTypeFont
 
 MADRID_TZ = ZoneInfo("Europe/Madrid")
 DEFAULT_ENDPOINT = "https://eventos.aldeapucela.org/site-data.json"
-DEFAULT_DAYS = 3
+DEFAULT_DAYS = 4
 DEFAULT_LIMIT = 6
 USER_AGENT = "aldeapucela-eventos-poster/1.0"
 DEFAULT_MODE = "next-days"

@@ -6,7 +6,7 @@ on:
       days:
         description: Ventana de dias futuros
         required: false
-        default: '3'
+        default: '4'
       limit:
         description: Numero maximo de carteles
         required: false
