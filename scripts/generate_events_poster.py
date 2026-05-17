@@ -210,7 +210,9 @@ def select_spread_events(events: list[Event], limit: int) -> list[Event]:
 
 def select_events_next_days(payload: dict, days: int, limit: int) -> list[Event]:
     now = datetime.now(MADRID_TZ)
-    start_day = now.replace(hour=0, minute=0, second=0, microsecond=0)
+    # "next-days" means full natural days after today (exclude today).
+    today_start = now.replace(hour=0, minute=0, second=0, microsecond=0)
+    start_day = today_start + timedelta(days=1)
     end_day = start_day + timedelta(days=max(days, 1))
     candidates: list[Event] = []
 
@@ -218,7 +220,7 @@ def select_events_next_days(payload: dict, days: int, limit: int) -> list[Event]
         event = normalize_event(raw)
         if not event:
             continue
-        if event.starts_at < now:
+        if event.starts_at < start_day:
             continue
         if event.starts_at >= end_day:
             continue
