@@ -34,7 +34,9 @@ export function splitFeatured(events) {
   const horizon = sorted.filter((event) => {
     return isUpcomingForWeek(event, todayStart) && new Date(event.startsAt) <= horizonEnd;
   });
-  const base = horizon.length ? horizon : upcoming.length ? upcoming : sorted;
+  // "Próximos" nunca debe retroceder a eventos ya iniciados en días anteriores.
+  // Si no hay eventos en ventana corta, usamos futuros; si no hay futuros, queda vacío.
+  const base = horizon.length ? horizon : upcoming;
   const today = sorted.filter((event) => event.startsAt && sameDate(event.startsAt, now));
   const daily = today.length ? today.slice(0, 4) : base.slice(0, 4);
   const ongoing = sorted.filter((event) => {

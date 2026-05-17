@@ -1159,12 +1159,11 @@ function isWithinListingWindow(event) {
   if (!event?.startsAtIso) return false;
   const startsAt = new Date(event.startsAtIso);
   if (Number.isNaN(startsAt.getTime())) return false;
-  if (shouldHideFromUpcomingList(event, startsAt)) return false;
-  const endsAt = event?.endsAtIso ? new Date(event.endsAtIso) : startsAt;
-  const referenceEnd = Number.isNaN(endsAt.getTime()) ? startsAt : endsAt;
   const windowStart = startOfToday(today);
+  if (startsAt < windowStart) return false;
+  if (shouldHideFromUpcomingList(event, startsAt)) return false;
   const windowEnd = getListingWindowEnd(activeTimeFilter, today);
-  return startsAt <= windowEnd && referenceEnd >= windowStart;
+  return startsAt <= windowEnd;
 }
 
 function getListingWindowEnd(filterValue, date) {
