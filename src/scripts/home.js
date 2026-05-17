@@ -1194,11 +1194,22 @@ function getListingWindowEnd(filterValue, date) {
 
 function isOngoingMultiDay(event) {
   if (!event?.startsAtIso || !event?.endsAtIso) return false;
-  const startsAt = new Date(event.startsAtIso);
-  const endsAt = new Date(event.endsAtIso);
+  const startsAt = parseEventBoundaryDate(event.startsAtIso, 'start');
+  const endsAt = parseEventBoundaryDate(event.endsAtIso, 'end');
   if (Number.isNaN(startsAt.getTime()) || Number.isNaN(endsAt.getTime())) return false;
   if (sameDay(startsAt, endsAt)) return false;
   return startsAt <= today && endsAt >= today;
+}
+
+function parseEventBoundaryDate(value, boundary = 'start') {
+  const stringValue = String(value || '').trim();
+  if (!stringValue) return new Date(NaN);
+  if (/^\d{4}-\d{2}-\d{2}$/.test(stringValue)) {
+    const [year, month, day] = stringValue.split('-').map(Number);
+    if (boundary === 'end') return new Date(year, month - 1, day, 23, 59, 59, 999);
+    return new Date(year, month - 1, day, 0, 0, 0, 0);
+  }
+  return new Date(stringValue);
 }
 
 function shouldHideFromUpcomingList(event, startsAt = null) {

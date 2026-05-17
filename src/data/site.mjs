@@ -42,8 +42,8 @@ export function splitFeatured(events) {
   const ongoing = sorted.filter((event) => {
     if (!event.startsAt || !event.endsAt) return false;
 
-    const starts = new Date(event.startsAt);
-    const ends = new Date(event.endsAt);
+    const starts = parseEventDateBoundary(event.startsAt, 'start');
+    const ends = parseEventDateBoundary(event.endsAt, 'end');
     if (Number.isNaN(starts.getTime()) || Number.isNaN(ends.getTime())) return false;
     if (!spansMultipleDays(starts, ends)) return false;
 
@@ -84,11 +84,24 @@ function startOfDay(value) {
 
 function isOngoingMultiDay(event, now) {
   if (!event.startsAt || !event.endsAt) return false;
-  const starts = new Date(event.startsAt);
-  const ends = new Date(event.endsAt);
+  const starts = parseEventDateBoundary(event.startsAt, 'start');
+  const ends = parseEventDateBoundary(event.endsAt, 'end');
   if (Number.isNaN(starts.getTime()) || Number.isNaN(ends.getTime())) return false;
   if (!spansMultipleDays(starts, ends)) return false;
   return starts <= now && ends >= now;
+}
+
+function parseEventDateBoundary(value, boundary = 'start') {
+  const stringValue = String(value || '').trim();
+  if (!stringValue) return new Date(NaN);
+  if (/^\d{4}-\d{2}-\d{2}$/.test(stringValue)) {
+    const [year, month, day] = stringValue.split('-').map(Number);
+    if (boundary === 'end') {
+      return new Date(year, month - 1, day, 23, 59, 59, 999);
+    }
+    return new Date(year, month - 1, day, 0, 0, 0, 0);
+  }
+  return new Date(stringValue);
 }
 
 function isUpcomingForWeek(event, todayStart) {
