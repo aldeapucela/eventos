@@ -411,11 +411,8 @@ function checkTimeVisible(startsAt, endsAt, filterValue) {
   }
   
   if (filterValue === 'Este finde') {
-    const wEnd = endOfWeek(t);
-    const wSat = new Date(wEnd);
-    wSat.setDate(wSat.getDate() - 1);
-    wSat.setHours(0, 0, 0, 0);
-    return startsAt <= wEnd && actualEndsAt >= wSat;
+    const weekendRange = getWeekendRange(t);
+    return startsAt <= weekendRange.end && actualEndsAt >= weekendRange.start;
   }
   
   if (filterValue === 'Esta semana') {
@@ -460,6 +457,14 @@ function endOfWeek(date) {
   copy.setHours(23, 59, 59, 999);
   copy.setDate(copy.getDate() + diff);
   return copy;
+}
+
+function getWeekendRange(date) {
+  const sundayEnd = endOfWeek(date);
+  const fridayStart = new Date(sundayEnd);
+  fridayStart.setDate(fridayStart.getDate() - 2);
+  fridayStart.setHours(15, 0, 0, 0);
+  return { start: fridayStart, end: sundayEnd };
 }
 
 function endOfHorizon(date, days) {
@@ -882,7 +887,7 @@ function renderWeekGroups() {
         .map(renderWeekItem)
         .join('');
       return `
-        <section class="week-day-group" data-week-day-group>
+        <section class="week-day-group" data-week-day-group data-day-key="${key}">
           <div class="week-day-header">
             <div class="week-day-label">${label}</div>
           </div>
@@ -1175,7 +1180,7 @@ function getListingWindowEnd(filterValue, date) {
     case 'Hoy':
       return endOfHorizon(date, 0);
     case 'Este finde':
-      return endOfWeek(date);
+      return getWeekendRange(date).end;
     case 'Esta semana':
       return endOfWeek(date);
     case 'Próxima semana':
@@ -1216,7 +1221,8 @@ function shouldHideFromUpcomingList(event, startsAt = null) {
   if (!isOngoingMultiDay(event)) return false;
   const eventStartsAt = startsAt instanceof Date ? startsAt : new Date(event.startsAtIso);
   if (Number.isNaN(eventStartsAt.getTime())) return false;
-  return !sameDay(eventStartsAt, today);
+  // Multi-day events already surface in "En curso", so we keep them out of day buckets.
+  return true;
 }
 
 function startOfToday(value) {
@@ -1242,6 +1248,17 @@ function filterWeekGroups() {
   });
 
   weekGroups.querySelectorAll('[data-week-day-group]').forEach((group) => {
+    if (activeTimeFilter === 'Este finde') {
+      const dayDate = parseDateLike(group.dataset.dayKey || '');
+      if (!Number.isNaN(dayDate.getTime())) {
+        const day = dayDate.getDay();
+        const isWeekendGroup = day === 5 || day === 6 || day === 0;
+        if (!isWeekendGroup) {
+          group.style.display = 'none';
+          return;
+        }
+      }
+    }
     const visibleItems = Array.from(group.querySelectorAll('[data-category]')).some((item) => item.style.display !== 'none');
     group.style.display = visibleItems ? '' : 'none';
   });
