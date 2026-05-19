@@ -1284,7 +1284,7 @@ function toggleQuickFilter(filterValue) {
 }
 
 function shouldAutoScrollToFirstVisibleBlock(filterValue) {
-  return isMobileViewport() && MOBILE_AUTO_SCROLL_FILTERS.has(String(filterValue || '').trim());
+  return MOBILE_AUTO_SCROLL_FILTERS.has(String(filterValue || '').trim());
 }
 
 function isMobileViewport() {
