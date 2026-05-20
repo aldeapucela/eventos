@@ -1,7 +1,10 @@
 {
   "mode": "next-weekend",
-  "generatedAt": "2026-05-13T18:37:38.096Z",
+  "generatedAt": "2026-05-20T08:00:42.966Z",
   "success": true,
+  "hasEvents": true,
+  "eventCount": 6,
+  "caption": "22 - 24 MAYO",
   "storyUrl": "https://eventos.aldeapucela.org/posters/proximos-weekend-story.png",
   "postUrl": "https://eventos.aldeapucela.org/posters/proximos-weekend-post.png"
 }
