@@ -154,6 +154,15 @@ export function cleanDescriptionHtml(html = '', title = '') {
   return output.trim();
 }
 
+export function buildTextParagraphHtml(text = '') {
+  const normalized = String(text || '').replace(/\r\n/g, '\n').trim();
+  if (!normalized) return '';
+  return normalized
+    .split(/\n{2,}/)
+    .map((paragraph) => `<p>${escapeHtml(paragraph.trim()).replace(/\n/g, '<br>')}</p>`)
+    .join('\n');
+}
+
 export function titleCase(value = '') {
   return String(value)
     .toLowerCase()

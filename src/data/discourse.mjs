@@ -1,4 +1,5 @@
 import {
+  buildTextParagraphHtml,
   buildExcerpt,
   cleanDescriptionHtml,
   extractParagraphLines,
@@ -128,13 +129,13 @@ export function normalizeDiscourseTopic(topic, detail) {
   const rawHtml = detailPost?.cooked || '';
   const meta = parseEventMetaFromHtml(rawHtml);
   const image = normalizeImage(topic.image_url || detail?.image_url || detail?.thumbnails?.[0]?.url || null);
-  const title = topic.title || detail?.title || '';
+  const title = event.name || topic.title || detail?.title || '';
   const slug = topic.slug || toSlug(title);
   const startsAt = event.starts_at || topic.event_starts_at || null;
   const endsAt = event.ends_at || topic.event_ends_at || null;
   const lines = extractParagraphLines(rawHtml);
-  const summary = extractSummary(lines, title);
-  const descriptionHtml = cleanDescriptionHtml(rawHtml, title);
+  const summary = normalizeEventSummary(event.description || extractSummary(lines, title));
+  const descriptionHtml = resolveDescriptionHtml(rawHtml, title, event.description_html, event.description);
   const categoryLabel = normalizeCategory(meta.categoryLabel);
   const location = normalizeLocation(meta.location || event.location || '', title);
   const parsedLocation = parseLocationParts(location, title);
@@ -167,6 +168,24 @@ export function normalizeDiscourseTopic(topic, detail) {
     publishedAt: topic.created_at || detailPost?.created_at || detail?.created_at || '',
     updatedAt: topic.last_posted_at || detailPost?.updated_at || topic.created_at || ''
   };
+}
+
+function normalizeEventSummary(value = '') {
+  return String(value || '').replace(/\s+/g, ' ').trim();
+}
+
+function resolveDescriptionHtml(rawHtml, title, eventDescriptionHtml = '', eventDescription = '') {
+  const cleanedEventHtml = String(eventDescriptionHtml || '').trim();
+  if (cleanedEventHtml) {
+    return /<[^>]+>/.test(cleanedEventHtml) ? cleanedEventHtml : buildTextParagraphHtml(cleanedEventHtml);
+  }
+
+  const cleanedEventText = normalizeEventSummary(eventDescription);
+  if (cleanedEventText) {
+    return buildTextParagraphHtml(cleanedEventText);
+  }
+
+  return cleanDescriptionHtml(rawHtml, title);
 }
 
 function detectIsFree(text = '') {
