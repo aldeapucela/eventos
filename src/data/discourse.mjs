@@ -137,7 +137,7 @@ export function normalizeDiscourseTopic(topic, detail) {
   const summary = normalizeEventSummary(event.description || extractSummary(lines, title));
   const descriptionHtml = resolveDescriptionHtml(rawHtml, title, event.description_html, event.description);
   const categoryLabel = normalizeCategory(meta.categoryLabel);
-  const location = normalizeLocation(meta.location || event.location || '', title);
+  const location = normalizeLocation(meta.location || event.location || meta.inferredLocation || '', title);
   const parsedLocation = parseLocationParts(location, title);
   const organizer = meta.organizer || '';
   const notes = meta.notes || '';

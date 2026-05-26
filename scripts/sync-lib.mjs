@@ -5,7 +5,7 @@ import { fetchCategoryTopics, fetchTopicDetail, normalizeDetailToRecord, shouldS
 import { ensureCacheDirs, readIndex, writeCachedTopic, writeIndex } from '../src/data/store.mjs';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
-const CACHE_SCHEMA_VERSION = 1;
+const CACHE_SCHEMA_VERSION = 2;
 const cacheDataDir = path.join(root, 'cache', 'data');
 const cacheRawDir = path.join(root, 'cache', 'raw');
 

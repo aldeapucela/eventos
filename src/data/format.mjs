@@ -106,7 +106,8 @@ export function parseEventMetaFromHtml(html = '') {
   const locationLine = lines.find((entry) => !entry.includes(':') && isLikelyLocationLine(entry));
   const importedFromChatUrl = extractImportedFromChatUrl(html);
   return {
-    location: pick('Lugar') || pick('Ubicación') || pinnedLocation || locationLine || '',
+    location: pick('Lugar') || pick('Ubicación') || pinnedLocation || '',
+    inferredLocation: locationLine || '',
     categoryLabel: pick('Categoría'),
     organizer: pick('Organizador'),
     notes: pick('Notas'),
