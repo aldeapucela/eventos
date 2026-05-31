@@ -359,15 +359,27 @@ def card_boxes(size: tuple[int, int], event_count: int) -> list[tuple[int, int, 
     rows = len(counts)
     max_cols = max(counts)
     available_h = grid["bottom"] - grid["top"] - grid["v_gap"] * max(rows - 1, 0)
-    card_h = available_h // rows
     available_w = size[0] - grid["side"] * 2 - grid["h_gap"] * max(max_cols - 1, 0)
-    card_w = available_w // max_cols
+    max_card_h = available_h // rows
+    max_card_w = available_w // max_cols
+
+    # Mantiene una proporcion de cartel mas natural cuando hay pocas tarjetas,
+    # evitando columnas excesivamente altas y estrechas.
+    target_ratio = 0.7
+    card_w = max_card_w
+    card_h = round(card_w / target_ratio)
+    if card_h > max_card_h:
+        card_h = max_card_h
+        card_w = round(card_h * target_ratio)
+
+    total_h = rows * card_h + grid["v_gap"] * max(rows - 1, 0)
+    start_y = grid["top"] + max(0, round((available_h - total_h) / 2))
 
     boxes: list[tuple[int, int, int, int]] = []
     for row, cols_in_row in enumerate(counts):
         row_width = cols_in_row * card_w + max(cols_in_row - 1, 0) * grid["h_gap"]
         start_x = round((size[0] - row_width) / 2)
-        y = grid["top"] + row * (card_h + grid["v_gap"])
+        y = start_y + row * (card_h + grid["v_gap"])
         for col in range(cols_in_row):
             x = start_x + col * (card_w + grid["h_gap"])
             boxes.append((x, y, x + card_w, y + card_h))
