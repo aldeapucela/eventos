@@ -161,27 +161,7 @@
 
 {% include "partials/subscribe-modal.njk" %}
 
-<div class="calendar-modal" data-install-modal hidden>
-  <button class="calendar-modal-backdrop" type="button" data-install-app-close aria-label="Cerrar diálogo"></button>
-  <aside class="calendar-modal-panel install-app-modal-panel" role="dialog" aria-modal="true" aria-labelledby="install-app-title">
-    <div class="calendar-modal-header">
-      <div>
-        <h2 class="calendar-modal-title" id="install-app-title">Añadir a pantalla de inicio</h2>
-        <p class="calendar-modal-copy" data-install-app-copy>Instala la agenda como app para abrirla más rápido desde tu móvil.</p>
-      </div>
-      <button class="calendar-modal-close" type="button" data-install-app-close aria-label="Cerrar">
-        <i class="fa-solid fa-xmark"></i>
-      </button>
-    </div>
-    <div class="install-app-modal-body">
-      <ol class="install-app-steps" data-install-app-steps>
-        <li class="install-app-step"><span class="install-app-step-number">1</span><span>En Safari, toca el botón de compartir.</span></li>
-        <li class="install-app-step"><span class="install-app-step-number">2</span><span>Elige <strong>Añadir a pantalla de inicio</strong> y confirma.</span></li>
-      </ol>
-      <button class="calendar-modal-action calendar-modal-action-primary install-app-modal-button" type="button" data-install-app-confirm>Instalar app</button>
-    </div>
-  </aside>
-</div>
+{% include "partials/install-modal.njk" %}
 
 {% include "partials/filter-modals.njk" %}
 {% endblock %}
