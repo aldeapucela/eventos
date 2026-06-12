@@ -90,6 +90,62 @@ export function formatDateRange(start, end, locale = 'es-ES') {
   return startLabel === endLabel ? startLabel : `${startLabel} - ${endLabel}`;
 }
 
+function madridDayMonthFormatter() {
+  return new Intl.DateTimeFormat('es-ES', {
+    timeZone: DISPLAY_TIMEZONE,
+    day: 'numeric',
+    month: 'long'
+  });
+}
+
+function madridMonthName(value) {
+  return new Intl.DateTimeFormat('es-ES', { timeZone: DISPLAY_TIMEZONE, month: 'long' }).format(
+    value instanceof Date ? value : parseDateLike(value)
+  );
+}
+
+export function formatMadridLongDay(value) {
+  const date = value instanceof Date ? value : parseDateLike(value);
+  if (Number.isNaN(date.getTime())) return '';
+  return new Intl.DateTimeFormat('es-ES', {
+    timeZone: DISPLAY_TIMEZONE,
+    weekday: 'long',
+    day: 'numeric',
+    month: 'long'
+  }).format(date).replace(',', '');
+}
+
+export function formatMadridLongDayRange(start, end) {
+  const startParts = getMadridDateParts(start);
+  const endParts = getMadridDateParts(end);
+  if (!startParts || !endParts) return '';
+  const startDate = start instanceof Date ? start : parseDateLike(start);
+  const endDate = end instanceof Date ? end : parseDateLike(end);
+  if (startParts.year !== endParts.year) {
+    return `del ${madridDayMonthFormatter().format(startDate)} de ${startParts.year} al ${madridDayMonthFormatter().format(endDate)} de ${endParts.year}`;
+  }
+  if (startParts.month !== endParts.month) {
+    return `del ${madridDayMonthFormatter().format(startDate)} al ${madridDayMonthFormatter().format(endDate)}`;
+  }
+  return `del ${startParts.day} al ${endParts.day} de ${madridMonthName(endDate)}`;
+}
+
+export function formatMadridMonthYear(value) {
+  const parts = getMadridDateParts(value);
+  if (!parts) return '';
+  return `${madridMonthName(value)} de ${parts.year}`;
+}
+
+export function formatMadridMonthRange(start, end) {
+  const startParts = getMadridDateParts(start);
+  const endParts = getMadridDateParts(end);
+  if (!startParts || !endParts) return '';
+  if (startParts.year !== endParts.year) {
+    return `de ${madridMonthName(start)} de ${startParts.year} a ${madridMonthName(end)} de ${endParts.year}`;
+  }
+  return `de ${madridMonthName(start)} a ${madridMonthName(end)} de ${endParts.year}`;
+}
+
 export function normalizeImage(imageUrl) {
   if (!imageUrl) return null;
   return imageUrl;
