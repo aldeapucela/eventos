@@ -363,25 +363,37 @@ function siteDataPayload(events, filters = deriveFilters(events), options = {}) 
   });
 }
 
-function buildTimePageDayGroups(enrichedEvents, now, weekendOnly = false) {
+function dayKeyLabel(key) {
+  const [year, month, day] = key.split('-').map(Number);
+  const date = new Date(Date.UTC(year, month - 1, day, 12));
+  return formatInMadrid(date, { weekday: 'short', day: 'numeric', month: 'short' })
+    .format(date)
+    .replace(',', '')
+    .replace(/\b\w/, (m) => m.toUpperCase());
+}
+
+function buildTimePageDayGroups(enrichedEvents, now, options = {}) {
+  const { weekendOnly = false, windowStartKey = '' } = options;
   const todayKey = toLocalDateKey(now);
   const tomorrowKey = toLocalDateKey(new Date(now.getTime() + 24 * 60 * 60 * 1000));
   const groups = new Map();
   for (const event of enrichedEvents) {
-    const key = event.startsAtDayKey;
+    let key = event.startsAtDayKey;
     if (!key) continue;
+    // Un multi-día que empieza antes de la ventana se lista en el primer día
+    // de esta, para no mostrar fechas fuera del rango que la página declara.
+    if (windowStartKey && key < windowStartKey) key = windowStartKey;
     if (weekendOnly && !isWeekendDayKey(key)) continue;
     if (!groups.has(key)) groups.set(key, []);
     groups.get(key).push(event);
   }
   return [...groups.keys()].sort().map((key) => {
-    const dayEvents = groups.get(key);
-    const baseLabel = dayEvents[0].startsAtDayLabel;
+    const baseLabel = dayKeyLabel(key);
     const prefix = key === todayKey ? 'Hoy' : key === tomorrowKey ? 'Mañana' : '';
     return {
       key,
       label: prefix ? `${prefix}, ${baseLabel}` : baseLabel,
-      events: dayEvents
+      events: groups.get(key)
     };
   });
 }
@@ -575,7 +587,10 @@ async function buildSite(events) {
     const { ongoing: pageOngoing, listed } = selectTimePageEvents(events, page.window, buildNow);
     const enrichedListed = sortEvents(listed).map(enrichEvent).map(withVenueKeys);
     const enrichedOngoing = sortEvents(pageOngoing).map(enrichEvent).map(withVenueKeys);
-    const dayGroups = buildTimePageDayGroups(enrichedListed, buildNow, page.weekendOnly);
+    const dayGroups = buildTimePageDayGroups(enrichedListed, buildNow, {
+      weekendOnly: page.weekendOnly,
+      windowStartKey: toLocalDateKey(page.window.start)
+    });
     const pageUrl = `${publicBaseUrl}${page.path}`;
     const itemListItems = [...enrichedOngoing, ...dayGroups.flatMap((group) => group.events)].map((event) => ({
       url: `${publicBaseUrl}/e/${event.id}/${event.slug}/`,
