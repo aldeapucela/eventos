@@ -120,6 +120,17 @@ document.addEventListener('click', async (event) => {
   const venueModalClose = event.target.closest('[data-venue-modal-close]');
   const venueFilterOption = event.target.closest('[data-venue-filter-value]');
   const venueClear = event.target.closest('[data-venue-clear]');
+  const timeLink = event.target.closest('a[data-time-link]');
+
+  // Los enlaces temporales arrastran los filtros activos (?free, ?type, ?venue).
+  if (timeLink) {
+    const href = timeLink.getAttribute('href') || '/';
+    const target = buildTimeFilterHref(href, 'all');
+    if (target !== href) {
+      event.preventDefault();
+      window.location.href = target;
+    }
+  }
 
   if (carouselPrev) {
     event.preventDefault();
@@ -245,16 +256,26 @@ document.addEventListener('click', async (event) => {
 
   if (dateFilterOption) {
     event.preventDefault();
-    activeTimeFilter = normalizeTimeFilter(dateFilterOption.dataset.dateFilterValue);
-    applyFilters();
-    closeDateModal();
+    if (isServerRenderedList) {
+      // En páginas temporales la ventana de fechas vive en el servidor: la
+      // selección se resuelve navegando a la portada con el filtro en la URL.
+      window.location.href = buildTimeFilterHref('/', normalizeTimeFilter(dateFilterOption.dataset.dateFilterValue));
+    } else {
+      activeTimeFilter = normalizeTimeFilter(dateFilterOption.dataset.dateFilterValue);
+      applyFilters();
+      closeDateModal();
+    }
   }
 
   if (dateClear) {
     event.preventDefault();
-    activeTimeFilter = 'all';
-    applyFilters();
-    closeDateModal();
+    if (isServerRenderedList) {
+      window.location.href = buildTimeFilterHref('/', 'all');
+    } else {
+      activeTimeFilter = 'all';
+      applyFilters();
+      closeDateModal();
+    }
   }
 
   if (typeModalOpen) {
@@ -556,6 +577,18 @@ function getRelativeDatePrefix(dateIso) {
   if (dateStr === todayStr) return 'Hoy';
   if (dateStr === tomorrowStr) return 'Mañana';
   return '';
+}
+
+// Construye un href conservando los filtros activos de la URL (?free, ?type,
+// ?venue) y fijando (o quitando, con 'all') el filtro temporal.
+function buildTimeFilterHref(basePath, timeValue) {
+  const params = new URLSearchParams(window.location.search);
+  params.delete('time');
+  if (timeValue && timeValue !== 'all') {
+    params.set('time', timeValue);
+  }
+  const query = params.toString();
+  return `${basePath}${query ? `?${query}` : ''}`;
 }
 
 function getFiltersFromUrl() {
@@ -1497,6 +1530,10 @@ if (dateMonthSelect) {
   dateMonthSelect.addEventListener('change', (event) => {
     const value = String(event.target.value || '');
     if (!value) return;
+    if (isServerRenderedList) {
+      window.location.href = buildTimeFilterHref('/', normalizeTimeFilter(value));
+      return;
+    }
     activeTimeFilter = normalizeTimeFilter(value);
     applyFilters();
     closeDateModal();

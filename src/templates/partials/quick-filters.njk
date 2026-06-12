@@ -1,19 +1,19 @@
 {# Los chips temporales son enlaces a páginas estáticas (/hoy/, /fin-de-semana/...);
    el chip activo enlaza a / para "quitar" el filtro. #}
 <div class="mobile-chip-row" aria-label="Filtros rápidos">
-  <a class="mobile-chip{% if timeFilterKey == 'Hoy' %} mobile-chip-active{% endif %}" href="{% if timeFilterKey == 'Hoy' %}/{% else %}/hoy/{% endif %}"{% if timeFilterKey == 'Hoy' %} aria-current="page"{% endif %}>
+  <a class="mobile-chip{% if timeFilterKey == 'Hoy' %} mobile-chip-active{% endif %}" href="{% if timeFilterKey == 'Hoy' %}/{% else %}/hoy/{% endif %}" data-time-link{% if timeFilterKey == 'Hoy' %} aria-current="page"{% endif %}>
     <i class="mobile-chip-icon fa-regular fa-sun" aria-hidden="true"></i>
     <span>Hoy</span>
   </a>
-  <a class="mobile-chip{% if timeFilterKey == 'Este finde' %} mobile-chip-active{% endif %}" href="{% if timeFilterKey == 'Este finde' %}/{% else %}/fin-de-semana/{% endif %}"{% if timeFilterKey == 'Este finde' %} aria-current="page"{% endif %}>
+  <a class="mobile-chip{% if timeFilterKey == 'Este finde' %} mobile-chip-active{% endif %}" href="{% if timeFilterKey == 'Este finde' %}/{% else %}/fin-de-semana/{% endif %}" data-time-link{% if timeFilterKey == 'Este finde' %} aria-current="page"{% endif %}>
     <i class="mobile-chip-icon fa-solid fa-umbrella-beach" aria-hidden="true"></i>
     <span>Este finde</span>
   </a>
-  <a class="mobile-chip{% if timeFilterKey == 'Esta semana' %} mobile-chip-active{% endif %}" href="{% if timeFilterKey == 'Esta semana' %}/{% else %}/esta-semana/{% endif %}"{% if timeFilterKey == 'Esta semana' %} aria-current="page"{% endif %}>
+  <a class="mobile-chip{% if timeFilterKey == 'Esta semana' %} mobile-chip-active{% endif %}" href="{% if timeFilterKey == 'Esta semana' %}/{% else %}/esta-semana/{% endif %}" data-time-link{% if timeFilterKey == 'Esta semana' %} aria-current="page"{% endif %}>
     <i class="mobile-chip-icon fa-regular fa-calendar" aria-hidden="true"></i>
     <span>Esta semana</span>
   </a>
-  <a class="mobile-chip{% if timeFilterKey == 'Próxima semana' %} mobile-chip-active{% endif %}" href="{% if timeFilterKey == 'Próxima semana' %}/{% else %}/proxima-semana/{% endif %}"{% if timeFilterKey == 'Próxima semana' %} aria-current="page"{% endif %}>
+  <a class="mobile-chip{% if timeFilterKey == 'Próxima semana' %} mobile-chip-active{% endif %}" href="{% if timeFilterKey == 'Próxima semana' %}/{% else %}/proxima-semana/{% endif %}" data-time-link{% if timeFilterKey == 'Próxima semana' %} aria-current="page"{% endif %}>
     <i class="mobile-chip-icon fa-solid fa-calendar-plus" aria-hidden="true"></i>
     <span>Próxima semana</span>
   </a>
