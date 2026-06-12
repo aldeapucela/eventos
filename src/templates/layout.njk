@@ -27,6 +27,7 @@
     <meta name="twitter:description" content="{{ social.description or meta.description or 'Agenda cultural de Aldea Pucela' }}" />
     {% if social.image %}<meta name="twitter:image" content="{{ social.image }}" />{% endif %}
     {% endif %}
+    {% if jsonLd %}<script type="application/ld+json">{{ jsonLd | safe }}</script>{% endif %}
     {% block extraHead %}{% endblock %}
     <script>
       (function () {

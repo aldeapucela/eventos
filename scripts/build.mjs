@@ -11,6 +11,7 @@ import { deriveFilters, sortEvents, splitFeatured, getPastEvents, groupEventsByM
 import { DISPLAY_TIMEZONE, escapeHtml, formatDateRange, formatDateTime, isSameMadridDay, parseDateLike, toMadridDateKey } from '../src/data/format.mjs';
 import { enrichVenueCatalog, mergeSpacesWithVenueCatalog } from '../src/data/venues.mjs';
 import { VENUE_CANONICAL_MAP } from '../src/data/venue-aliases.mjs';
+import { buildCollectionPageJsonLd, buildEventJsonLd, serializeJsonLd } from '../src/data/structured-data.mjs';
 import { syncEvents } from './sync-lib.mjs';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -398,6 +399,11 @@ async function buildSite(events) {
       .filter((space) => space?.name)
       .map((space) => [normalizeVenueKey(canonicalizeVenue(space.name)), space.name])
   );
+  const spaceByVenueKey = new Map(
+    spaces
+      .filter((space) => space?.name)
+      .map((space) => [normalizeVenueKey(canonicalizeVenue(space.name)), space])
+  );
   const assetVersion = await computeAssetVersion();
   const eventsPayload = siteDataPayload(events, filters, { spaces, spaceNameByVenueKey });
   console.log(`build: data ${elapsedMs('data').toFixed(1)}ms`);
@@ -523,11 +529,13 @@ async function buildSite(events) {
     const moreInVenueTitle = canonicalizeVenue(event.venue || '') || event.venue || '';
     const venueSlug = eventVenueKey ? spaceSlugByVenueKey.get(eventVenueKey) : '';
     const moreInVenueHref = venueSlug ? `/espacios#${venueSlug}` : '/espacios';
+    const venueEntry = eventVenueKey ? spaceByVenueKey.get(eventVenueKey) || null : null;
 
     await writeFile(path.join('e', String(event.id), event.slug, 'index.html'), render('event-detail.njk', {
       title: `${event.title} - Eventos Valladolid - Aldea Pucela`,
       meta: { description: event.excerpt },
       canonicalUrl: `${publicBaseUrl}/e/${event.id}/${event.slug}/`,
+      jsonLd: serializeJsonLd(buildEventJsonLd(event, { publicBaseUrl, venueEntry })),
       pageCss: 'event-detail.css',
       pageJs: 'event-detail.js',
       event,
