@@ -12,6 +12,7 @@ import { DISPLAY_TIMEZONE, escapeHtml, formatDateRange, formatDateTime, isSameMa
 import { enrichVenueCatalog, mergeSpacesWithVenueCatalog } from '../src/data/venues.mjs';
 import { VENUE_CANONICAL_MAP } from '../src/data/venue-aliases.mjs';
 import { buildCollectionPageJsonLd, buildEventJsonLd, serializeJsonLd } from '../src/data/structured-data.mjs';
+import { getTimePages, isWeekendDayKey, resolveBuildNow, selectTimePageEvents } from '../src/data/time-windows.mjs';
 import { syncEvents } from './sync-lib.mjs';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -335,6 +336,29 @@ function siteDataPayload(events, filters = deriveFilters(events), options = {}) 
   });
 }
 
+function buildTimePageDayGroups(enrichedEvents, now, weekendOnly = false) {
+  const todayKey = toLocalDateKey(now);
+  const tomorrowKey = toLocalDateKey(new Date(now.getTime() + 24 * 60 * 60 * 1000));
+  const groups = new Map();
+  for (const event of enrichedEvents) {
+    const key = event.startsAtDayKey;
+    if (!key) continue;
+    if (weekendOnly && !isWeekendDayKey(key)) continue;
+    if (!groups.has(key)) groups.set(key, []);
+    groups.get(key).push(event);
+  }
+  return [...groups.keys()].sort().map((key) => {
+    const dayEvents = groups.get(key);
+    const baseLabel = dayEvents[0].startsAtDayLabel;
+    const prefix = key === todayKey ? 'Hoy' : key === tomorrowKey ? 'Mañana' : '';
+    return {
+      key,
+      label: prefix ? `${prefix}, ${baseLabel}` : baseLabel,
+      events: dayEvents
+    };
+  });
+}
+
 function sameDay(a, b) {
   return isSameMadridDay(a, b);
 }
@@ -514,6 +538,54 @@ async function buildSite(events) {
     }))),
     ...sharedContext
   }));
+
+  const buildNow = resolveBuildNow();
+  const withVenueKeys = (event) => {
+    const venueKey = normalizeVenueKey(canonicalizeVenue(event.venue || event.location || ''));
+    return { ...event, venueKey, venueLabel: spaceNameByVenueKey.get(venueKey) || '' };
+  };
+  for (const page of getTimePages(buildNow)) {
+    const { ongoing: pageOngoing, listed } = selectTimePageEvents(events, page.window, buildNow);
+    const enrichedListed = sortEvents(listed).map(enrichEvent).map(withVenueKeys);
+    const enrichedOngoing = sortEvents(pageOngoing).map(enrichEvent).map(withVenueKeys);
+    const dayGroups = buildTimePageDayGroups(enrichedListed, buildNow, page.weekendOnly);
+    const pageUrl = `${publicBaseUrl}${page.path}`;
+    const itemListItems = [...enrichedOngoing, ...dayGroups.flatMap((group) => group.events)].map((event) => ({
+      url: `${publicBaseUrl}/e/${event.id}/${event.slug}/`,
+      name: event.title
+    }));
+    await writeFile(path.join(page.slug, 'index.html'), render('time-page.njk', {
+      title: page.title,
+      meta: { description: page.description },
+      canonicalUrl: pageUrl,
+      jsonLd: itemListItems.length
+        ? serializeJsonLd(buildCollectionPageJsonLd({
+            name: page.h1,
+            description: page.description,
+            url: pageUrl,
+            items: itemListItems
+          }))
+        : null,
+      social: {
+        type: 'website',
+        title: page.title,
+        description: page.description,
+        image: `${publicBaseUrl}/assets/social-preview.jpg`,
+        url: pageUrl
+      },
+      pageCss: 'home.css',
+      pageJs: 'home.js',
+      activeNav: 'home',
+      pageH1: page.h1,
+      pageH2: page.h2,
+      timeFilterKey: page.filterKey,
+      ongoing: enrichedOngoing,
+      dayGroups,
+      categories: filters,
+      includeSiteData: true,
+      ...sharedContext
+    }));
+  }
 
   for (const event of sorted) {
     const relatedEvents = event.categoryLabel

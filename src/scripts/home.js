@@ -14,6 +14,9 @@ const resultsTitle = document.querySelector('[data-results-title]');
 const weekEmpty = document.querySelector('[data-week-empty]');
 const clearFilters = document.querySelector('[data-clear-filters]');
 const weekGroups = document.querySelector('[data-week-groups]');
+// En las páginas temporales (/hoy/, /fin-de-semana/...) la lista llega
+// renderizada del servidor y no debe re-renderizarse en cliente.
+const isServerRenderedList = Boolean(weekGroups && weekGroups.dataset.serverRendered === 'true');
 const dateModal = document.querySelector('[data-date-modal]');
 const typeModal = document.querySelector('[data-type-modal]');
 const venueModal = document.querySelector('[data-venue-modal]');
@@ -316,7 +319,7 @@ document.addEventListener('keydown', (event) => {
 
 function applyFilters(options = {}) {
   const { updateUrl = true } = options;
-  if (weekGroups) {
+  if (weekGroups && !isServerRenderedList) {
     renderWeekGroups();
   }
   filters.forEach((button) => {
@@ -541,7 +544,8 @@ function getRelativeDatePrefix(dateIso) {
 
 function getFiltersFromUrl() {
   const params = new URLSearchParams(window.location.search);
-  const time = normalizeTimeFilter(params.get('time'));
+  // En páginas temporales la ventana de fechas ya viene aplicada del servidor.
+  const time = isServerRenderedList ? 'all' : normalizeTimeFilter(params.get('time'));
   const free = params.get('free') === '1' || normalizeTimeFilter(params.get('filter')) === 'free';
   const typeParam = params.get('type') || params.get('filter') || '';
   const type = typeParam ? typeParam.split(',').map(normalizeTypeFilter).filter(t => t !== 'all') : [];
@@ -675,6 +679,7 @@ function updateTypePill() {
 }
 
 function updateDateFilterUi() {
+  if (isServerRenderedList) return;
   const active = DATE_MODAL_FILTERS.has(activeTimeFilter) || isDateMonthFilter(activeTimeFilter);
   if (dateSelectLabel) {
     dateSelectLabel.textContent = active ? `Fecha · ${getLabel(activeTimeFilter)}` : 'Fecha';
@@ -764,7 +769,7 @@ async function initializeSiteData() {
   renderDateMonthOptions();
   renderVenueOptions();
   updateVenuePill();
-  if (weekGroups) {
+  if (weekGroups && !isServerRenderedList) {
     renderWeekGroups();
   }
   syncSavedStates();
@@ -1134,6 +1139,8 @@ function closeAddEventModal() {
   addEventOpenButton?.focus();
 }
 
+// Espejo de src/templates/partials/event-compact.njk: si cambias este markup,
+// cambia también el partial (y viceversa).
 function renderWeekItem(event) {
     return `
       <article class="event-compact" data-category="${event.categoryLabel || ''}" data-free="${event.isFree ? 'true' : 'false'}" data-venue="${event.venueLabel || event.location || ''}" data-venue-key="${event.venueKey || ''}" data-starts-at="${event.startsAtIso || ''}" data-ends-at="${event.endsAtIso || ''}">
