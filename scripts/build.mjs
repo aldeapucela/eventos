@@ -421,6 +421,7 @@ async function buildSite(events) {
   await writeFile('index.html', render('home.njk', {
     title: 'Qué hacer en Valladolid | Aldea Pucela',
     meta: { description: 'Agenda cultural de Valladolid alimentada desde el foro de Aldea Pucela.' },
+    canonicalUrl: `${publicBaseUrl}/`,
     social: {
       type: 'website',
       title: 'Qué hacer en Valladolid | Aldea Pucela',
@@ -443,12 +444,13 @@ async function buildSite(events) {
   await writeFile('guardados/index.html', render('saved-events.njk', {
     title: 'Mis guardados - Eventos Valladolid - Aldea Pucela',
     meta: { description: 'Tus eventos guardados en Aldea Pucela Eventos.' },
+    robotsMeta: 'noindex,follow',
     social: {
       type: 'website',
       title: 'Mis guardados - Eventos Valladolid - Aldea Pucela',
       description: 'Tus eventos guardados en Aldea Pucela Eventos.',
       image: `${publicBaseUrl}/assets/social-preview.jpg`,
-      url: `${publicBaseUrl}/guardados`
+      url: `${publicBaseUrl}/guardados/`
     },
     pageCss: 'home.css',
     pageJs: 'saved-events.js',
@@ -462,12 +464,13 @@ async function buildSite(events) {
   await writeFile('archivo/index.html', render('archivo.njk', {
     title: 'Archivo de eventos - Eventos Valladolid - Aldea Pucela',
     meta: { description: 'Histórico de eventos culturales pasados en Valladolid.' },
+    canonicalUrl: `${publicBaseUrl}/archivo/`,
     social: {
       type: 'website',
       title: 'Archivo de eventos - Eventos Valladolid - Aldea Pucela',
       description: 'Histórico de eventos culturales pasados en Valladolid.',
       image: `${publicBaseUrl}/assets/social-preview.jpg`,
-      url: `${publicBaseUrl}/archivo`
+      url: `${publicBaseUrl}/archivo/`
     },
     pageCss: 'home.css',
     pageJs: 'home.js',
@@ -479,12 +482,13 @@ async function buildSite(events) {
   await writeFile('espacios/index.html', render('spaces.njk', {
     title: 'Espacios - Eventos Valladolid - Aldea Pucela',
     meta: { description: 'Eventos en los próximos seis meses agrupados por espacio en Valladolid.' },
+    canonicalUrl: `${publicBaseUrl}/espacios/`,
     social: {
       type: 'website',
       title: 'Espacios - Eventos Valladolid - Aldea Pucela',
       description: 'Eventos en los próximos seis meses agrupados por espacio en Valladolid.',
       image: `${publicBaseUrl}/assets/social-preview.jpg`,
-      url: `${publicBaseUrl}/espacios`
+      url: `${publicBaseUrl}/espacios/`
     },
     pageCss: 'home.css',
     pageJs: 'home.js',
@@ -523,6 +527,7 @@ async function buildSite(events) {
     await writeFile(path.join('e', String(event.id), event.slug, 'index.html'), render('event-detail.njk', {
       title: `${event.title} - Eventos Valladolid - Aldea Pucela`,
       meta: { description: event.excerpt },
+      canonicalUrl: `${publicBaseUrl}/e/${event.id}/${event.slug}/`,
       pageCss: 'event-detail.css',
       pageJs: 'event-detail.js',
       event,
@@ -543,7 +548,7 @@ async function buildSite(events) {
         title: event.title,
         description: event.summary || event.excerpt,
         image: event.image || `${publicBaseUrl}/img/logo-web.jpg`,
-        url: `${publicBaseUrl}/e/${event.id}/${event.slug}`
+        url: `${publicBaseUrl}/e/${event.id}/${event.slug}/`
       },
       includeSiteData: false,
       ...sharedContext
