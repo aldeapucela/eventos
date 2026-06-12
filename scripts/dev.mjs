@@ -36,6 +36,8 @@ const server = http.createServer(async (req, res) => {
       ? 'application/json; charset=utf-8'
       : ext === '.svg'
       ? 'image/svg+xml'
+      : ext === '.xml'
+      ? 'application/xml; charset=utf-8'
       : 'text/html; charset=utf-8';
     send(res, 200, data, type);
   } catch {

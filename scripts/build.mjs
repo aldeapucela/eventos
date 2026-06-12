@@ -211,6 +211,33 @@ function buildRssItemDescription(event, eventUrl) {
   return parts.join('').replaceAll(']]>', ']]&gt;');
 }
 
+function buildSitemapXml({ staticPages, events }) {
+  const urls = [];
+  for (const page of staticPages) {
+    urls.push({ loc: toAbsoluteUrl(page.path), lastmod: page.lastmod });
+  }
+  for (const event of events) {
+    const lastmodDate = event.updatedAt ? parseDateLike(event.updatedAt) : null;
+    urls.push({
+      loc: toAbsoluteUrl(`/e/${event.id}/${event.slug}/`),
+      lastmod: lastmodDate && !Number.isNaN(lastmodDate.getTime()) ? lastmodDate.toISOString() : ''
+    });
+  }
+  const entries = urls.map((url) => [
+    '  <url>',
+    `    <loc>${escapeHtml(url.loc)}</loc>`,
+    ...(url.lastmod ? [`    <lastmod>${url.lastmod}</lastmod>`] : []),
+    '  </url>'
+  ].join('\n')).join('\n');
+  return [
+    '<?xml version="1.0" encoding="UTF-8"?>',
+    '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">',
+    entries,
+    '</urlset>',
+    ''
+  ].join('\n');
+}
+
 function buildCalendarIcs(events, options = {}) {
   const calendarName = options.name || 'Eventos Valladolid - Aldea Pucela';
   const now = new Date();
@@ -640,6 +667,16 @@ async function buildSite(events) {
   mark('feeds');
   await writeFile('site-data.json', siteDataPayload(events, filters, { spaces, spaceNameByVenueKey }));
   await writeFile('rss.xml', buildRssXml(events));
+  // /guardados/ queda fuera a propósito (página personal, noindex).
+  await writeFile('sitemap.xml', buildSitemapXml({
+    staticPages: [
+      { path: '/', lastmod: toLocalDateKey(buildNow) },
+      { path: '/archivo/', lastmod: toLocalDateKey(buildNow) },
+      { path: '/espacios/', lastmod: toLocalDateKey(buildNow) },
+      ...getTimePages(buildNow).map((page) => ({ path: page.path, lastmod: toLocalDateKey(buildNow) }))
+    ],
+    events
+  }));
   await writeFile('calendar.ics', buildCalendarIcs(events));
   for (const feed of categoryFeeds) {
     const filteredEvents = events.filter((event) => event.categoryLabel === feed.label);
