@@ -56,6 +56,14 @@ const DATE_MODAL_FILTERS = new Set(['Este mes', 'Próximos 3 meses', 'Este año'
 const DATE_MONTH_PREFIX = 'Mes:';
 const TIME_FILTERS = new Set(['all', 'Hoy', 'Este finde', 'Esta semana', 'Próxima semana', ...DATE_MODAL_FILTERS]);
 const MOBILE_AUTO_SCROLL_FILTERS = new Set(['Hoy', 'Este finde', 'Esta semana', 'Próxima semana']);
+const PRETTY_TIME_PATHS = {
+  'Hoy': '/hoy/',
+  'Este finde': '/fin-de-semana/',
+  'Esta semana': '/esta-semana/',
+  'Próxima semana': '/proxima-semana/',
+  'Este mes': '/este-mes/',
+  'Próximos 3 meses': '/proximos-3-meses/'
+};
 let deferredInstallPrompt = null;
 let siteDataPromise = null;
 let didInitialFilterRowScroll = false;
@@ -63,6 +71,14 @@ initTheme();
 
 const today = new Date();
 const initialState = getFiltersFromUrl();
+// Compatibilidad con enlaces antiguos: /?time=Este+finde -> /fin-de-semana/
+// conservando el resto de filtros (?type=, ?venue=, ?free=).
+const prettyTimePath = window.location.pathname === '/' ? PRETTY_TIME_PATHS[initialState.time] : '';
+if (prettyTimePath) {
+  const redirectUrl = new URL(window.location.href);
+  redirectUrl.searchParams.delete('time');
+  window.location.replace(`${prettyTimePath}${redirectUrl.search}${redirectUrl.hash}`);
+}
 let activeTimeFilter = initialState.time;
 let activeFreeFilter = initialState.free;
 let activeTypeFilters = initialState.type;

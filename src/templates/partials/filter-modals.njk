@@ -80,14 +80,14 @@
     </div>
 
     <div class="calendar-modal-actions filter-date-actions">
-      <button class="calendar-modal-action filter-date-option" type="button" data-date-filter-value="Este mes">
+      <a class="calendar-modal-action filter-date-option{% if timeFilterKey == 'Este mes' %} calendar-modal-action-primary{% endif %}" href="{% if timeFilterKey == 'Este mes' %}/{% else %}/este-mes/{% endif %}">
         <i class="fa-regular fa-calendar-days" aria-hidden="true"></i>
         <span>Este mes</span>
-      </button>
-      <button class="calendar-modal-action filter-date-option" type="button" data-date-filter-value="Próximos 3 meses">
+      </a>
+      <a class="calendar-modal-action filter-date-option{% if timeFilterKey == 'Próximos 3 meses' %} calendar-modal-action-primary{% endif %}" href="{% if timeFilterKey == 'Próximos 3 meses' %}/{% else %}/proximos-3-meses/{% endif %}">
         <i class="fa-regular fa-calendar" aria-hidden="true"></i>
         <span>Próximos 3 meses</span>
-      </button>
+      </a>
       <div class="calendar-modal-action filter-date-option filter-date-select-option">
         <i class="fa-regular fa-calendar-plus" aria-hidden="true"></i>
         <span class="filter-date-select-label">Seleccionar mes</span>
