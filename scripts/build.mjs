@@ -437,6 +437,7 @@ async function buildSite(events) {
     },
     pageCss: 'home.css',
     pageJs: 'home.js',
+    activeNav: 'home',
     featured: featured ? enrichEvent(featured) : null,
     week: week.map(enrichEvent),
     ongoing: ongoing.map(enrichEvent),
