@@ -64,6 +64,9 @@ const PRETTY_TIME_PATHS = {
   'Este mes': '/este-mes/',
   'Próximos 3 meses': '/proximos-3-meses/'
 };
+const SERVER_RENDERED_TIME_FILTERS = new Map(
+  Object.entries(PRETTY_TIME_PATHS).map(([filterKey, path]) => [path, filterKey])
+);
 let deferredInstallPrompt = null;
 let siteDataPromise = null;
 let didInitialFilterRowScroll = false;
@@ -829,7 +832,7 @@ async function initializeSiteData() {
 
 function maybeScrollToFiltersOnInitialLoad() {
   if (didInitialFilterRowScroll || !isMobileViewport() || !mobileFilterRow) return;
-  if (!hasFiltersInUrl() || !hasAnyActiveFilter()) return;
+  if (!hasAnyFilterContextForInitialScroll() || !hasAnyActiveFilter()) return;
   didInitialFilterRowScroll = true;
   window.requestAnimationFrame(() => {
     const offset = 76;
@@ -838,13 +841,22 @@ function maybeScrollToFiltersOnInitialLoad() {
   });
 }
 
+function hasAnyFilterContextForInitialScroll() {
+  return hasFiltersInUrl() || hasServerRenderedTimeFilter();
+}
+
 function hasFiltersInUrl() {
   const params = new URLSearchParams(window.location.search);
   return ['time', 'free', 'type', 'venue', 'filter'].some((key) => params.has(key));
 }
 
+function hasServerRenderedTimeFilter() {
+  if (!isServerRenderedList) return false;
+  return SERVER_RENDERED_TIME_FILTERS.has(window.location.pathname);
+}
+
 function hasAnyActiveFilter() {
-  return activeTimeFilter !== 'all' || activeFreeFilter || activeTypeFilters.length > 0 || activeVenueFilter !== 'all';
+  return activeTimeFilter !== 'all' || hasServerRenderedTimeFilter() || activeFreeFilter || activeTypeFilters.length > 0 || activeVenueFilter !== 'all';
 }
 
 async function loadSiteData() {
