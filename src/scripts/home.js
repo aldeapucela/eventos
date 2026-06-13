@@ -428,6 +428,10 @@ filters.forEach((button) => {
 if (clearFilters) {
   clearFilters.addEventListener('click', (event) => {
     event.preventDefault();
+    if (isServerRenderedList) {
+      window.location.href = '/';
+      return;
+    }
     activeTimeFilter = 'all';
     activeFreeFilter = false;
     activeTypeFilters = [];
