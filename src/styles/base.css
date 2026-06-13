@@ -246,6 +246,18 @@
     @apply px-0 pb-4 pt-0 sm:pb-6 lg:pb-8;
   }
 
+  .time-page-intro {
+    @apply px-4 pt-6 sm:px-0 sm:pt-3;
+  }
+
+  .time-page-intro-head {
+    @apply max-w-none text-left;
+  }
+
+  .time-page-intro-subtitle {
+    @apply max-w-[32ch] text-base leading-[1.6] text-slate-500 sm:max-w-[46ch];
+  }
+
   .hero-mobile-title {
     @apply relative z-20 max-w-[12ch] font-display text-[2.65rem] font-bold leading-[0.94] tracking-tight text-[#2f3b54] sm:text-5xl lg:text-6xl;
   }
@@ -1511,6 +1523,14 @@ html.dark .site-footer-copy a {
   .hero-mobile-copy {
     @apply mx-[-0.75rem] px-0 pb-4 pt-0;
     margin-top: 0 !important;
+  }
+
+  .time-page-intro {
+    @apply px-4 pt-6;
+  }
+
+  .time-page-intro-subtitle {
+    @apply mt-2 max-w-[30ch] text-left leading-[1.65];
   }
 
   .hero-mobile-title {
