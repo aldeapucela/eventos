@@ -428,6 +428,10 @@ filters.forEach((button) => {
 if (clearFilters) {
   clearFilters.addEventListener('click', (event) => {
     event.preventDefault();
+    if (isServerRenderedList) {
+      window.location.href = '/';
+      return;
+    }
     activeTimeFilter = 'all';
     activeFreeFilter = false;
     activeTypeFilters = [];
@@ -834,11 +838,7 @@ function maybeScrollToFiltersOnInitialLoad() {
   if (didInitialFilterRowScroll || !isMobileViewport() || !mobileFilterRow) return;
   if (!hasAnyFilterContextForInitialScroll() || !hasAnyActiveFilter()) return;
   didInitialFilterRowScroll = true;
-  window.requestAnimationFrame(() => {
-    const offset = 76;
-    const top = mobileFilterRow.getBoundingClientRect().top + window.scrollY - offset;
-    window.scrollTo({ top: Math.max(0, top), behavior: 'smooth' });
-  });
+  scrollToResultsSection();
 }
 
 function hasAnyFilterContextForInitialScroll() {
@@ -1357,6 +1357,16 @@ function shouldAutoScrollToFirstVisibleBlock(filterValue) {
 
 function isMobileViewport() {
   return window.matchMedia('(max-width: 767px)').matches;
+}
+
+function scrollToResultsSection() {
+  window.requestAnimationFrame(() => {
+    const target = resultsTitle || getFirstVisibleResultsBlock();
+    if (!target) return;
+    const offset = 88;
+    const top = target.getBoundingClientRect().top + window.scrollY - offset;
+    window.scrollTo({ top: Math.max(0, top), behavior: 'smooth' });
+  });
 }
 
 function scrollToFirstVisibleResultsBlock() {
