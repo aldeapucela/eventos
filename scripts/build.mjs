@@ -11,6 +11,8 @@ import { deriveFilters, sortEvents, splitFeatured, getPastEvents, groupEventsByM
 import { DISPLAY_TIMEZONE, escapeHtml, formatDateRange, formatDateTime, isSameMadridDay, parseDateLike, toMadridDateKey } from '../src/data/format.mjs';
 import { enrichVenueCatalog, mergeSpacesWithVenueCatalog } from '../src/data/venues.mjs';
 import { VENUE_CANONICAL_MAP } from '../src/data/venue-aliases.mjs';
+import { buildCollectionPageJsonLd, buildEventJsonLd, serializeJsonLd } from '../src/data/structured-data.mjs';
+import { getTimePages, isWeekendDayKey, resolveBuildNow, selectTimePageEvents } from '../src/data/time-windows.mjs';
 import { syncEvents } from './sync-lib.mjs';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -209,6 +211,33 @@ function buildRssItemDescription(event, eventUrl) {
   return parts.join('').replaceAll(']]>', ']]&gt;');
 }
 
+function buildSitemapXml({ staticPages, events }) {
+  const urls = [];
+  for (const page of staticPages) {
+    urls.push({ loc: toAbsoluteUrl(page.path), lastmod: page.lastmod });
+  }
+  for (const event of events) {
+    const lastmodDate = event.updatedAt ? parseDateLike(event.updatedAt) : null;
+    urls.push({
+      loc: toAbsoluteUrl(`/e/${event.id}/${event.slug}/`),
+      lastmod: lastmodDate && !Number.isNaN(lastmodDate.getTime()) ? lastmodDate.toISOString() : ''
+    });
+  }
+  const entries = urls.map((url) => [
+    '  <url>',
+    `    <loc>${escapeHtml(url.loc)}</loc>`,
+    ...(url.lastmod ? [`    <lastmod>${url.lastmod}</lastmod>`] : []),
+    '  </url>'
+  ].join('\n')).join('\n');
+  return [
+    '<?xml version="1.0" encoding="UTF-8"?>',
+    '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">',
+    entries,
+    '</urlset>',
+    ''
+  ].join('\n');
+}
+
 function buildCalendarIcs(events, options = {}) {
   const calendarName = options.name || 'Eventos Valladolid - Aldea Pucela';
   const now = new Date();
@@ -334,6 +363,41 @@ function siteDataPayload(events, filters = deriveFilters(events), options = {}) 
   });
 }
 
+function dayKeyLabel(key) {
+  const [year, month, day] = key.split('-').map(Number);
+  const date = new Date(Date.UTC(year, month - 1, day, 12));
+  return formatInMadrid(date, { weekday: 'short', day: 'numeric', month: 'short' })
+    .format(date)
+    .replace(',', '')
+    .replace(/\b\w/, (m) => m.toUpperCase());
+}
+
+function buildTimePageDayGroups(enrichedEvents, now, options = {}) {
+  const { weekendOnly = false, windowStartKey = '' } = options;
+  const todayKey = toLocalDateKey(now);
+  const tomorrowKey = toLocalDateKey(new Date(now.getTime() + 24 * 60 * 60 * 1000));
+  const groups = new Map();
+  for (const event of enrichedEvents) {
+    let key = event.startsAtDayKey;
+    if (!key) continue;
+    // Un multi-día que empieza antes de la ventana se lista en el primer día
+    // de esta, para no mostrar fechas fuera del rango que la página declara.
+    if (windowStartKey && key < windowStartKey) key = windowStartKey;
+    if (weekendOnly && !isWeekendDayKey(key)) continue;
+    if (!groups.has(key)) groups.set(key, []);
+    groups.get(key).push(event);
+  }
+  return [...groups.keys()].sort().map((key) => {
+    const baseLabel = dayKeyLabel(key);
+    const prefix = key === todayKey ? 'Hoy' : key === tomorrowKey ? 'Mañana' : '';
+    return {
+      key,
+      label: prefix ? `${prefix}, ${baseLabel}` : baseLabel,
+      events: groups.get(key)
+    };
+  });
+}
+
 function sameDay(a, b) {
   return isSameMadridDay(a, b);
 }
@@ -398,6 +462,11 @@ async function buildSite(events) {
       .filter((space) => space?.name)
       .map((space) => [normalizeVenueKey(canonicalizeVenue(space.name)), space.name])
   );
+  const spaceByVenueKey = new Map(
+    spaces
+      .filter((space) => space?.name)
+      .map((space) => [normalizeVenueKey(canonicalizeVenue(space.name)), space])
+  );
   const assetVersion = await computeAssetVersion();
   const eventsPayload = siteDataPayload(events, filters, { spaces, spaceNameByVenueKey });
   console.log(`build: data ${elapsedMs('data').toFixed(1)}ms`);
@@ -421,6 +490,7 @@ async function buildSite(events) {
   await writeFile('index.html', render('home.njk', {
     title: 'Qué hacer en Valladolid | Aldea Pucela',
     meta: { description: 'Agenda cultural de Valladolid alimentada desde el foro de Aldea Pucela.' },
+    canonicalUrl: `${publicBaseUrl}/`,
     social: {
       type: 'website',
       title: 'Qué hacer en Valladolid | Aldea Pucela',
@@ -430,6 +500,7 @@ async function buildSite(events) {
     },
     pageCss: 'home.css',
     pageJs: 'home.js',
+    activeNav: 'home',
     featured: featured ? enrichEvent(featured) : null,
     week: week.map(enrichEvent),
     ongoing: ongoing.map(enrichEvent),
@@ -443,12 +514,13 @@ async function buildSite(events) {
   await writeFile('guardados/index.html', render('saved-events.njk', {
     title: 'Mis guardados - Eventos Valladolid - Aldea Pucela',
     meta: { description: 'Tus eventos guardados en Aldea Pucela Eventos.' },
+    robotsMeta: 'noindex,follow',
     social: {
       type: 'website',
       title: 'Mis guardados - Eventos Valladolid - Aldea Pucela',
       description: 'Tus eventos guardados en Aldea Pucela Eventos.',
       image: `${publicBaseUrl}/assets/social-preview.jpg`,
-      url: `${publicBaseUrl}/guardados`
+      url: `${publicBaseUrl}/guardados/`
     },
     pageCss: 'home.css',
     pageJs: 'saved-events.js',
@@ -462,12 +534,13 @@ async function buildSite(events) {
   await writeFile('archivo/index.html', render('archivo.njk', {
     title: 'Archivo de eventos - Eventos Valladolid - Aldea Pucela',
     meta: { description: 'Histórico de eventos culturales pasados en Valladolid.' },
+    canonicalUrl: `${publicBaseUrl}/archivo/`,
     social: {
       type: 'website',
       title: 'Archivo de eventos - Eventos Valladolid - Aldea Pucela',
       description: 'Histórico de eventos culturales pasados en Valladolid.',
       image: `${publicBaseUrl}/assets/social-preview.jpg`,
-      url: `${publicBaseUrl}/archivo`
+      url: `${publicBaseUrl}/archivo/`
     },
     pageCss: 'home.css',
     pageJs: 'home.js',
@@ -479,12 +552,13 @@ async function buildSite(events) {
   await writeFile('espacios/index.html', render('spaces.njk', {
     title: 'Espacios - Eventos Valladolid - Aldea Pucela',
     meta: { description: 'Eventos en los próximos seis meses agrupados por espacio en Valladolid.' },
+    canonicalUrl: `${publicBaseUrl}/espacios/`,
     social: {
       type: 'website',
       title: 'Espacios - Eventos Valladolid - Aldea Pucela',
       description: 'Eventos en los próximos seis meses agrupados por espacio en Valladolid.',
       image: `${publicBaseUrl}/assets/social-preview.jpg`,
-      url: `${publicBaseUrl}/espacios`
+      url: `${publicBaseUrl}/espacios/`
     },
     pageCss: 'home.css',
     pageJs: 'home.js',
@@ -504,6 +578,57 @@ async function buildSite(events) {
     ...sharedContext
   }));
 
+  const buildNow = resolveBuildNow();
+  const withVenueKeys = (event) => {
+    const venueKey = normalizeVenueKey(canonicalizeVenue(event.venue || event.location || ''));
+    return { ...event, venueKey, venueLabel: spaceNameByVenueKey.get(venueKey) || '' };
+  };
+  for (const page of getTimePages(buildNow)) {
+    const { ongoing: pageOngoing, listed } = selectTimePageEvents(events, page.window, buildNow);
+    const enrichedListed = sortEvents(listed).map(enrichEvent).map(withVenueKeys);
+    const enrichedOngoing = sortEvents(pageOngoing).map(enrichEvent).map(withVenueKeys);
+    const dayGroups = buildTimePageDayGroups(enrichedListed, buildNow, {
+      weekendOnly: page.weekendOnly,
+      windowStartKey: toLocalDateKey(page.window.start)
+    });
+    const pageUrl = `${publicBaseUrl}${page.path}`;
+    const itemListItems = [...enrichedOngoing, ...dayGroups.flatMap((group) => group.events)].map((event) => ({
+      url: `${publicBaseUrl}/e/${event.id}/${event.slug}/`,
+      name: event.title
+    }));
+    await writeFile(path.join(page.slug, 'index.html'), render('time-page.njk', {
+      title: page.title,
+      meta: { description: page.description },
+      canonicalUrl: pageUrl,
+      jsonLd: itemListItems.length
+        ? serializeJsonLd(buildCollectionPageJsonLd({
+            name: page.h1,
+            description: page.description,
+            url: pageUrl,
+            items: itemListItems
+          }))
+        : null,
+      social: {
+        type: 'website',
+        title: page.title,
+        description: page.description,
+        image: `${publicBaseUrl}/assets/social-preview.jpg`,
+        url: pageUrl
+      },
+      pageCss: 'home.css',
+      pageJs: 'home.js',
+      activeNav: 'home',
+      pageH1: page.h1,
+      pageH2: page.h2,
+      timeFilterKey: page.filterKey,
+      ongoing: enrichedOngoing,
+      dayGroups,
+      categories: filters,
+      includeSiteData: true,
+      ...sharedContext
+    }));
+  }
+
   for (const event of sorted) {
     const relatedEvents = event.categoryLabel
       ? sorted.filter((e) => e.id !== event.id && e.categoryLabel === event.categoryLabel && !e.hasEnded).slice(0, 4)
@@ -519,10 +644,13 @@ async function buildSite(events) {
     const moreInVenueTitle = canonicalizeVenue(event.venue || '') || event.venue || '';
     const venueSlug = eventVenueKey ? spaceSlugByVenueKey.get(eventVenueKey) : '';
     const moreInVenueHref = venueSlug ? `/espacios#${venueSlug}` : '/espacios';
+    const venueEntry = eventVenueKey ? spaceByVenueKey.get(eventVenueKey) || null : null;
 
     await writeFile(path.join('e', String(event.id), event.slug, 'index.html'), render('event-detail.njk', {
       title: `${event.title} - Eventos Valladolid - Aldea Pucela`,
       meta: { description: event.excerpt },
+      canonicalUrl: `${publicBaseUrl}/e/${event.id}/${event.slug}/`,
+      jsonLd: serializeJsonLd(buildEventJsonLd(event, { publicBaseUrl, venueEntry })),
       pageCss: 'event-detail.css',
       pageJs: 'event-detail.js',
       event,
@@ -543,7 +671,7 @@ async function buildSite(events) {
         title: event.title,
         description: event.summary || event.excerpt,
         image: event.image || `${publicBaseUrl}/img/logo-web.jpg`,
-        url: `${publicBaseUrl}/e/${event.id}/${event.slug}`
+        url: `${publicBaseUrl}/e/${event.id}/${event.slug}/`
       },
       includeSiteData: false,
       ...sharedContext
@@ -554,6 +682,16 @@ async function buildSite(events) {
   mark('feeds');
   await writeFile('site-data.json', siteDataPayload(events, filters, { spaces, spaceNameByVenueKey }));
   await writeFile('rss.xml', buildRssXml(events));
+  // /guardados/ queda fuera a propósito (página personal, noindex).
+  await writeFile('sitemap.xml', buildSitemapXml({
+    staticPages: [
+      { path: '/', lastmod: toLocalDateKey(buildNow) },
+      { path: '/archivo/', lastmod: toLocalDateKey(buildNow) },
+      { path: '/espacios/', lastmod: toLocalDateKey(buildNow) },
+      ...getTimePages(buildNow).map((page) => ({ path: page.path, lastmod: toLocalDateKey(buildNow) }))
+    ],
+    events
+  }));
   await writeFile('calendar.ics', buildCalendarIcs(events));
   for (const feed of categoryFeeds) {
     const filteredEvents = events.filter((event) => event.categoryLabel === feed.label);

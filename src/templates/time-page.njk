@@ -8,57 +8,13 @@
 <main class="page-shell py-5 sm:py-8 lg:py-10">
   <section class="home-layout space-y-8 lg:space-y-10">
     <div class="home-column space-y-6">
-      <section class="hero-mobile-copy">
-        <div class="hero-mobile-visual">
-          <img
-            class="hero-mobile-image"
-            src="/assets/home-hero.jpg"
-            alt=""
-            loading="eager"
-            fetchpriority="high"
-            decoding="async"
-          />
-          <div class="hero-mobile-overlay">
-            <div class="hero-mobile-text-panel">
-              <h1 class="hero-mobile-title">Qué hacer en Valladolid</h1>
-              <p class="hero-mobile-subtitle">Agenda vecinal de eventos culturales</p>
-              <span class="hero-mobile-accent" aria-hidden="true"></span>
-            </div>
-          </div>
-        </div>
-
-        <div class="hero-mobile-search hidden" aria-hidden="true">
-          <i class="fa-solid fa-magnifying-glass"></i>
-          <span>Buscar eventos, lugares, temas...</span>
-        </div>
-
+      <section class="hero-mobile-copy space-y-4">
+        <header class="space-y-1">
+          <h1 class="section-mobile-title">{{ pageH1 }}</h1>
+          <h2 class="text-sm font-normal leading-6 text-slate-500">{{ pageH2 }}</h2>
+        </header>
         {% include "partials/quick-filters.njk" %}
       </section>
-
-      {% if featured %}
-      {% if featured %}
-      <section class="space-y-4">
-        <div class="section-mobile-head">
-          <h2 class="section-mobile-title">Destacado</h2>
-        </div>
-        <article class="featured-mobile-card">
-          <div class="featured-mobile-image" style="background-image:url('{{ featured.image }}')"></div>
-          <div class="featured-mobile-copy">
-            <p class="muted-label">{{ featured.categoryLabel or 'Destacado' }}</p>
-            <h3 class="featured-mobile-title">{{ featured.title }}</h3>
-            <p class="featured-mobile-summary">{{ featured.summary or featured.excerpt }}</p>
-            <div class="featured-mobile-meta">
-              <span>{% if featured.scheduleLabel %}{{ featured.scheduleLabel }}{% else %}{{ featured.dateRangeLabel }}{% endif %}</span>
-              {% if featured.location %}<span>{{ featured.location }}</span>{% endif %}
-            </div>
-            {% if featured.isFree %}
-            <span class="compact-badge compact-badge-success">Entrada libre</span>
-            {% endif %}
-          </div>
-        </article>
-      </section>
-      {% endif %}
-      {% endif %}
 
       {% if ongoing.length %}
       <section class="space-y-3" data-ongoing-section>
@@ -99,25 +55,30 @@
       </section>
       {% endif %}
 
-      <section class="calendar-cta-strip" aria-label="Acciones de calendario">
-        <button class="calendar-cta-chip calendar-cta-chip-primary" type="button" data-subscribe-open>
-          <i class="fa-regular fa-calendar-plus" aria-hidden="true"></i>
-          <span>Calendario</span>
-        </button>
-        <button class="calendar-cta-chip hidden" type="button" data-install-app-open>
-          <i class="fa-solid fa-mobile-screen-button" aria-hidden="true"></i>
-          <span>Añadir a pantalla de inicio</span>
-        </button>
-      </section>
-
       <section class="space-y-3" id="results">
         <div class="section-mobile-head">
-          <h2 class="section-mobile-title" data-results-title>Próximos eventos</h2>
+          <h2 class="section-mobile-title">Eventos</h2>
           <a class="section-mobile-link hidden" href="/" data-clear-filters>Quitar filtros</a>
         </div>
-        <div class="week-groups" id="week-groups" data-week-groups></div>
+        <div class="week-groups" id="week-groups" data-week-groups data-server-rendered="true">
+          {% if dayGroups.length %}
+          {% for group in dayGroups %}
+          <section class="week-day-group" data-week-day-group data-day-key="{{ group.key }}">
+            <div class="week-day-header">
+              <div class="week-day-label">{{ group.label }}</div>
+            </div>
+            <div class="event-row-list">
+              {%- for event in group.events %}
+              {% include "partials/event-compact.njk" %}
+              {%- endfor %}
+            </div>
+          </section>
+          {% endfor %}
+          {% else %}
+          <p class="text-sm leading-6 text-slate-500">Todavía no hay eventos publicados para estas fechas. Echa un vistazo a <a class="underline" href="/esta-semana/">esta semana</a> o a <a class="underline" href="/">toda la agenda</a>.</p>
+          {% endif %}
+        </div>
         <p class="hidden text-sm leading-6 text-slate-500" data-week-empty>No hay eventos para este filtro.</p>
-
       </section>
     </div>
   </section>

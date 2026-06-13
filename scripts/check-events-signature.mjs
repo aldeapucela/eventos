@@ -69,6 +69,15 @@ async function fetchAllTopics() {
   return topics;
 }
 
+function madridDateKey() {
+  return new Intl.DateTimeFormat('en-CA', {
+    timeZone: 'Europe/Madrid',
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit'
+  }).format(new Date());
+}
+
 function computeDigest(topics) {
   const payload = topics
     .filter((topic) => !shouldSkipTopic(topic))
@@ -76,7 +85,10 @@ function computeDigest(topics) {
     .sort()
     .join('\n');
 
-  return crypto.createHash('sha256').update(payload).digest('hex');
+  // Las páginas temporales (/hoy/, /fin-de-semana/...) dependen de la fecha:
+  // salamos el digest con el día de Madrid para forzar un rebuild en la
+  // primera pasada del cron tras la medianoche aunque el foro no cambie.
+  return crypto.createHash('sha256').update(`${madridDateKey()}\n${payload}`).digest('hex');
 }
 
 async function readPreviousDigest() {

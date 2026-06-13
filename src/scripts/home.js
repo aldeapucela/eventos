@@ -14,6 +14,9 @@ const resultsTitle = document.querySelector('[data-results-title]');
 const weekEmpty = document.querySelector('[data-week-empty]');
 const clearFilters = document.querySelector('[data-clear-filters]');
 const weekGroups = document.querySelector('[data-week-groups]');
+// En las páginas temporales (/hoy/, /fin-de-semana/...) la lista llega
+// renderizada del servidor y no debe re-renderizarse en cliente.
+const isServerRenderedList = Boolean(weekGroups && weekGroups.dataset.serverRendered === 'true');
 const dateModal = document.querySelector('[data-date-modal]');
 const typeModal = document.querySelector('[data-type-modal]');
 const venueModal = document.querySelector('[data-venue-modal]');
@@ -53,6 +56,17 @@ const DATE_MODAL_FILTERS = new Set(['Este mes', 'Próximos 3 meses', 'Este año'
 const DATE_MONTH_PREFIX = 'Mes:';
 const TIME_FILTERS = new Set(['all', 'Hoy', 'Este finde', 'Esta semana', 'Próxima semana', ...DATE_MODAL_FILTERS]);
 const MOBILE_AUTO_SCROLL_FILTERS = new Set(['Hoy', 'Este finde', 'Esta semana', 'Próxima semana']);
+const PRETTY_TIME_PATHS = {
+  'Hoy': '/hoy/',
+  'Este finde': '/fin-de-semana/',
+  'Esta semana': '/esta-semana/',
+  'Próxima semana': '/proxima-semana/',
+  'Este mes': '/este-mes/',
+  'Próximos 3 meses': '/proximos-3-meses/'
+};
+const SERVER_RENDERED_TIME_FILTERS = new Map(
+  Object.entries(PRETTY_TIME_PATHS).map(([filterKey, path]) => [path, filterKey])
+);
 let deferredInstallPrompt = null;
 let siteDataPromise = null;
 let didInitialFilterRowScroll = false;
@@ -60,6 +74,14 @@ initTheme();
 
 const today = new Date();
 const initialState = getFiltersFromUrl();
+// Compatibilidad con enlaces antiguos: /?time=Este+finde -> /fin-de-semana/
+// conservando el resto de filtros (?type=, ?venue=, ?free=).
+const prettyTimePath = window.location.pathname === '/' ? PRETTY_TIME_PATHS[initialState.time] : '';
+if (prettyTimePath) {
+  const redirectUrl = new URL(window.location.href);
+  redirectUrl.searchParams.delete('time');
+  window.location.replace(`${prettyTimePath}${redirectUrl.search}${redirectUrl.hash}`);
+}
 let activeTimeFilter = initialState.time;
 let activeFreeFilter = initialState.free;
 let activeTypeFilters = initialState.type;
@@ -101,6 +123,17 @@ document.addEventListener('click', async (event) => {
   const venueModalClose = event.target.closest('[data-venue-modal-close]');
   const venueFilterOption = event.target.closest('[data-venue-filter-value]');
   const venueClear = event.target.closest('[data-venue-clear]');
+  const timeLink = event.target.closest('a[data-time-link]');
+
+  // Los enlaces temporales arrastran los filtros activos (?free, ?type, ?venue).
+  if (timeLink) {
+    const href = timeLink.getAttribute('href') || '/';
+    const target = buildTimeFilterHref(href, 'all');
+    if (target !== href) {
+      event.preventDefault();
+      window.location.href = target;
+    }
+  }
 
   if (carouselPrev) {
     event.preventDefault();
@@ -226,16 +259,26 @@ document.addEventListener('click', async (event) => {
 
   if (dateFilterOption) {
     event.preventDefault();
-    activeTimeFilter = normalizeTimeFilter(dateFilterOption.dataset.dateFilterValue);
-    applyFilters();
-    closeDateModal();
+    if (isServerRenderedList) {
+      // En páginas temporales la ventana de fechas vive en el servidor: la
+      // selección se resuelve navegando a la portada con el filtro en la URL.
+      window.location.href = buildTimeFilterHref('/', normalizeTimeFilter(dateFilterOption.dataset.dateFilterValue));
+    } else {
+      activeTimeFilter = normalizeTimeFilter(dateFilterOption.dataset.dateFilterValue);
+      applyFilters();
+      closeDateModal();
+    }
   }
 
   if (dateClear) {
     event.preventDefault();
-    activeTimeFilter = 'all';
-    applyFilters();
-    closeDateModal();
+    if (isServerRenderedList) {
+      window.location.href = buildTimeFilterHref('/', 'all');
+    } else {
+      activeTimeFilter = 'all';
+      applyFilters();
+      closeDateModal();
+    }
   }
 
   if (typeModalOpen) {
@@ -316,7 +359,7 @@ document.addEventListener('keydown', (event) => {
 
 function applyFilters(options = {}) {
   const { updateUrl = true } = options;
-  if (weekGroups) {
+  if (weekGroups && !isServerRenderedList) {
     renderWeekGroups();
   }
   filters.forEach((button) => {
@@ -539,9 +582,22 @@ function getRelativeDatePrefix(dateIso) {
   return '';
 }
 
+// Construye un href conservando los filtros activos de la URL (?free, ?type,
+// ?venue) y fijando (o quitando, con 'all') el filtro temporal.
+function buildTimeFilterHref(basePath, timeValue) {
+  const params = new URLSearchParams(window.location.search);
+  params.delete('time');
+  if (timeValue && timeValue !== 'all') {
+    params.set('time', timeValue);
+  }
+  const query = params.toString();
+  return `${basePath}${query ? `?${query}` : ''}`;
+}
+
 function getFiltersFromUrl() {
   const params = new URLSearchParams(window.location.search);
-  const time = normalizeTimeFilter(params.get('time'));
+  // En páginas temporales la ventana de fechas ya viene aplicada del servidor.
+  const time = isServerRenderedList ? 'all' : normalizeTimeFilter(params.get('time'));
   const free = params.get('free') === '1' || normalizeTimeFilter(params.get('filter')) === 'free';
   const typeParam = params.get('type') || params.get('filter') || '';
   const type = typeParam ? typeParam.split(',').map(normalizeTypeFilter).filter(t => t !== 'all') : [];
@@ -675,6 +731,7 @@ function updateTypePill() {
 }
 
 function updateDateFilterUi() {
+  if (isServerRenderedList) return;
   const active = DATE_MODAL_FILTERS.has(activeTimeFilter) || isDateMonthFilter(activeTimeFilter);
   if (dateSelectLabel) {
     dateSelectLabel.textContent = active ? `Fecha · ${getLabel(activeTimeFilter)}` : 'Fecha';
@@ -764,7 +821,7 @@ async function initializeSiteData() {
   renderDateMonthOptions();
   renderVenueOptions();
   updateVenuePill();
-  if (weekGroups) {
+  if (weekGroups && !isServerRenderedList) {
     renderWeekGroups();
   }
   syncSavedStates();
@@ -775,7 +832,7 @@ async function initializeSiteData() {
 
 function maybeScrollToFiltersOnInitialLoad() {
   if (didInitialFilterRowScroll || !isMobileViewport() || !mobileFilterRow) return;
-  if (!hasFiltersInUrl() || !hasAnyActiveFilter()) return;
+  if (!hasAnyFilterContextForInitialScroll() || !hasAnyActiveFilter()) return;
   didInitialFilterRowScroll = true;
   window.requestAnimationFrame(() => {
     const offset = 76;
@@ -784,13 +841,22 @@ function maybeScrollToFiltersOnInitialLoad() {
   });
 }
 
+function hasAnyFilterContextForInitialScroll() {
+  return hasFiltersInUrl() || hasServerRenderedTimeFilter();
+}
+
 function hasFiltersInUrl() {
   const params = new URLSearchParams(window.location.search);
   return ['time', 'free', 'type', 'venue', 'filter'].some((key) => params.has(key));
 }
 
+function hasServerRenderedTimeFilter() {
+  if (!isServerRenderedList) return false;
+  return SERVER_RENDERED_TIME_FILTERS.has(window.location.pathname);
+}
+
 function hasAnyActiveFilter() {
-  return activeTimeFilter !== 'all' || activeFreeFilter || activeTypeFilters.length > 0 || activeVenueFilter !== 'all';
+  return activeTimeFilter !== 'all' || hasServerRenderedTimeFilter() || activeFreeFilter || activeTypeFilters.length > 0 || activeVenueFilter !== 'all';
 }
 
 async function loadSiteData() {
@@ -1134,6 +1200,8 @@ function closeAddEventModal() {
   addEventOpenButton?.focus();
 }
 
+// Espejo de src/templates/partials/event-compact.njk: si cambias este markup,
+// cambia también el partial (y viceversa).
 function renderWeekItem(event) {
     return `
       <article class="event-compact" data-category="${event.categoryLabel || ''}" data-free="${event.isFree ? 'true' : 'false'}" data-venue="${event.venueLabel || event.location || ''}" data-venue-key="${event.venueKey || ''}" data-starts-at="${event.startsAtIso || ''}" data-ends-at="${event.endsAtIso || ''}">
@@ -1474,6 +1542,10 @@ if (dateMonthSelect) {
   dateMonthSelect.addEventListener('change', (event) => {
     const value = String(event.target.value || '');
     if (!value) return;
+    if (isServerRenderedList) {
+      window.location.href = buildTimeFilterHref('/', normalizeTimeFilter(value));
+      return;
+    }
     activeTimeFilter = normalizeTimeFilter(value);
     applyFilters();
     closeDateModal();

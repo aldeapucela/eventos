@@ -1,0 +1,111 @@
+<div class="calendar-modal" data-type-modal hidden>
+  <button class="calendar-modal-backdrop" type="button" data-type-modal-close aria-label="Cerrar diálogo"></button>
+  <aside class="calendar-modal-panel subscribe-modal-panel" role="dialog" aria-modal="true" aria-labelledby="type-modal-title">
+    <div class="calendar-modal-header">
+      <div>
+        <h2 class="calendar-modal-title" id="type-modal-title">Tipos de evento</h2>
+        <p class="calendar-modal-copy">Selecciona los tipos de eventos que deseas ver.</p>
+      </div>
+      <button class="calendar-modal-close" type="button" data-type-modal-close aria-label="Cerrar">
+        <i class="fa-solid fa-xmark"></i>
+      </button>
+    </div>
+
+    <div class="filter-modal-toolbar">
+      <button class="calendar-modal-action filter-modal-toolbar-action" type="button" data-type-select-all>
+        <i class="fa-solid fa-check-double"></i>
+        <span>Todos</span>
+      </button>
+      <button class="calendar-modal-action filter-modal-toolbar-action" type="button" data-type-deselect-all>
+        <i class="fa-solid fa-xmark"></i>
+        <span>Ninguno</span>
+      </button>
+    </div>
+
+    <section class="subscribe-section filter-modal-section filter-modal-section-compact">
+      <div class="type-checkbox-list">
+        {% for category in categories %}
+        <div class="type-checkbox-row">
+          <label class="type-checkbox-item">
+            <input type="checkbox" name="type" value="{{ category }}" data-type-checkbox checked class="type-checkbox-input">
+            <span class="type-checkbox-label">{{ category }}</span>
+          </label>
+          <button class="type-only-btn" type="button" data-type-only="{{ category }}">Solo</button>
+        </div>
+        {% endfor %}
+      </div>
+    </section>
+
+    <div class="filter-modal-footer">
+      <button class="calendar-modal-action calendar-modal-action-primary filter-modal-submit" type="button" data-type-modal-close>Ver resultados</button>
+    </div>
+  </aside>
+</div>
+
+<div class="calendar-modal" data-venue-modal hidden>
+  <button class="calendar-modal-backdrop" type="button" data-venue-modal-close aria-label="Cerrar diálogo"></button>
+  <aside class="calendar-modal-panel subscribe-modal-panel" role="dialog" aria-modal="true" aria-labelledby="venue-modal-title">
+    <div class="calendar-modal-header">
+      <div>
+        <h2 class="calendar-modal-title" id="venue-modal-title">Espacios</h2>
+        <p class="calendar-modal-copy">Selecciona el espacio que deseas ver.</p>
+      </div>
+      <button class="calendar-modal-close" type="button" data-venue-modal-close aria-label="Cerrar">
+        <i class="fa-solid fa-xmark"></i>
+      </button>
+    </div>
+
+    <div class="calendar-modal-actions filter-date-actions filter-venue-actions" data-venue-options></div>
+
+    <div class="filter-modal-footer">
+      <button class="calendar-modal-action filter-modal-submit" type="button" data-venue-clear>
+        <i class="fa-solid fa-rotate-left" aria-hidden="true"></i>
+        <span>Quitar filtro de espacio</span>
+      </button>
+    </div>
+  </aside>
+</div>
+
+<div class="calendar-modal" data-date-modal hidden>
+  <button class="calendar-modal-backdrop" type="button" data-date-modal-close aria-label="Cerrar diálogo"></button>
+  <aside class="calendar-modal-panel" role="dialog" aria-modal="true" aria-labelledby="date-modal-title">
+    <div class="calendar-modal-header">
+      <div>
+        <h2 class="calendar-modal-title" id="date-modal-title">Filtrar por fecha</h2>
+        <p class="calendar-modal-copy">Elige el horizonte temporal que quieres explorar.</p>
+      </div>
+      <button class="calendar-modal-close" type="button" data-date-modal-close aria-label="Cerrar">
+        <i class="fa-solid fa-xmark"></i>
+      </button>
+    </div>
+
+    <div class="calendar-modal-actions filter-date-actions">
+      <a class="calendar-modal-action filter-date-option{% if timeFilterKey == 'Este mes' %} calendar-modal-action-primary{% endif %}" href="{% if timeFilterKey == 'Este mes' %}/{% else %}/este-mes/{% endif %}" data-time-link>
+        <i class="fa-regular fa-calendar-days" aria-hidden="true"></i>
+        <span>Este mes</span>
+      </a>
+      <a class="calendar-modal-action filter-date-option{% if timeFilterKey == 'Próximos 3 meses' %} calendar-modal-action-primary{% endif %}" href="{% if timeFilterKey == 'Próximos 3 meses' %}/{% else %}/proximos-3-meses/{% endif %}" data-time-link>
+        <i class="fa-regular fa-calendar" aria-hidden="true"></i>
+        <span>Próximos 3 meses</span>
+      </a>
+      <div class="calendar-modal-action filter-date-option filter-date-select-option">
+        <i class="fa-regular fa-calendar-plus" aria-hidden="true"></i>
+        <span class="filter-date-select-label">Seleccionar mes</span>
+        <select class="filter-date-select-control" data-date-month-select aria-label="Seleccionar mes">
+          <option value="">Opciones</option>
+        </select>
+      </div>
+      <button class="calendar-modal-action filter-date-option" type="button" data-date-filter-value="Este año">
+        <i class="fa-regular fa-calendar-check" aria-hidden="true"></i>
+        <span>Este año</span>
+      </button>
+    </div>
+
+    <div class="filter-modal-footer">
+      <button class="calendar-modal-action filter-modal-submit" type="button" data-date-clear>
+        <i class="fa-solid fa-rotate-left" aria-hidden="true"></i>
+        <span>Quitar filtro de fecha</span>
+      </button>
+    </div>
+  </aside>
+</div>
