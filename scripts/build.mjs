@@ -23,6 +23,8 @@ const postersDir = path.join(dist, 'posters');
 const cssDir = path.join(assetsDir, 'css');
 const jsDir = path.join(assetsDir, 'js');
 const publicBaseUrl = 'https://eventos.aldeapucela.org';
+// Verificación de propiedad en Google Search Console (solo en la portada).
+const googleSiteVerification = 'WI4USc-QdbTLezu0qIZfb2J9Yvqkwg818tWzExtVREw';
 
 const args = new Set(process.argv.slice(2));
 
@@ -491,6 +493,7 @@ async function buildSite(events) {
     title: 'Qué hacer en Valladolid | Aldea Pucela',
     meta: { description: 'Agenda cultural de Valladolid alimentada desde el foro de Aldea Pucela.' },
     canonicalUrl: `${publicBaseUrl}/`,
+    googleSiteVerification,
     social: {
       type: 'website',
       title: 'Qué hacer en Valladolid | Aldea Pucela',
