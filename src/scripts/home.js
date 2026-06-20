@@ -1520,7 +1520,7 @@ function setShareFailure(button) {
 }
 
 async function shareSite(button = shareSiteButton) {
-  const shareUrl = withShareCampaign('/');
+  const shareUrl = withShareCampaign(window.location.href);
   const message = 'Descubre qué hacer en Valladolid: eventos culturales compartidos por Aldea Pucela.';
   try {
     if (navigator.share) {
