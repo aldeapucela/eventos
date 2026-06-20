@@ -1519,9 +1519,53 @@ function setShareFailure(button) {
   }, 1600);
 }
 
+function getActiveShareTimeFilter() {
+  if (activeTimeFilter !== 'all') return activeTimeFilter;
+  return SERVER_RENDERED_TIME_FILTERS.get(window.location.pathname) || 'all';
+}
+
+function getShareTimeContext() {
+  const filterValue = getActiveShareTimeFilter();
+  switch (filterValue) {
+    case 'Hoy':
+      return 'hoy';
+    case 'Este finde':
+      return 'este finde';
+    case 'Esta semana':
+      return 'esta semana';
+    case 'Próxima semana':
+      return 'la próxima semana';
+    case 'Este mes':
+      return 'este mes';
+    case 'Próximos 3 meses':
+      return 'en los próximos meses';
+    case 'Este año':
+      return 'este año';
+    default:
+      if (isDateMonthFilter(filterValue)) {
+        const monthSelection = parseDateMonthFilter(filterValue);
+        if (!monthSelection) return '';
+        const monthLabel = new Intl.DateTimeFormat('es-ES', { month: 'long' }).format(
+          new Date(monthSelection.year, monthSelection.monthIndex, 1)
+        );
+        return monthSelection.year === today.getFullYear()
+          ? `en ${monthLabel}`
+          : `en ${monthLabel} de ${monthSelection.year}`;
+      }
+      return '';
+  }
+}
+
+function buildShareSiteMessage() {
+  const timeContext = getShareTimeContext();
+  return timeContext
+    ? `Eventos culturales ${timeContext} en Valladolid.`
+    : 'Eventos culturales en Valladolid.';
+}
+
 async function shareSite(button = shareSiteButton) {
   const shareUrl = withShareCampaign(window.location.href);
-  const message = 'Descubre qué hacer en Valladolid: eventos culturales compartidos por Aldea Pucela.';
+  const message = buildShareSiteMessage();
   try {
     if (navigator.share) {
       await navigator.share({
