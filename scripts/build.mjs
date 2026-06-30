@@ -13,7 +13,7 @@ import { enrichVenueCatalog, mergeSpacesWithVenueCatalog } from '../src/data/ven
 import { VENUE_CANONICAL_MAP } from '../src/data/venue-aliases.mjs';
 import { buildCollectionPageJsonLd, buildEventJsonLd, serializeJsonLd } from '../src/data/structured-data.mjs';
 import { getOpenEndedWindow, getTimePages, isWeekendDayKey, resolveBuildNow, selectTimePageEvents } from '../src/data/time-windows.mjs';
-import { getCategoryPages } from '../src/data/category-pages.mjs';
+import { getCategoryPages, mappedCategoryLabels } from '../src/data/category-pages.mjs';
 import { syncEvents } from './sync-lib.mjs';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -482,7 +482,17 @@ async function buildSite(events) {
   }));
 
   const categoryPages = getCategoryPages(events);
-  const categoryPagePaths = Object.fromEntries(categoryPages.map((page) => [page.filterKey, page.path]));
+  // Cada etiqueta (clave o alias) apunta a su página, para enrutar "Solo".
+  const categoryPagePaths = Object.fromEntries(
+    categoryPages.flatMap((page) => page.labels.map((label) => [label, page.path]))
+  );
+  // Aviso si alguna categoría con eventos se queda sin página (la omitiría el
+  // filtrado por categoría). "Otro" se excluye a propósito.
+  const mapped = new Set(mappedCategoryLabels());
+  const unmapped = filters.filter((label) => label !== 'Otro' && !mapped.has(label));
+  if (unmapped.length) {
+    console.warn(`build: categorías sin página (añádelas a category-pages.mjs): ${unmapped.join(', ')}`);
+  }
 
   const sharedContext = {
     filtersJson: JSON.stringify(filters),
@@ -641,7 +651,7 @@ async function buildSite(events) {
   // pero con ventana abierta (de hoy en adelante) filtrada por categoría.
   const categoryWindow = getOpenEndedWindow(buildNow);
   for (const page of categoryPages) {
-    const categoryEvents = events.filter((event) => event.categoryLabel === page.filterKey);
+    const categoryEvents = events.filter((event) => page.labels.includes(event.categoryLabel));
     const { ongoing: pageOngoing, listed } = selectTimePageEvents(categoryEvents, categoryWindow, buildNow);
     const enrichedListed = sortEvents(listed).map(enrichEvent).map(withVenueKeys);
     const enrichedOngoing = sortEvents(pageOngoing).map(enrichEvent).map(withVenueKeys);

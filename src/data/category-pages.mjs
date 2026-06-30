@@ -13,7 +13,7 @@ const CATEGORY_PAGES = {
   'Feria Mercado': { slug: 'ferias-y-mercados', h1: 'Ferias y mercados en Valladolid', h2: 'Mercadillos, ferias y mercados', description: 'Agenda de ferias y mercados en Valladolid: mercadillos y ferias recopilados por la comunidad de Aldea Pucela.' },
   'Conferencia': { slug: 'conferencias', h1: 'Conferencias en Valladolid', h2: 'Conferencias y ponencias', description: 'Agenda de conferencias en Valladolid: ponencias y encuentros divulgativos recopilados por la comunidad de Aldea Pucela.' },
   'Espectáculo': { slug: 'espectaculos', h1: 'Espectáculos en Valladolid', h2: 'Espectáculos en directo', description: 'Agenda de espectáculos en Valladolid: todas las próximas citas en directo recopiladas por la comunidad de Aldea Pucela.' },
-  'Cine Proyeccion': { slug: 'cine', h1: 'Cine en Valladolid', h2: 'Proyecciones, ciclos y estrenos', description: 'Agenda de cine en Valladolid: proyecciones, ciclos y estrenos recopilados por la comunidad de Aldea Pucela.' },
+  'Cine Proyeccion': { slug: 'cine', aliases: ['Proyección', 'Cine'], h1: 'Cine en Valladolid', h2: 'Proyecciones, ciclos y estrenos', description: 'Agenda de cine en Valladolid: proyecciones, ciclos y estrenos recopilados por la comunidad de Aldea Pucela.' },
   'Infantil Familiar': { slug: 'infantil-y-familia', h1: 'Planes infantiles y en familia en Valladolid', h2: 'Actividades para peques y familias', description: 'Agenda infantil y en familia en Valladolid: talleres, espectáculos y planes para peques recopilados por la comunidad de Aldea Pucela.' },
   'Danza': { slug: 'danza', h1: 'Danza en Valladolid', h2: 'Espectáculos de danza y baile', description: 'Agenda de danza en Valladolid: todos los próximos espectáculos de danza y baile recopilados por la comunidad de Aldea Pucela.' },
   'Magia Circo': { slug: 'magia-y-circo', h1: 'Magia y circo en Valladolid', h2: 'Espectáculos de magia y circo', description: 'Agenda de magia y circo en Valladolid: todas las próximas funciones recopiladas por la comunidad de Aldea Pucela.' },
@@ -21,24 +21,36 @@ const CATEGORY_PAGES = {
   'Talleres': { slug: 'talleres', h1: 'Talleres en Valladolid', h2: 'Talleres y actividades formativas', description: 'Agenda de talleres en Valladolid: cursos y actividades formativas recopilados por la comunidad de Aldea Pucela.' },
   'Gastronomia Cata': { slug: 'gastronomia-y-catas', h1: 'Gastronomía y catas en Valladolid', h2: 'Catas, degustaciones y eventos gastronómicos', description: 'Agenda gastronómica en Valladolid: catas, degustaciones y eventos de comida y vino recopilados por la comunidad de Aldea Pucela.' },
   'Recital': { slug: 'recitales', h1: 'Recitales en Valladolid', h2: 'Recitales y poesía', description: 'Agenda de recitales en Valladolid: poesía y lecturas recopiladas por la comunidad de Aldea Pucela.' },
-  'Proyección': { slug: 'proyecciones', h1: 'Proyecciones en Valladolid', h2: 'Proyecciones audiovisuales', description: 'Agenda de proyecciones audiovisuales en Valladolid recopiladas por la comunidad de Aldea Pucela.' },
   'Deportes': { slug: 'deportes', h1: 'Eventos deportivos en Valladolid', h2: 'Deporte y actividades', description: 'Agenda deportiva en Valladolid: competiciones y actividades recopiladas por la comunidad de Aldea Pucela.' }
 };
 
-// Solo categorías curadas que existen en los datos actuales.
+// Etiquetas del foro que apunta cada página (la clave + sus alias). Varias
+// etiquetas pueden referirse a lo mismo (p. ej. "Cine Proyeccion", "Proyección"
+// y "Cine"), así que la página recoge todas.
+function pageLabels(label, meta) {
+  return [label, ...(meta.aliases || [])];
+}
+
+// Solo categorías curadas con al menos una etiqueta presente en los datos.
 export function getCategoryPages(events) {
   const present = new Set(events.map((event) => event.categoryLabel).filter(Boolean));
   return Object.entries(CATEGORY_PAGES)
-    .filter(([label]) => present.has(label))
     .map(([label, meta]) => ({
-      filterKey: label,
+      labels: pageLabels(label, meta),
       slug: meta.slug,
       path: `/${meta.slug}/`,
       title: `${meta.h1} | Aldea Pucela`,
       h1: meta.h1,
       h2: meta.h2,
       description: meta.description
-    }));
+    }))
+    .filter((page) => page.labels.some((label) => present.has(label)));
+}
+
+// Todas las etiquetas (clave + alias) que tienen página, para detectar
+// categorías presentes que se quedarían sin página (las omite el filtrado).
+export function mappedCategoryLabels() {
+  return Object.entries(CATEGORY_PAGES).flatMap(([label, meta]) => pageLabels(label, meta));
 }
 
 // ponytail: self-check de slugs (únicos y sin chocar con rutas reservadas).
@@ -48,5 +60,7 @@ if (process.argv[1] && (await import('node:url')).fileURLToPath(import.meta.url)
   console.assert(new Set(slugs).size === slugs.length, 'slugs de categoría duplicados');
   console.assert(!slugs.some((s) => RESERVED.has(s)), 'slug de categoría choca con ruta reservada');
   console.assert(!('Otro' in CATEGORY_PAGES), '"Otro" no debe tener página');
-  console.log(`ok: ${slugs.length} categorías, sin colisiones`);
+  const allLabels = mappedCategoryLabels();
+  console.assert(new Set(allLabels).size === allLabels.length, 'una etiqueta (clave o alias) aparece en dos páginas');
+  console.log(`ok: ${slugs.length} páginas, ${allLabels.length} etiquetas, sin colisiones`);
 }
