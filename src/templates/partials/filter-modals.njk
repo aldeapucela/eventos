@@ -30,8 +30,7 @@
             <input type="checkbox" name="type" value="{{ category }}" data-type-checkbox checked class="type-checkbox-input">
             <span class="type-checkbox-label">{{ category }}</span>
           </label>
-          {% if categoryPagePaths and categoryPagePaths[category] %}<a class="type-only-btn" href="{{ categoryPagePaths[category] }}" aria-label="Ver todos los eventos de {{ category }}">Ver todos</a>{% endif %}
-          <button class="type-only-btn" type="button" data-type-only="{{ category }}">Solo</button>
+          <button class="type-only-btn" type="button" data-type-only="{{ category }}"{% if categoryPagePaths and categoryPagePaths[category] %} data-type-page="{{ categoryPagePaths[category] }}"{% endif %}>Solo</button>
         </div>
         {% endfor %}
       </div>
