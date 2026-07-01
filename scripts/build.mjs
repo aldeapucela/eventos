@@ -695,6 +695,12 @@ async function buildSite(events) {
     ],
     events
   }));
+  await writeFile('robots.txt', [
+    'User-agent: *',
+    'Allow: /',
+    `Sitemap: ${publicBaseUrl}/sitemap.xml`,
+    ''
+  ].join('\n'));
   await writeFile('calendar.ics', buildCalendarIcs(events));
   for (const feed of categoryFeeds) {
     const filteredEvents = events.filter((event) => event.categoryLabel === feed.label);
