@@ -12,7 +12,8 @@ import { DISPLAY_TIMEZONE, escapeHtml, formatDateRange, formatDateTime, isSameMa
 import { enrichVenueCatalog, mergeSpacesWithVenueCatalog } from '../src/data/venues.mjs';
 import { VENUE_CANONICAL_MAP } from '../src/data/venue-aliases.mjs';
 import { buildCollectionPageJsonLd, buildEventJsonLd, serializeJsonLd } from '../src/data/structured-data.mjs';
-import { getTimePages, isWeekendDayKey, resolveBuildNow, selectTimePageEvents } from '../src/data/time-windows.mjs';
+import { getOpenEndedWindow, getTimePages, isWeekendDayKey, resolveBuildNow, selectTimePageEvents } from '../src/data/time-windows.mjs';
+import { getCategoryPages, mappedCategoryLabels } from '../src/data/category-pages.mjs';
 import { syncEvents } from './sync-lib.mjs';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -488,11 +489,25 @@ async function buildSite(events) {
     webcalUrl: `webcal://eventos.aldeapucela.org/calendar/${slugify(category)}.ics`
   }));
 
+  const categoryPages = getCategoryPages(events);
+  // Cada etiqueta (clave o alias) apunta a su página, para enrutar "Solo".
+  const categoryPagePaths = Object.fromEntries(
+    categoryPages.flatMap((page) => page.labels.map((label) => [label, page.path]))
+  );
+  // Aviso si alguna categoría con eventos se queda sin página (la omitiría el
+  // filtrado por categoría). "Otro" se excluye a propósito.
+  const mapped = new Set(mappedCategoryLabels());
+  const unmapped = filters.filter((label) => label !== 'Otro' && !mapped.has(label));
+  if (unmapped.length) {
+    console.warn(`build: categorías sin página (añádelas a category-pages.mjs): ${unmapped.join(', ')}`);
+  }
+
   const sharedContext = {
     filtersJson: JSON.stringify(filters),
     eventsJson: eventsPayload,
     filters,
     categoryFeeds,
+    categoryPagePaths,
     assetVersion
   };
 
@@ -636,6 +651,54 @@ async function buildSite(events) {
     }));
   }
 
+  // Páginas por categoría (/musica/, /cine/...): mismo patrón que las temporales
+  // pero con ventana abierta (de hoy en adelante) filtrada por categoría.
+  const categoryWindow = getOpenEndedWindow(buildNow);
+  for (const page of categoryPages) {
+    const categoryEvents = events.filter((event) => page.labels.includes(event.categoryLabel));
+    const { ongoing: pageOngoing, listed } = selectTimePageEvents(categoryEvents, categoryWindow, buildNow);
+    const enrichedListed = sortEvents(listed).map(enrichEvent).map(withVenueKeys);
+    const enrichedOngoing = sortEvents(pageOngoing).map(enrichEvent).map(withVenueKeys);
+    const dayGroups = buildTimePageDayGroups(enrichedListed, buildNow, {
+      windowStartKey: toLocalDateKey(categoryWindow.start)
+    });
+    const pageUrl = `${publicBaseUrl}${page.path}`;
+    const itemListItems = [...enrichedOngoing, ...dayGroups.flatMap((group) => group.events)].map((event) => ({
+      url: `${publicBaseUrl}/e/${event.id}/${event.slug}/`,
+      name: event.title
+    }));
+    await writeFile(path.join(page.slug, 'index.html'), render('time-page.njk', {
+      title: page.title,
+      meta: { description: page.description },
+      canonicalUrl: pageUrl,
+      jsonLd: itemListItems.length
+        ? serializeJsonLd(buildCollectionPageJsonLd({
+            name: page.h1,
+            description: page.description,
+            url: pageUrl,
+            items: itemListItems
+          }))
+        : null,
+      social: {
+        type: 'website',
+        title: page.title,
+        description: page.description,
+        image: `${publicBaseUrl}/assets/social-preview.jpg`,
+        url: pageUrl
+      },
+      pageCss: 'home.css',
+      pageJs: 'home.js',
+      activeNav: 'home',
+      pageH1: page.h1,
+      pageH2: page.h2,
+      ongoing: enrichedOngoing,
+      dayGroups,
+      categories: filters,
+      includeSiteData: true,
+      ...sharedContext
+    }));
+  }
+
   for (const event of sorted) {
     const relatedEvents = event.categoryLabel
       ? sorted.filter((e) => e.id !== event.id && e.categoryLabel === event.categoryLabel && !e.hasEnded).slice(0, 4)
@@ -695,7 +758,8 @@ async function buildSite(events) {
       { path: '/', lastmod: toLocalDateKey(buildNow) },
       { path: '/archivo/', lastmod: toLocalDateKey(buildNow) },
       { path: '/espacios/', lastmod: toLocalDateKey(buildNow) },
-      ...getTimePages(buildNow).map((page) => ({ path: page.path, lastmod: toLocalDateKey(buildNow) }))
+      ...getTimePages(buildNow).map((page) => ({ path: page.path, lastmod: toLocalDateKey(buildNow) })),
+      ...categoryPages.map((page) => ({ path: page.path, lastmod: toLocalDateKey(buildNow) }))
     ],
     events
   }));

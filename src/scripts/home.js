@@ -307,6 +307,12 @@ document.addEventListener('click', async (event) => {
 
   if (typeOnly) {
     event.preventDefault();
+    // Si la categoría tiene página propia (/cine/, /musica/...), "Solo" navega
+    // a ella; si no (p. ej. "Otro"), filtra en la home como antes.
+    if (typeOnly.dataset.typePage) {
+      window.location.href = typeOnly.dataset.typePage;
+      return;
+    }
     const value = typeOnly.dataset.typeOnly;
     typeCheckboxes.forEach(cb => cb.checked = (cb.value === value));
     activeTypeFilters = [value];

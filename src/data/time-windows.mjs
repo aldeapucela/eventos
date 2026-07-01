@@ -144,6 +144,12 @@ export function eventMatchesWindow(event, window) {
   return startsAt <= window.end && endsAt >= window.start;
 }
 
+// Ventana abierta (de hoy en adelante, sin fin): para listados sin tope
+// temporal como las páginas por categoría.
+export function getOpenEndedWindow(now) {
+  return { start: startOfMadridDay(getMadridDateParts(now)), end: new Date(8640000000000000) };
+}
+
 function isOngoingMultiDay(event, now) {
   if (!event?.startsAt || !event?.endsAt) return false;
   const starts = parseEventBoundary(event.startsAt, 'start');
