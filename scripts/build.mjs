@@ -470,6 +470,13 @@ async function buildSite(events) {
       .filter((space) => space?.name)
       .map((space) => [normalizeVenueKey(canonicalizeVenue(space.name)), space])
   );
+  // Añade venueKey/venueLabel canónicos a un evento enriquecido, igual que
+  // siteDataPayload, para que las tarjetas server-rendered filtren por el
+  // espacio canónico (no por el texto de ubicación en crudo).
+  const withVenueKeys = (event) => {
+    const venueKey = normalizeVenueKey(canonicalizeVenue(event.venue || event.location || ''));
+    return { ...event, venueKey, venueLabel: spaceNameByVenueKey.get(venueKey) || '' };
+  };
   const assetVersion = await computeAssetVersion();
   const eventsPayload = siteDataPayload(events, filters, { spaces, spaceNameByVenueKey });
   console.log(`build: data ${elapsedMs('data').toFixed(1)}ms`);
@@ -507,7 +514,7 @@ async function buildSite(events) {
     activeNav: 'home',
     featured: featured ? enrichEvent(featured) : null,
     week: week.map(enrichEvent),
-    ongoing: ongoing.map(enrichEvent),
+    ongoing: ongoing.map(enrichEvent).map(withVenueKeys),
     today: today.map(enrichEvent),
     todayCount: today.length,
     categories: filters,
@@ -583,10 +590,6 @@ async function buildSite(events) {
   }));
 
   const buildNow = resolveBuildNow();
-  const withVenueKeys = (event) => {
-    const venueKey = normalizeVenueKey(canonicalizeVenue(event.venue || event.location || ''));
-    return { ...event, venueKey, venueLabel: spaceNameByVenueKey.get(venueKey) || '' };
-  };
   for (const page of getTimePages(buildNow)) {
     const { ongoing: pageOngoing, listed } = selectTimePageEvents(events, page.window, buildNow);
     const enrichedListed = sortEvents(listed).map(enrichEvent).map(withVenueKeys);
