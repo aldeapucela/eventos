@@ -102,7 +102,8 @@ function normalizeVenueKey(value = '') {
     .toLowerCase()
     .replace(/\b(sala|espacio|centro|teatro|bar|csa|club)\b/g, ' ')
     .replace(/[^a-z0-9]+/g, ' ')
-    .replace(/\s+/g, ' ');
+    .replace(/\s+/g, ' ')
+    .trim();
 }
 
 function canonicalizeVenue(value = '') {
