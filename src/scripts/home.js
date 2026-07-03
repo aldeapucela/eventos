@@ -138,6 +138,11 @@ document.addEventListener('click', async (event) => {
     const href = timeLink.getAttribute('href') || '/';
     if (isTimeFilterableList) {
       event.preventDefault();
+      // Estos enlaces también viven dentro del drawer y del modal de fecha:
+      // ciérralos antes de filtrar, como el resto de handlers de esos overlays,
+      // para que no queden abiertos tapando el resultado.
+      if (timeLink.closest('[data-menu-drawer]')) closeMenu();
+      if (timeLink.closest('[data-date-modal]')) closeDateModal();
       const key = SERVER_RENDERED_TIME_FILTERS.get(href);
       if (key) toggleQuickFilter(key);
     } else {
@@ -390,9 +395,10 @@ function applyFilters(options = {}) {
     button.setAttribute('aria-pressed', String(isActive));
   });
   // En páginas de categoría el filtro temporal es de cliente: los chips <a> no
-  // son [data-filter], así que marcamos su estado activo aquí.
+  // son [data-filter], así que marcamos su estado activo aquí. Solo la barra
+  // visible; los enlaces del drawer/modal se cierran al elegir.
   if (isTimeFilterableList) {
-    document.querySelectorAll('a[data-time-link]').forEach((link) => {
+    document.querySelectorAll('.mobile-chip-row a[data-time-link]').forEach((link) => {
       const key = SERVER_RENDERED_TIME_FILTERS.get(link.getAttribute('href'));
       const isActive = Boolean(key) && key === activeTimeFilter;
       link.classList.toggle('mobile-chip-active', isActive);
