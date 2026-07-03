@@ -67,6 +67,13 @@ const PRETTY_TIME_PATHS = {
 const SERVER_RENDERED_TIME_FILTERS = new Map(
   Object.entries(PRETTY_TIME_PATHS).map(([filterKey, path]) => [path, filterKey])
 );
+// Las páginas por categoría (/cine/, /musica/...) también llegan server-rendered
+// pero listan una ventana abierta (de hoy en adelante), así que los filtros
+// temporales pueden aplicarse en cliente sin salir de la categoría, en vez de
+// saltar a /hoy/ (que mostraría todos los eventos y perdería la categoría).
+// ponytail: una lista server-rendered cuya ruta no es de página temporal es de
+// categoría; si se añaden otras páginas server-rendered, revisar esta heurística.
+const isTimeFilterableList = isServerRenderedList && !SERVER_RENDERED_TIME_FILTERS.has(window.location.pathname);
 let deferredInstallPrompt = null;
 let siteDataPromise = null;
 let didInitialFilterRowScroll = false;
@@ -125,13 +132,20 @@ document.addEventListener('click', async (event) => {
   const venueClear = event.target.closest('[data-venue-clear]');
   const timeLink = event.target.closest('a[data-time-link]');
 
-  // Los enlaces temporales arrastran los filtros activos (?free, ?type, ?venue).
+  // En páginas de categoría el chip temporal filtra en cliente (sin salir de la
+  // categoría). En el resto arrastra los filtros activos (?free, ?type, ?venue).
   if (timeLink) {
     const href = timeLink.getAttribute('href') || '/';
-    const target = buildTimeFilterHref(href, 'all');
-    if (target !== href) {
+    if (isTimeFilterableList) {
       event.preventDefault();
-      window.location.href = target;
+      const key = SERVER_RENDERED_TIME_FILTERS.get(href);
+      if (key) toggleQuickFilter(key);
+    } else {
+      const target = buildTimeFilterHref(href, 'all');
+      if (target !== href) {
+        event.preventDefault();
+        window.location.href = target;
+      }
     }
   }
 
@@ -259,7 +273,7 @@ document.addEventListener('click', async (event) => {
 
   if (dateFilterOption) {
     event.preventDefault();
-    if (isServerRenderedList) {
+    if (isServerRenderedList && !isTimeFilterableList) {
       // En páginas temporales la ventana de fechas vive en el servidor: la
       // selección se resuelve navegando a la portada con el filtro en la URL.
       window.location.href = buildTimeFilterHref('/', normalizeTimeFilter(dateFilterOption.dataset.dateFilterValue));
@@ -272,7 +286,7 @@ document.addEventListener('click', async (event) => {
 
   if (dateClear) {
     event.preventDefault();
-    if (isServerRenderedList) {
+    if (isServerRenderedList && !isTimeFilterableList) {
       window.location.href = buildTimeFilterHref('/', 'all');
     } else {
       activeTimeFilter = 'all';
@@ -375,6 +389,17 @@ function applyFilters(options = {}) {
     button.classList.toggle('mobile-chip-active', isActive);
     button.setAttribute('aria-pressed', String(isActive));
   });
+  // En páginas de categoría el filtro temporal es de cliente: los chips <a> no
+  // son [data-filter], así que marcamos su estado activo aquí.
+  if (isTimeFilterableList) {
+    document.querySelectorAll('a[data-time-link]').forEach((link) => {
+      const key = SERVER_RENDERED_TIME_FILTERS.get(link.getAttribute('href'));
+      const isActive = Boolean(key) && key === activeTimeFilter;
+      link.classList.toggle('mobile-chip-active', isActive);
+      if (isActive) link.setAttribute('aria-current', 'page');
+      else link.removeAttribute('aria-current');
+    });
+  }
   if (typeCheckboxes.length) {
     typeCheckboxes.forEach(cb => {
       cb.checked = activeTypeFilters.length === 0 || activeTypeFilters.includes(cb.value);
@@ -434,7 +459,9 @@ filters.forEach((button) => {
 if (clearFilters) {
   clearFilters.addEventListener('click', (event) => {
     event.preventDefault();
-    if (isServerRenderedList) {
+    // En páginas de categoría limpiar mantiene la categoría (filtra en cliente);
+    // en las temporales vuelve a la portada.
+    if (isServerRenderedList && !isTimeFilterableList) {
       window.location.href = '/';
       return;
     }
@@ -606,8 +633,9 @@ function buildTimeFilterHref(basePath, timeValue) {
 
 function getFiltersFromUrl() {
   const params = new URLSearchParams(window.location.search);
-  // En páginas temporales la ventana de fechas ya viene aplicada del servidor.
-  const time = isServerRenderedList ? 'all' : normalizeTimeFilter(params.get('time'));
+  // En páginas temporales la ventana de fechas ya viene aplicada del servidor;
+  // en las de categoría (ventana abierta) el filtro temporal sí se aplica aquí.
+  const time = (isServerRenderedList && !isTimeFilterableList) ? 'all' : normalizeTimeFilter(params.get('time'));
   const free = params.get('free') === '1' || normalizeTimeFilter(params.get('filter')) === 'free';
   const typeParam = params.get('type') || params.get('filter') || '';
   const type = typeParam ? typeParam.split(',').map(normalizeTypeFilter).filter(t => t !== 'all') : [];
@@ -741,7 +769,7 @@ function updateTypePill() {
 }
 
 function updateDateFilterUi() {
-  if (isServerRenderedList) return;
+  if (isServerRenderedList && !isTimeFilterableList) return;
   const active = DATE_MODAL_FILTERS.has(activeTimeFilter) || isDateMonthFilter(activeTimeFilter);
   if (dateSelectLabel) {
     dateSelectLabel.textContent = active ? `Fecha · ${getLabel(activeTimeFilter)}` : 'Fecha';
@@ -1602,7 +1630,7 @@ if (dateMonthSelect) {
   dateMonthSelect.addEventListener('change', (event) => {
     const value = String(event.target.value || '');
     if (!value) return;
-    if (isServerRenderedList) {
+    if (isServerRenderedList && !isTimeFilterableList) {
       window.location.href = buildTimeFilterHref('/', normalizeTimeFilter(value));
       return;
     }
