@@ -10,7 +10,7 @@ import { loadCachedEvents } from '../src/data/store.mjs';
 import { deriveFilters, sortEvents, splitFeatured, getPastEvents, groupEventsByMonth, groupFutureEventsByVenue } from '../src/data/site.mjs';
 import { DISPLAY_TIMEZONE, escapeHtml, formatDateRange, formatDateTime, isSameMadridDay, parseDateLike, toMadridDateKey } from '../src/data/format.mjs';
 import { enrichVenueCatalog, mergeSpacesWithVenueCatalog } from '../src/data/venues.mjs';
-import { VENUE_CANONICAL_MAP } from '../src/data/venue-aliases.mjs';
+import { canonicalizeVenue, normalizeVenueKey } from '../src/data/venue-aliases.mjs';
 import { buildCollectionPageJsonLd, buildEventJsonLd, serializeJsonLd } from '../src/data/structured-data.mjs';
 import { getOpenEndedWindow, getTimePages, isWeekendDayKey, resolveBuildNow, selectTimePageEvents } from '../src/data/time-windows.mjs';
 import { getCategoryPages, mappedCategoryLabels } from '../src/data/category-pages.mjs';
@@ -94,24 +94,6 @@ function slugify(value = '') {
     .replace(/[^a-z0-9]+/g, '-')
     .replace(/^-+|-+$/g, '')
     || 'categoria';
-}
-
-function normalizeVenueKey(value = '') {
-  return String(value)
-    .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, '')
-    .toLowerCase()
-    .replace(/\b(sala|espacio|centro|teatro|bar|csa|club)\b/g, ' ')
-    .replace(/[^a-z0-9]+/g, ' ')
-    .replace(/\s+/g, ' ')
-    .trim();
-}
-
-function canonicalizeVenue(value = '') {
-  const raw = String(value || '').trim();
-  if (!raw) return '';
-  const normalizedKey = normalizeVenueKey(raw);
-  return VENUE_CANONICAL_MAP[raw.toLowerCase()] || VENUE_CANONICAL_MAP[normalizedKey] || raw;
 }
 
 function render(template, context) {

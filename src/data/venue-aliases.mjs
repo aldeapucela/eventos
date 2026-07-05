@@ -79,3 +79,27 @@ export const VENUE_GEO_OVERRIDES = {
     lon: -4.73673
   }
 };
+
+// Clave normalizada de un venue: sin tildes, en minúsculas, sin palabras
+// genéricas ("sala/espacio/centro/teatro/bar/csa/club") y con espacios
+// colapsados. Fuente única (la usan build.mjs, site.mjs y el script de
+// candidatos) para que la normalización no diverja entre sitios.
+export function normalizeVenueKey(value) {
+  return String(value || '')
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase()
+    .replace(/\b(sala|espacio|centro|teatro|bar|csa|club)\b/g, ' ')
+    .replace(/[^a-z0-9]+/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+// Nombre canónico de un venue: primero por texto crudo en minúsculas, luego
+// por clave normalizada; si no hay entrada en el mapa, devuelve el texto tal cual.
+export function canonicalizeVenue(value) {
+  const raw = String(value || '').trim();
+  if (!raw) return '';
+  const normalizedKey = normalizeVenueKey(raw);
+  return VENUE_CANONICAL_MAP[raw.toLowerCase()] || VENUE_CANONICAL_MAP[normalizedKey] || raw;
+}
