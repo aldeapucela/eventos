@@ -699,18 +699,16 @@ async function buildSite(events) {
       normalizeVenueKey(canonicalizeVenue(event.venue || '')) === page.venueKey
     );
     const { ongoing: pageOngoing, listed } = selectTimePageEvents(venueEvents, categoryWindow, buildNow);
-    const enrichedListed = sortEvents(listed).map(enrichEvent).map(withVenueKeys);
-    const enrichedOngoing = sortEvents(pageOngoing).map(enrichEvent).map(withVenueKeys);
-    const dayGroups = buildTimePageDayGroups(enrichedListed, buildNow, {
-      windowStartKey: toLocalDateKey(categoryWindow.start)
-    });
+    // Todos los eventos del espacio en un único grid (como en /espacios/), con la
+    // fecha en cada tarjeta; sin separar por día ni carrusel "En curso" aparte.
+    const flatEvents = sortEvents([...pageOngoing, ...listed]).map(enrichEvent).map(withVenueKeys);
     // Sin eventos que mostrar (borde raro: cualificó por la ventana de 6 meses
     // pero no queda nada en la ventana abierta): no generamos una página vacía
     // indexable ni la anunciamos en el sitemap.
-    if (!enrichedOngoing.length && !dayGroups.length) continue;
+    if (!flatEvents.length) continue;
     renderedVenuePages.push(page);
     const pageUrl = `${publicBaseUrl}${page.path}`;
-    const itemListItems = [...enrichedOngoing, ...dayGroups.flatMap((group) => group.events)].map((event) => ({
+    const itemListItems = flatEvents.map((event) => ({
       url: `${publicBaseUrl}/e/${event.id}/${event.slug}/`,
       name: event.title
     }));
@@ -743,8 +741,8 @@ async function buildSite(events) {
       pageH1: page.h1,
       pageH2: page.h2,
       venue: { name: page.canonicalVenue, address: page.address, mapsUrl },
-      ongoing: enrichedOngoing,
-      dayGroups,
+      ongoing: [],
+      flatEvents,
       categories: filters,
       includeSiteData: true,
       ...sharedContext
