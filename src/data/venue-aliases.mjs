@@ -57,7 +57,85 @@ export const VENUE_CANONICAL_MAP = {
 
   // Patio de la Hospedería de San Benito (aún sin eventos en los datos; preparado).
   'patio de la hospederia de san benito': 'Patio de la Hospedería de San Benito',
-  'patio san benito': 'Patio de la Hospedería de San Benito'
+  'patio san benito': 'Patio de la Hospedería de San Benito',
+
+  // Alias añadidos tras revisión de candidatos (npm run venues): agrupan variantes
+  // ortográficas/con sufijos del mismo espacio. "Museo de Arte Africano Arellano
+  // Alonso" y "Palacio de Santa Cruz" se mantienen SEPARADOS a propósito (el Palacio
+  // es la sede del museo, no el museo).
+  'akelarre libreria cafe': 'Akelarre Librería Café',
+  'libreria cafe akelarre': 'Akelarre Librería Café',
+  'libreria akelarre': 'Akelarre Librería Café',
+  'libreria akelarre c': 'Akelarre Librería Café',
+  'libreria cafeteria akelarre': 'Akelarre Librería Café',
+  'akelarre cafeteria': 'Akelarre Librería Café',
+  'portacaeli': 'Sala Porta Caeli',
+  'porta': 'Sala Porta Caeli',
+  'museo patio herreriano': 'Museo Patio Herreriano',
+  'patio herreriano': 'Museo Patio Herreriano',
+  'museo patio herreriano salas 4 y 5': 'Museo Patio Herreriano',
+  'patio de san benito': 'Patio de la Hospedería de San Benito',
+  'palacio real de valladolid': 'Palacio Real de Valladolid',
+  'palacio real': 'Palacio Real de Valladolid',
+  'plaza de zorrilla': 'Plaza de Zorrilla',
+  'plaza zorrilla': 'Plaza de Zorrilla',
+  'plaza de la solidaridad': 'Plaza de la Solidaridad',
+  'plaza solidaridad': 'Plaza de la Solidaridad',
+  'plaza de la solidaridad la victoria': 'Plaza de la Solidaridad',
+  'plaza de san pablo': 'Plaza de San Pablo',
+  'pza san pablo': 'Plaza de San Pablo',
+  'pza de san pablo': 'Plaza de San Pablo',
+  'plaza de san pablo cadenas de san gregorio': 'Plaza de San Pablo',
+  'el desierto rojo': 'El Desierto Rojo',
+  'desierto rojo': 'El Desierto Rojo',
+  'barrio de la victoria': 'Barrio de La Victoria',
+  'barrio la victoria': 'Barrio de La Victoria',
+  'biblioteca reina sofia': 'Biblioteca Reina Sofía',
+  'biblioteca reina sofia abierto': 'Biblioteca Reina Sofía',
+  'estadio jose zorrilla': 'Estadio José Zorrilla',
+  'estadio jose zorrilla fan zone': 'Estadio José Zorrilla',
+  'archivo general de simancas': 'Archivo General de Simancas',
+  'plaza exterior del archivo general de simancas': 'Archivo General de Simancas',
+  'puerta principal del archivo general de simancas': 'Archivo General de Simancas',
+  'civico canal de castilla': 'Centro Cívico Canal de Castilla',
+  'civico canal de castilla la victoria': 'Centro Cívico Canal de Castilla',
+  'civico canal de castilla exterior p jardin botanico': 'Centro Cívico Canal de Castilla',
+  'cc canal de castilla': 'Centro Cívico Canal de Castilla',
+  'facultad de filosofia y letras': 'Facultad de Filosofía y Letras',
+  'facultad de filosofia y letras universidad de valladolid': 'Facultad de Filosofía y Letras',
+  'facultad de filosofia y letras salon de grados': 'Facultad de Filosofía y Letras',
+  'museo de arte africano arellano alonso': 'Museo de Arte Africano Arellano Alonso',
+  'museo de arte africano arellano alonso de la uva': 'Museo de Arte Africano Arellano Alonso',
+  'museo de arte africano arellano alonso de la universidad de valladolid': 'Museo de Arte Africano Arellano Alonso',
+  'museo de arte africano arellano alonso de la universidad de valladolid palacio de santa cruz': 'Museo de Arte Africano Arellano Alonso',
+  'museo de arte africano arellano alonso de la uva palacio de santa cruz valladolid': 'Museo de Arte Africano Arellano Alonso',
+  'museo de arte africano de la uva galeria superior de la de san ambrosio palacio de santa cruz': 'Museo de Arte Africano Arellano Alonso',
+  'antigua hipica': 'Pingüinos Arena',
+  'la barberia': 'La Barbería',
+  'terraza de la barberia': 'La Barbería',
+  'la barberia terraza de la barberia': 'La Barbería',
+  'hogar del jubilado la flecha': 'Bar Hogar del Jubilado La Flecha',
+  'terraza hogar del jubilado la flecha': 'Bar Hogar del Jubilado La Flecha',
+  'hogar del jubilado la flecha terraza': 'Bar Hogar del Jubilado La Flecha',
+  'auditorio casa de la musica y el': 'Auditorio Casa de la Música y el Teatro',
+  'auditorio de la casa de la musica y el': 'Auditorio Casa de la Música y el Teatro',
+  'casa de la musica y el': 'Auditorio Casa de la Música y el Teatro',
+  'casa de zorrilla': 'Casa de Zorrilla',
+  'jardin romantico casa de zorrilla': 'Casa de Zorrilla',
+  'casa de zorrilla narciso alonso cortes': 'Casa de Zorrilla',
+  'amaranto narciso alonso cortes en casa museo zorrilla': 'Casa de Zorrilla',
+  'casa de zorilla': 'Casa de Zorrilla',
+  'zorilla': 'Teatro Zorrilla',
+  'palacio de santa cruz': 'Palacio de Santa Cruz',
+  'jardines del palacio de santa cruz': 'Palacio de Santa Cruz',
+  'claustro del palacio de santa cruz': 'Palacio de Santa Cruz',
+  'museo palacio de santa cruz': 'Palacio de Santa Cruz',
+  'jardines del palacio de santa cruz universidad de valladolid': 'Palacio de Santa Cruz',
+  'santa cruz universidad de valladolid': 'Palacio de Santa Cruz',
+  'carcamal': 'Carcamal',
+  'carcamal tapas': 'Carcamal',
+  'carcamal tapas groove': 'Carcamal',
+  'la terraza del carcamal': 'Carcamal'
 };
 
 export const VENUE_SLUG_MAP = {
@@ -68,7 +146,7 @@ export const VENUE_SLUG_MAP = {
 };
 
 export const VENUE_GEO_OVERRIDES = {
-  'La Terraza del Carcamal': {
+  'Carcamal': {
     query: 'La Terraza del Carcamal Valladolid',
     lat: 41.62368,
     lon: -4.76157
