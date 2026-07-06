@@ -111,3 +111,26 @@ export function buildCollectionPageJsonLd({ name, description, url, items = [] }
     }
   };
 }
+
+// Página de una ubicación: CollectionPage con la lista de eventos + un Place
+// (about) con la dirección y coordenadas del venue.
+export function buildVenuePageJsonLd({ name, description, url, items = [], venue = {} }) {
+  const page = buildCollectionPageJsonLd({ name, description, url, items });
+  const address = {
+    '@type': 'PostalAddress',
+    addressLocality: 'Valladolid',
+    addressRegion: 'Castilla y León',
+    addressCountry: 'ES'
+  };
+  if (venue.address) address.streetAddress = venue.address;
+  const place = {
+    '@type': 'Place',
+    name: venue.name || name,
+    address
+  };
+  if (Number.isFinite(venue.lat) && Number.isFinite(venue.lon)) {
+    place.geo = { '@type': 'GeoCoordinates', latitude: venue.lat, longitude: venue.lon };
+  }
+  page.about = place;
+  return page;
+}

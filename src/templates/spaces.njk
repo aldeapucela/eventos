@@ -97,7 +97,7 @@
       <section class="spaces-card" id="{{ space.slug }}">
         <div class="spaces-card-head">
           <div class="spaces-card-copy">
-            <h2 class="spaces-card-title">{{ space.name }}</h2>
+            <h2 class="spaces-card-title">{% if space.pageHref %}<a href="{{ space.pageHref }}">{{ space.name }}</a>{% else %}{{ space.name }}{% endif %}</h2>
             <div class="spaces-card-meta">
               <span><i class="fa-regular fa-calendar" aria-hidden="true"></i>{{ space.count }} {% if space.count == 1 %}evento{% else %}eventos{% endif %}</span>
               {% if space.address or space.name %}

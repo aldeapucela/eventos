@@ -11,9 +11,10 @@ import { deriveFilters, sortEvents, splitFeatured, getPastEvents, groupEventsByM
 import { DISPLAY_TIMEZONE, escapeHtml, formatDateRange, formatDateTime, isSameMadridDay, parseDateLike, toMadridDateKey } from '../src/data/format.mjs';
 import { enrichVenueCatalog, mergeSpacesWithVenueCatalog } from '../src/data/venues.mjs';
 import { canonicalizeVenue, normalizeVenueKey } from '../src/data/venue-aliases.mjs';
-import { buildCollectionPageJsonLd, buildEventJsonLd, serializeJsonLd } from '../src/data/structured-data.mjs';
+import { buildCollectionPageJsonLd, buildEventJsonLd, buildVenuePageJsonLd, serializeJsonLd } from '../src/data/structured-data.mjs';
 import { getOpenEndedWindow, getTimePages, isWeekendDayKey, resolveBuildNow, selectTimePageEvents } from '../src/data/time-windows.mjs';
 import { getCategoryPages, mappedCategoryLabels } from '../src/data/category-pages.mjs';
+import { getVenuePages } from '../src/data/venue-pages.mjs';
 import { syncEvents } from './sync-lib.mjs';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -484,6 +485,10 @@ async function buildSite(events) {
     console.warn(`build: categorías sin página (añádelas a category-pages.mjs): ${unmapped.join(', ')}`);
   }
 
+  // Páginas por ubicación (/espacios/<slug>/), una por venue con eventos suficientes.
+  const venuePages = getVenuePages(spaces);
+  const venuePageSlugs = new Set(venuePages.map((page) => page.slug));
+
   const sharedContext = {
     filtersJson: JSON.stringify(filters),
     eventsJson: eventsPayload,
@@ -570,7 +575,10 @@ async function buildSite(events) {
     },
     pageCss: 'home.css',
     pageJs: 'home.js',
-    spaces,
+    spaces: spaces.map((space) => ({
+      ...space,
+      pageHref: venuePageSlugs.has(space.slug) ? `/espacios/${space.slug}/` : null
+    })),
     spacesCount: spaces.length,
     futureEventsCount: spaces.reduce((total, space) => total + space.count, 0),
     includeSiteData: true,
@@ -681,6 +689,68 @@ async function buildSite(events) {
     }));
   }
 
+  // Páginas por ubicación (/espacios/<slug>/): mismo patrón que las de categoría,
+  // pero filtrando por el venue canónico. Igual que la cualificación del venue
+  // (groupFutureEventsByVenue solo mira event.venue), para que la lista de la
+  // página coincida con lo que la hizo elegible (no colar eventos por location).
+  const renderedVenuePages = [];
+  for (const page of venuePages) {
+    const venueEvents = events.filter((event) =>
+      normalizeVenueKey(canonicalizeVenue(event.venue || '')) === page.venueKey
+    );
+    const { ongoing: pageOngoing, listed } = selectTimePageEvents(venueEvents, categoryWindow, buildNow);
+    const enrichedListed = sortEvents(listed).map(enrichEvent).map(withVenueKeys);
+    const enrichedOngoing = sortEvents(pageOngoing).map(enrichEvent).map(withVenueKeys);
+    const dayGroups = buildTimePageDayGroups(enrichedListed, buildNow, {
+      windowStartKey: toLocalDateKey(categoryWindow.start)
+    });
+    // Sin eventos que mostrar (borde raro: cualificó por la ventana de 6 meses
+    // pero no queda nada en la ventana abierta): no generamos una página vacía
+    // indexable ni la anunciamos en el sitemap.
+    if (!enrichedOngoing.length && !dayGroups.length) continue;
+    renderedVenuePages.push(page);
+    const pageUrl = `${publicBaseUrl}${page.path}`;
+    const itemListItems = [...enrichedOngoing, ...dayGroups.flatMap((group) => group.events)].map((event) => ({
+      url: `${publicBaseUrl}/e/${event.id}/${event.slug}/`,
+      name: event.title
+    }));
+    const mapsUrl = page.hasMapPoint
+      ? `https://www.openstreetmap.org/?mlat=${page.lat}&mlon=${page.lon}#map=17/${page.lat}/${page.lon}`
+      : `https://www.openstreetmap.org/search?query=${encodeURIComponent(`${page.address || page.canonicalVenue} Valladolid`)}`;
+    await writeFile(path.join('espacios', page.slug, 'index.html'), render('time-page.njk', {
+      title: page.title,
+      meta: { description: page.description },
+      canonicalUrl: pageUrl,
+      jsonLd: itemListItems.length
+        ? serializeJsonLd(buildVenuePageJsonLd({
+            name: page.h1,
+            description: page.description,
+            url: pageUrl,
+            items: itemListItems,
+            venue: { name: page.canonicalVenue, address: page.address, lat: page.lat, lon: page.lon }
+          }))
+        : null,
+      social: {
+        type: 'website',
+        title: page.title,
+        description: page.description,
+        image: `${publicBaseUrl}/assets/social-preview.jpg`,
+        url: pageUrl
+      },
+      pageCss: 'home.css',
+      pageJs: 'home.js',
+      activeNav: 'home',
+      pageH1: page.h1,
+      pageH2: page.h2,
+      venue: { name: page.canonicalVenue, address: page.address, mapsUrl },
+      ongoing: enrichedOngoing,
+      dayGroups,
+      categories: filters,
+      includeSiteData: true,
+      ...sharedContext
+    }));
+  }
+
   for (const event of sorted) {
     const relatedEvents = event.categoryLabel
       ? sorted.filter((e) => e.id !== event.id && e.categoryLabel === event.categoryLabel && !e.hasEnded).slice(0, 4)
@@ -695,7 +765,9 @@ async function buildSite(events) {
       : [];
     const moreInVenueTitle = canonicalizeVenue(event.venue || '') || event.venue || '';
     const venueSlug = eventVenueKey ? spaceSlugByVenueKey.get(eventVenueKey) : '';
-    const moreInVenueHref = venueSlug ? `/espacios#${venueSlug}` : '/espacios';
+    const moreInVenueHref = venueSlug
+      ? (venuePageSlugs.has(venueSlug) ? `/espacios/${venueSlug}/` : `/espacios#${venueSlug}`)
+      : '/espacios';
     const venueEntry = eventVenueKey ? spaceByVenueKey.get(eventVenueKey) || null : null;
 
     await writeFile(path.join('e', String(event.id), event.slug, 'index.html'), render('event-detail.njk', {
@@ -741,7 +813,8 @@ async function buildSite(events) {
       { path: '/archivo/', lastmod: toLocalDateKey(buildNow) },
       { path: '/espacios/', lastmod: toLocalDateKey(buildNow) },
       ...getTimePages(buildNow).map((page) => ({ path: page.path, lastmod: toLocalDateKey(buildNow) })),
-      ...categoryPages.map((page) => ({ path: page.path, lastmod: toLocalDateKey(buildNow) }))
+      ...categoryPages.map((page) => ({ path: page.path, lastmod: toLocalDateKey(buildNow) })),
+      ...renderedVenuePages.map((page) => ({ path: page.path, lastmod: toLocalDateKey(buildNow) }))
     ],
     events
   }));
