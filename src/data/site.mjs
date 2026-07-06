@@ -1,4 +1,4 @@
-import { VENUE_CANONICAL_MAP, VENUE_SLUG_MAP } from './venue-aliases.mjs';
+import { VENUE_SLUG_MAP, canonicalizeVenue, normalizeVenueKey } from './venue-aliases.mjs';
 import { isSameMadridDay, toMadridDateKey } from './format.mjs';
 
 export function groupByDate(events) {
@@ -236,24 +236,6 @@ export function groupFutureEventsByVenue(events, options = {}) {
       const timeDiff = new Date(a.nextEventAt).getTime() - new Date(b.nextEventAt).getTime();
       return timeDiff !== 0 ? timeDiff : a.name.localeCompare(b.name, 'es');
     });
-}
-
-function canonicalizeVenue(value) {
-  const raw = String(value || '').trim();
-  if (!raw) return '';
-  const normalizedKey = normalizeVenueKey(raw);
-  return VENUE_CANONICAL_MAP[raw.toLowerCase()] || VENUE_CANONICAL_MAP[normalizedKey] || raw;
-}
-
-function normalizeVenueKey(value) {
-  return String(value || '')
-    .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, '')
-    .toLowerCase()
-    .replace(/\b(sala|espacio|centro|teatro|bar|csa|club)\b/g, ' ')
-    .replace(/[^a-z0-9]+/g, ' ')
-    .replace(/\s+/g, ' ')
-    .trim();
 }
 
 function slugifyVenue(value) {

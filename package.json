@@ -8,7 +8,8 @@
     "build": "node scripts/build.mjs",
     "dev": "node scripts/dev.mjs",
     "clean": "node -e \"import('node:fs/promises').then(fs=>fs.rm('dist',{recursive:true,force:true}))\"",
-    "rebuild": "node scripts/build.mjs --rebuild"
+    "rebuild": "node scripts/build.mjs --rebuild",
+    "venues": "node scripts/venue-candidates.mjs"
   },
   "dependencies": {
     "@fortawesome/fontawesome-free": "^6.7.2",
