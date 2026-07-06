@@ -15,6 +15,7 @@ import { buildCollectionPageJsonLd, buildEventJsonLd, buildVenuePageJsonLd, seri
 import { getOpenEndedWindow, getTimePages, isWeekendDayKey, resolveBuildNow, selectTimePageEvents } from '../src/data/time-windows.mjs';
 import { getCategoryPages, mappedCategoryLabels } from '../src/data/category-pages.mjs';
 import { getVenuePages } from '../src/data/venue-pages.mjs';
+import { canonicalizeCategory } from '../src/data/category-aliases.mjs';
 import { syncEvents } from './sync-lib.mjs';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -433,6 +434,11 @@ async function buildSite(events) {
   console.log(`build: assets ${elapsedMs('assets').toFixed(1)}ms`);
 
   mark('data');
+  // Canonicaliza la categoría en un único punto: todo lo demás (filtro Tipo,
+  // tarjetas, páginas de categoría, JSON-LD, feeds) hereda la etiqueta unificada.
+  events = events.map((event) => (
+    event.categoryLabel ? { ...event, categoryLabel: canonicalizeCategory(event.categoryLabel) } : event
+  ));
   const sorted = sortEvents(events).map(enrichEvent);
   const filters = deriveFilters(events);
   const { featured, week, ongoing, today } = splitFeatured(events);
@@ -480,7 +486,7 @@ async function buildSite(events) {
   // Aviso si alguna categoría con eventos se queda sin página (la omitiría el
   // filtrado por categoría). "Otro" se excluye a propósito.
   const mapped = new Set(mappedCategoryLabels());
-  const unmapped = filters.filter((label) => label !== 'Otro' && !mapped.has(label));
+  const unmapped = filters.filter((label) => label !== 'Otros' && !mapped.has(label));
   if (unmapped.length) {
     console.warn(`build: categorías sin página (añádelas a category-pages.mjs): ${unmapped.join(', ')}`);
   }
