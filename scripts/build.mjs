@@ -712,6 +712,10 @@ async function buildSite(events) {
     // indexable ni la anunciamos en el sitemap.
     if (!ongoingGrid.length && !upcomingEvents.length) continue;
     renderedVenuePages.push(page);
+    // "Tipo" en esta página solo ofrece las categorías presentes en el espacio,
+    // manteniendo el orden del catálogo global.
+    const venueCategoryLabels = new Set([...ongoingGrid, ...upcomingEvents].map((event) => event.categoryLabel).filter(Boolean));
+    const venueCategories = filters.filter((label) => venueCategoryLabels.has(label));
     const pageUrl = `${publicBaseUrl}${page.path}`;
     const itemListItems = [...ongoingGrid, ...upcomingEvents].map((event) => ({
       url: `${publicBaseUrl}/e/${event.id}/${event.slug}/`,
@@ -749,7 +753,7 @@ async function buildSite(events) {
       ongoing: [],
       ongoingGrid,
       flatEvents: upcomingEvents,
-      categories: filters,
+      categories: venueCategories,
       includeSiteData: true,
       ...sharedContext
     }));

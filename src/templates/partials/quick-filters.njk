@@ -29,8 +29,11 @@
     <i class="mobile-chip-icon mobile-chip-leading fa-solid fa-filter" aria-hidden="true"></i>
     <span data-filter-type-label>Tipo</span>
   </button>
+  {# En las páginas de espacio (venue) el filtro de Espacio no tiene sentido: se oculta. #}
+  {% if not venue %}
   <button class="mobile-chip mobile-chip-select-wrap mobile-chip-venue-trigger" type="button" data-venue-modal-open aria-label="Filtrar por espacio">
     <i class="mobile-chip-icon mobile-chip-leading fa-solid fa-location-dot" aria-hidden="true"></i>
     <span data-filter-venue-label>Espacio</span>
   </button>
+  {% endif %}
 </div>
