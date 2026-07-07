@@ -81,7 +81,7 @@
       {% endif %}
       <h1 class="detail-clean-title">{{ event.title }}</h1>
       <div class="detail-clean-meta">
-        {% if event.scheduleLabel %}<div class="detail-clean-meta-row"><i class="fa-regular fa-calendar"></i><span>{{ event.scheduleLabel }}</span></div>{% elif event.dateRangeLabel %}<div class="detail-clean-meta-row"><i class="fa-regular fa-calendar"></i><span>{{ event.dateRangeLabel }}</span></div>{% endif %}
+        {% if event.detailScheduleLabel %}<div class="detail-clean-meta-row"><i class="fa-regular fa-calendar"></i><span>{{ event.detailScheduleLabel }}</span></div>{% elif event.detailDateRangeLabel %}<div class="detail-clean-meta-row"><i class="fa-regular fa-calendar"></i><span>{{ event.detailDateRangeLabel }}</span></div>{% endif %}
         {% if event.location %}<a class="detail-clean-meta-row detail-clean-meta-row-location detail-clean-meta-row-button" data-location-open data-location="{{ event.location }}" href="#"><i class="fa-solid fa-location-dot detail-clean-meta-row-icon"></i><span>{{ event.location }}</span></a>{% endif %}
         <a href="#comentarios" class="detail-clean-meta-row detail-clean-meta-row-button detail-clean-meta-row-button-muted detail-clean-meta-row-comments js-comment-count-full hidden" data-scroll-to-comments><i class="fa-regular fa-comment"></i><span></span></a>
       </div>

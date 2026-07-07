@@ -76,12 +76,13 @@ export function formatDateTime(value, locale = 'es-ES') {
   }).format(date);
 }
 
-export function formatDateRange(start, end, locale = 'es-ES') {
+export function formatDateRange(start, end, locale = 'es-ES', { withYear = false } = {}) {
   if (!start) return '';
   const startDate = parseDateLike(start);
   const formatter = new Intl.DateTimeFormat(locale, {
     day: 'numeric',
     month: 'short',
+    year: withYear ? 'numeric' : undefined,
     timeZone: DISPLAY_TIMEZONE
   });
   const startLabel = formatter.format(startDate);

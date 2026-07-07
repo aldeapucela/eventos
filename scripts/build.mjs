@@ -287,6 +287,13 @@ function enrichEvent(event) {
         .replace(',', '')
         .replace(/\b\w/, (m) => m.toUpperCase())
     : '';
+  // Con año: solo para la ficha de evento (ya hay eventos de años futuros).
+  const startsAtDateYearLabel = startsAtDate
+    ? formatInMadrid(startsAtDate, { day: 'numeric', month: 'short', year: 'numeric' })
+        .format(startsAtDate)
+        .replace(',', '')
+        .replace(/\b\w/, (m) => m.toUpperCase())
+    : '';
   const startsAtTimeLabel = startsAtDate
     ? formatInMadrid(startsAtDate, { hour: '2-digit', minute: '2-digit' }).format(startsAtDate)
     : '';
@@ -305,6 +312,13 @@ function enrichEvent(event) {
       ? formatDateRange(event.startsAt, event.endsAt)
       : startsAtDate
         ? `${startsAtDateLabel}${startsAtTimeLabel ? ` · ${startsAtTimeLabel}` : ''}`
+        : '',
+    // Variantes con año para la ficha de evento (el resto de tarjetas van sin año).
+    detailDateRangeLabel: formatDateRange(event.startsAt, event.endsAt, 'es-ES', { withYear: true }),
+    detailScheduleLabel: isMultiDay
+      ? formatDateRange(event.startsAt, event.endsAt, 'es-ES', { withYear: true })
+      : startsAtDate
+        ? `${startsAtDateYearLabel}${startsAtTimeLabel ? ` · ${startsAtTimeLabel}` : ''}`
         : '',
     compactDateLabel,
     startsAtDayKey: startsAtDate ? toLocalDateKey(startsAtDate) : '',
@@ -531,12 +545,12 @@ async function buildSite(events) {
   }));
 
   await writeFile('guardados/index.html', render('saved-events.njk', {
-    title: 'Mis guardados - Eventos Valladolid - Aldea Pucela',
+    title: 'Mis guardados | Eventos Valladolid | Aldea Pucela',
     meta: { description: 'Tus eventos guardados en Aldea Pucela Eventos.' },
     robotsMeta: 'noindex,follow',
     social: {
       type: 'website',
-      title: 'Mis guardados - Eventos Valladolid - Aldea Pucela',
+      title: 'Mis guardados | Eventos Valladolid | Aldea Pucela',
       description: 'Tus eventos guardados en Aldea Pucela Eventos.',
       image: `${publicBaseUrl}/assets/social-preview.jpg`,
       url: `${publicBaseUrl}/guardados/`
@@ -551,12 +565,12 @@ async function buildSite(events) {
   const groups = groupEventsByMonth(pastEvents);
 
   await writeFile('archivo/index.html', render('archivo.njk', {
-    title: 'Archivo de eventos - Eventos Valladolid - Aldea Pucela',
+    title: 'Archivo de eventos | Eventos Valladolid | Aldea Pucela',
     meta: { description: 'Histórico de eventos culturales pasados en Valladolid.' },
     canonicalUrl: `${publicBaseUrl}/archivo/`,
     social: {
       type: 'website',
-      title: 'Archivo de eventos - Eventos Valladolid - Aldea Pucela',
+      title: 'Archivo de eventos | Eventos Valladolid | Aldea Pucela',
       description: 'Histórico de eventos culturales pasados en Valladolid.',
       image: `${publicBaseUrl}/assets/social-preview.jpg`,
       url: `${publicBaseUrl}/archivo/`
@@ -569,12 +583,12 @@ async function buildSite(events) {
   }));
 
   await writeFile('espacios/index.html', render('spaces.njk', {
-    title: 'Espacios - Eventos Valladolid - Aldea Pucela',
+    title: 'Espacios | Eventos Valladolid | Aldea Pucela',
     meta: { description: 'Eventos en los próximos seis meses agrupados por espacio en Valladolid.' },
     canonicalUrl: `${publicBaseUrl}/espacios/`,
     social: {
       type: 'website',
-      title: 'Espacios - Eventos Valladolid - Aldea Pucela',
+      title: 'Espacios | Eventos Valladolid | Aldea Pucela',
       description: 'Eventos en los próximos seis meses agrupados por espacio en Valladolid.',
       image: `${publicBaseUrl}/assets/social-preview.jpg`,
       url: `${publicBaseUrl}/espacios/`
@@ -710,12 +724,12 @@ async function buildSite(events) {
   // eventos vigentes primero; desempate alfabético.
   const typesArchiveSorted = [...typesArchive].sort((a, b) => b.count - a.count || a.label.localeCompare(b.label, 'es'));
   await writeFile('tipos/index.html', render('types.njk', {
-    title: 'Tipos de evento - Eventos Valladolid - Aldea Pucela',
+    title: 'Tipos de evento | Eventos Valladolid | Aldea Pucela',
     meta: { description: 'Explora la agenda cultural de Valladolid por tipo de evento: música, cine, teatro, exposiciones y más, recopilados por la comunidad de Aldea Pucela.' },
     canonicalUrl: `${publicBaseUrl}/tipos/`,
     social: {
       type: 'website',
-      title: 'Tipos de evento - Eventos Valladolid - Aldea Pucela',
+      title: 'Tipos de evento | Eventos Valladolid | Aldea Pucela',
       description: 'Explora la agenda cultural de Valladolid por tipo de evento: música, cine, teatro, exposiciones y más.',
       image: `${publicBaseUrl}/assets/social-preview.jpg`,
       url: `${publicBaseUrl}/tipos/`
@@ -816,7 +830,7 @@ async function buildSite(events) {
     const venueEntry = eventVenueKey ? spaceByVenueKey.get(eventVenueKey) || null : null;
 
     await writeFile(path.join('e', String(event.id), event.slug, 'index.html'), render('event-detail.njk', {
-      title: `${event.title} - Eventos Valladolid - Aldea Pucela`,
+      title: `${event.title} | Eventos Valladolid | Aldea Pucela`,
       meta: { description: event.excerpt },
       canonicalUrl: `${publicBaseUrl}/e/${event.id}/${event.slug}/`,
       jsonLd: serializeJsonLd(buildEventJsonLd(event, { publicBaseUrl, venueEntry })),
