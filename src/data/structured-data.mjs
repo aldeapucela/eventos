@@ -1,24 +1,22 @@
-// Claves alineadas con los categoryLabel reales que produce normalizeCategory
-// (ver src/data/discourse.mjs y la lista `filters` de site-data.json).
+// Claves alineadas con los categoryLabel YA canónicos (ver category-aliases.mjs,
+// que se aplica en build sobre event.categoryLabel).
 const SCHEMA_TYPE_BY_CATEGORY = {
-  'Musica': 'MusicEvent',
+  'Música': 'MusicEvent',
   'Recital': 'LiteraryEvent',
   'Cine': 'ScreeningEvent',
-  'Cine Proyeccion': 'ScreeningEvent',
-  'Proyección': 'ScreeningEvent',
   'Charlas': 'EducationEvent',
   'Conferencia': 'EducationEvent',
   'Talleres': 'EducationEvent',
-  'Exposicion': 'ExhibitionEvent',
+  'Exposición': 'ExhibitionEvent',
   'Festival': 'Festival',
   'Literatura': 'LiteraryEvent',
-  'Presentacion Libro': 'LiteraryEvent',
+  'Libros': 'LiteraryEvent',
   'Teatro': 'TheaterEvent',
   'Danza': 'DanceEvent',
   'Comedia': 'ComedyEvent',
   'Deportes': 'SportsEvent',
-  'Gastronomia Cata': 'FoodEvent',
-  'Infantil Familiar': 'ChildrensEvent'
+  'Gastronomía': 'FoodEvent',
+  'Infantil y familia': 'ChildrensEvent'
 };
 
 export function schemaTypeForCategory(categoryLabel) {
