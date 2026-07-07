@@ -650,11 +650,24 @@ async function buildSite(events) {
   // Páginas por categoría (/musica/, /cine/...): mismo patrón que las temporales
   // pero con ventana abierta (de hoy en adelante) filtrada por categoría.
   const categoryWindow = getOpenEndedWindow(buildNow);
+  // Archivo de tipos (/tipos/): un avance por categoría; el listado completo vive
+  // en cada página /<slug>/. Se alimenta de lo que ya calcula este bucle.
+  const typesArchive = [];
   for (const page of categoryPages) {
     const categoryEvents = events.filter((event) => page.labels.includes(event.categoryLabel));
     const { ongoing: pageOngoing, listed } = selectTimePageEvents(categoryEvents, categoryWindow, buildNow);
     const enrichedListed = sortEvents(listed).map(enrichEvent).map(withVenueKeys);
     const enrichedOngoing = sortEvents(pageOngoing).map(enrichEvent).map(withVenueKeys);
+    const typeCount = enrichedOngoing.length + enrichedListed.length;
+    if (typeCount > 0) {
+      typesArchive.push({
+        label: page.labels[0],
+        slug: page.slug,
+        path: page.path,
+        count: typeCount,
+        events: [...enrichedOngoing, ...enrichedListed].slice(0, 6)
+      });
+    }
     const pageUrl = `${publicBaseUrl}${page.path}`;
     const itemListItems = [...enrichedOngoing, ...enrichedListed].map((event) => ({
       url: `${publicBaseUrl}/e/${event.id}/${event.slug}/`,
@@ -692,6 +705,30 @@ async function buildSite(events) {
       ...sharedContext
     }));
   }
+
+  // Archivo de tipos (/tipos/), a imagen de /espacios/ pero por categoría. Más
+  // eventos vigentes primero; desempate alfabético.
+  const typesArchiveSorted = [...typesArchive].sort((a, b) => b.count - a.count || a.label.localeCompare(b.label, 'es'));
+  await writeFile('tipos/index.html', render('types.njk', {
+    title: 'Tipos de evento - Eventos Valladolid - Aldea Pucela',
+    meta: { description: 'Explora la agenda cultural de Valladolid por tipo de evento: música, cine, teatro, exposiciones y más, recopilados por la comunidad de Aldea Pucela.' },
+    canonicalUrl: `${publicBaseUrl}/tipos/`,
+    social: {
+      type: 'website',
+      title: 'Tipos de evento - Eventos Valladolid - Aldea Pucela',
+      description: 'Explora la agenda cultural de Valladolid por tipo de evento: música, cine, teatro, exposiciones y más.',
+      image: `${publicBaseUrl}/assets/social-preview.jpg`,
+      url: `${publicBaseUrl}/tipos/`
+    },
+    pageCss: 'home.css',
+    pageJs: 'home.js',
+    activeNav: 'types',
+    types: typesArchiveSorted,
+    typesCount: typesArchiveSorted.length,
+    futureEventsCount: typesArchiveSorted.reduce((total, type) => total + type.count, 0),
+    includeSiteData: true,
+    ...sharedContext
+  }));
 
   // Páginas por ubicación (/espacios/<slug>/): mismo patrón que las de categoría,
   // pero filtrando por el venue canónico. Igual que la cualificación del venue
@@ -820,6 +857,7 @@ async function buildSite(events) {
       { path: '/', lastmod: toLocalDateKey(buildNow) },
       { path: '/archivo/', lastmod: toLocalDateKey(buildNow) },
       { path: '/espacios/', lastmod: toLocalDateKey(buildNow) },
+      { path: '/tipos/', lastmod: toLocalDateKey(buildNow) },
       ...getTimePages(buildNow).map((page) => ({ path: page.path, lastmod: toLocalDateKey(buildNow) })),
       ...categoryPages.map((page) => ({ path: page.path, lastmod: toLocalDateKey(buildNow) })),
       ...renderedVenuePages.map((page) => ({ path: page.path, lastmod: toLocalDateKey(buildNow) }))

@@ -54,7 +54,7 @@ export function mappedCategoryLabels() {
 }
 
 // ponytail: self-check de slugs (únicos y sin chocar con rutas reservadas).
-const RESERVED = new Set(['hoy', 'fin-de-semana', 'esta-semana', 'proxima-semana', 'este-mes', 'proximos-3-meses', 'archivo', 'espacios', 'guardados', 'e', 'calendar', 'assets', 'posters', 'img']);
+const RESERVED = new Set(['hoy', 'fin-de-semana', 'esta-semana', 'proxima-semana', 'este-mes', 'proximos-3-meses', 'archivo', 'espacios', 'tipos', 'guardados', 'e', 'calendar', 'assets', 'posters', 'img']);
 if (process.argv[1] && (await import('node:url')).fileURLToPath(import.meta.url) === process.argv[1]) {
   const slugs = Object.values(CATEGORY_PAGES).map((m) => m.slug);
   console.assert(new Set(slugs).size === slugs.length, 'slugs de categoría duplicados');
