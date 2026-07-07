@@ -173,7 +173,7 @@
           {% endfor %}
         </div>
         <div class="mt-2">
-          <a class="detail-clean-action" href="/?type={{ event.categoryLabel | urlencode }}#results">
+          <a class="detail-clean-action" href="{% if categoryPagePaths and categoryPagePaths[event.categoryLabel] %}{{ categoryPagePaths[event.categoryLabel] }}{% else %}/?type={{ event.categoryLabel | urlencode }}#results{% endif %}">
             <i class="fa-solid fa-list-ul"></i>
             <span>Ver más en {{ event.categoryLabel }}</span>
           </a>
@@ -212,7 +212,7 @@
         <div class="mt-2">
           <a class="detail-clean-action" href="{{ moreInVenueHref }}">
             <i class="fa-solid fa-location-dot"></i>
-            <span>Ver más en este espacio</span>
+            <span>Ver más en {{ moreInVenueTitle }}</span>
           </a>
         </div>
       </section>
