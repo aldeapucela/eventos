@@ -12,6 +12,12 @@
         <header class="time-page-intro-head space-y-2">
           <h1 class="section-mobile-title">{{ pageH1 }}</h1>
           <h2 class="time-page-intro-subtitle text-sm font-normal leading-6 text-slate-500">{{ pageH2 }}</h2>
+          {% if venue %}
+          <p class="time-page-venue-meta text-sm leading-6 text-slate-500">
+            {% if venue.address %}<span>{{ venue.address }}</span>{% if venue.mapsUrl %} · {% endif %}{% endif %}
+            {% if venue.mapsUrl %}<a class="underline" href="{{ venue.mapsUrl }}" target="_blank" rel="noopener noreferrer">Ver en el mapa</a>{% endif %}
+          </p>
+          {% endif %}
         </header>
         {% include "partials/quick-filters.njk" %}
       </section>
@@ -57,11 +63,18 @@
 
       <section class="space-y-3" id="results">
         <div class="section-mobile-head">
-          <h2 class="section-mobile-title">{{ timeFilterKey }}</h2>
+          <h2 class="section-mobile-title">{{ timeFilterKey or 'Próximos eventos' }}</h2>
           <a class="section-mobile-link hidden" href="/" data-clear-filters>Quitar filtros</a>
         </div>
         <div class="week-groups" id="week-groups" data-week-groups data-server-rendered="true">
-          {% if dayGroups.length %}
+          {% if flatEvents %}
+          {# Páginas de espacio: todo en un grid, con la fecha en cada tarjeta. #}
+          <div class="event-row-list">
+            {%- for event in flatEvents %}
+            {% include "partials/event-compact.njk" %}
+            {%- endfor %}
+          </div>
+          {% elif dayGroups.length %}
           {% for group in dayGroups %}
           <section class="week-day-group" data-week-day-group data-day-key="{{ group.key }}">
             <div class="week-day-header">

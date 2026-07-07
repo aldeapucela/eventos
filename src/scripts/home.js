@@ -816,9 +816,15 @@ function updateVenuePill() {
 }
 function renderVenueOptions() {
   if (!venueOptions) return;
+  // Solo espacios con eventos visibles bajo los filtros actuales (más el activo).
+  const selectable = getSelectableVenueKeys();
+  const venuesToShow = availableVenues.filter((venue) => {
+    const key = normalizeVenueKey(venue);
+    return selectable.has(key) || key === activeVenueFilter;
+  });
   const buttons = [
     `<button class="calendar-modal-action filter-date-option ${activeVenueFilter === 'all' ? 'calendar-modal-action-primary' : ''}" type="button" data-venue-filter-value="all" aria-pressed="${String(activeVenueFilter === 'all')}"><i class="fa-solid fa-check"></i><span>Todos</span></button>`,
-    ...availableVenues.map((venue) => {
+    ...venuesToShow.map((venue) => {
       const normalized = normalizeVenueKey(venue);
       const selected = activeVenueFilter === normalized;
       return `<button class="calendar-modal-action filter-date-option filter-venue-option ${selected ? 'calendar-modal-action-primary' : ''}" type="button" data-venue-filter-value="${venue}" aria-pressed="${String(selected)}"><i class="fa-solid fa-location-dot"></i><span>${venue}</span></button>`;
@@ -958,7 +964,28 @@ function getAvailableVenues(items) {
   return items
     .map((space) => String(space?.name || '').trim().replace(/\s+/g, ' '))
     .filter(Boolean)
+    // Descarta nombres que no parecen un lugar (p. ej. "C." truncado).
+    .filter((name) => /[a-záéíóúñü]{3,}/i.test(name))
     .sort((a, b) => a.localeCompare(b, 'es-ES'));
+}
+
+// Claves de venue con al menos un evento que pasa los filtros actuales
+// (tiempo/gratis/tipo, ignorando el propio filtro de espacio). Se recalcula en
+// cada applyFilters, así el filtro Espacio solo ofrece opciones con resultados.
+function getSelectableVenueKeys() {
+  const keys = new Set();
+  document.querySelectorAll('article[data-category]').forEach((card) => {
+    const category = card.dataset.category || '';
+    const isFree = card.dataset.free === 'true';
+    const startsAt = card.dataset.startsAt ? parseDateLike(card.dataset.startsAt) : null;
+    const endsAt = card.dataset.endsAt ? parseDateLike(card.dataset.endsAt) : null;
+    if (!checkTimeVisible(startsAt, endsAt, activeTimeFilter)) return;
+    if (activeFreeFilter && !isFree) return;
+    if (activeTypeFilters.length && !activeTypeFilters.includes(category)) return;
+    const venueKey = normalizeVenueKey(card.dataset.venueKey || card.dataset.venue || '');
+    if (venueKey) keys.add(venueKey);
+  });
+  return keys;
 }
 
 function renderWeekGroups() {
