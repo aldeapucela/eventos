@@ -14,8 +14,7 @@
           <h2 class="time-page-intro-subtitle text-sm font-normal leading-6 text-slate-500">{{ pageH2 }}</h2>
           {% if venue %}
           <p class="time-page-venue-meta text-sm leading-6 text-slate-500">
-            {% if venue.address %}<span>{{ venue.address }}</span>{% if venue.mapsUrl %} · {% endif %}{% endif %}
-            {% if venue.mapsUrl %}<a class="underline" href="{{ venue.mapsUrl }}" target="_blank" rel="noopener noreferrer">Ver en el mapa</a>{% endif %}
+            {% if venue.address %}<span>{{ venue.address }}</span> · {% endif %}<a class="underline" data-location-open data-location="{{ venue.address or venue.name }}" href="#">Ver en el mapa</a>
           </p>
           {% endif %}
         </header>
@@ -153,4 +152,7 @@
 {% include "partials/install-modal.njk" %}
 
 {% include "partials/filter-modals.njk" %}
+
+{# Solo en páginas de espacio: modal para elegir servicio de mapas en "Ver en el mapa". #}
+{% if venue %}{% include "partials/location-modal.njk" %}{% endif %}
 {% endblock %}

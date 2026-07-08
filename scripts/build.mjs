@@ -81,6 +81,7 @@ async function copyJs() {
   await fs.copyFile(path.join(root, 'src', 'scripts', 'event-detail.js'), path.join(jsDir, 'event-detail.js'));
   await fs.copyFile(path.join(root, 'src', 'scripts', 'comments.js'), path.join(jsDir, 'comments.js'));
   await fs.copyFile(path.join(root, 'src', 'scripts', 'location-link.js'), path.join(jsDir, 'location-link.js'));
+  await fs.copyFile(path.join(root, 'src', 'scripts', 'subscribe.js'), path.join(jsDir, 'subscribe.js'));
   await fs.copyFile(path.join(root, 'src', 'scripts', 'saved-events.js'), path.join(jsDir, 'saved-events.js'));
   await fs.copyFile(path.join(root, 'src', 'scripts', 'spaces.js'), path.join(jsDir, 'spaces.js'));
   await fs.copyFile(path.join(root, 'src', 'scripts', 'theme.js'), path.join(jsDir, 'theme.js'));
@@ -415,6 +416,7 @@ async function computeAssetVersion() {
     path.join(root, 'src', 'styles', 'event-detail.css'),
     path.join(root, 'src', 'scripts', 'home.js'),
     path.join(root, 'src', 'scripts', 'location-link.js'),
+    path.join(root, 'src', 'scripts', 'subscribe.js'),
     path.join(root, 'src', 'scripts', 'spaces.js'),
     path.join(root, 'src', 'scripts', 'saved-events.js'),
     path.join(root, 'src', 'scripts', 'event-detail.js'),
@@ -595,6 +597,7 @@ async function buildSite(events) {
     },
     pageCss: 'home.css',
     pageJs: 'home.js',
+    activeNav: 'spaces',
     spaces: spaces.map((space) => ({
       ...space,
       pageHref: venuePageSlugs.has(space.slug) ? `/espacios/${space.slug}/` : null
@@ -708,7 +711,7 @@ async function buildSite(events) {
       },
       pageCss: 'home.css',
       pageJs: 'home.js',
-      activeNav: 'home',
+      activeNav: 'types',
       pageH1: page.h1,
       pageH2: page.h2,
       ongoing: [],
@@ -772,9 +775,6 @@ async function buildSite(events) {
       url: `${publicBaseUrl}/e/${event.id}/${event.slug}/`,
       name: event.title
     }));
-    const mapsUrl = page.hasMapPoint
-      ? `https://www.openstreetmap.org/?mlat=${page.lat}&mlon=${page.lon}#map=17/${page.lat}/${page.lon}`
-      : `https://www.openstreetmap.org/search?query=${encodeURIComponent(`${page.address || page.canonicalVenue} Valladolid`)}`;
     await writeFile(path.join('espacios', page.slug, 'index.html'), render('time-page.njk', {
       title: page.title,
       meta: { description: page.description },
@@ -797,10 +797,10 @@ async function buildSite(events) {
       },
       pageCss: 'home.css',
       pageJs: 'home.js',
-      activeNav: 'home',
+      activeNav: 'spaces',
       pageH1: page.h1,
       pageH2: page.h2,
-      venue: { name: page.canonicalVenue, address: page.address, mapsUrl },
+      venue: { name: page.canonicalVenue, address: page.address },
       ongoing: [],
       ongoingGrid,
       flatEvents: upcomingEvents,

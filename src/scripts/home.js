@@ -1,4 +1,5 @@
 import { initTheme } from './theme.js';
+import { setupLocationLinks } from './location-link.js';
 
 const filters = Array.from(document.querySelectorAll('[data-filter]'));
 let cards = [];
@@ -98,6 +99,7 @@ setupScrollTopButton();
 setupCategoryPicker();
 setupInstallPrompt();
 setupTypeCheckboxes();
+setupLocationLinks();
 void initializeSiteData();
 
 document.addEventListener('click', async (event) => {

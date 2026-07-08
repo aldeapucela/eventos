@@ -19,44 +19,7 @@
         <span class="home-brand-mobile-title">Eventos</span>
       </span>
     </a>
-    <nav class="header-main-nav hidden lg:flex" aria-label="Navegación principal">
-      <a class="nav-link " href="/">
-        <i class="fa-solid fa-house" aria-hidden="true"></i>
-        <span>Inicio</span>
-      </a>
-      <a class="nav-link nav-link-active" href="/espacios">
-        <i class="fa-solid fa-location-dot" aria-hidden="true"></i>
-        <span>Espacios</span>
-      </a>
-      <a class="nav-link " href="/tipos">
-        <i class="fa-solid fa-filter" aria-hidden="true"></i>
-        <span>Tipos</span>
-      </a>
-      <a class="nav-link " href="/guardados">
-        <i class="fa-regular fa-bookmark" aria-hidden="true"></i>
-        <span>Mis guardados</span>
-      </a>
-      <a class="nav-link " href="/archivo">
-        <i class="fa-solid fa-box-archive" aria-hidden="true"></i>
-        <span>Archivo</span>
-      </a>
-      <button class="nav-link" type="button" data-subscribe-open>
-        <i class="fa-solid fa-rss" aria-hidden="true"></i>
-        <span>Suscribirse</span>
-      </button>
-      <a class="nav-link" href="https://aldeapucela.org" target="_blank" rel="noopener noreferrer">
-        <i class="fa-solid fa-people-group" aria-hidden="true"></i>
-        <span>Comunidad</span>
-      </a>
-      <a class="nav-link" href="https://t.me/aldeapucela/244" target="_blank" rel="noopener noreferrer">
-        <i class="fa-brands fa-telegram" aria-hidden="true"></i>
-        <span>Chat</span>
-      </a>
-      <button class="nav-link nav-theme-toggle" type="button" data-theme-toggle aria-label="Cambiar tema" aria-pressed="false">
-        <i class="fa-regular fa-moon" aria-hidden="true"></i>
-        <span data-theme-toggle-label>Modo oscuro</span>
-      </button>
-    </nav>
+    {% include "partials/main-nav.njk" %}
     <button class="header-search-btn inline-flex h-11 w-11 items-center justify-center rounded-full text-slate-500 lg:hidden" type="button" data-menu-open aria-label="Abrir menú">
       <i class="fa-solid fa-bars"></i>
     </button>
@@ -210,35 +173,7 @@
 
 {% include "partials/subscribe-modal.njk" %}
 
-<div class="location-modal" data-location-modal hidden>
-  <button class="location-modal-backdrop" type="button" data-location-close aria-label="Cerrar"></button>
-  <div class="location-modal-panel" role="dialog" aria-modal="true" aria-labelledby="location-modal-title">
-    <div class="location-modal-header">
-      <h2 class="location-modal-title" id="location-modal-title">Abrir ubicación en</h2>
-      <button class="location-modal-close" type="button" data-location-close aria-label="Cerrar">
-        <i class="fa-solid fa-xmark"></i>
-      </button>
-    </div>
-    <div class="location-modal-actions">
-      <a class="location-modal-action" data-location-map="openstreetmap" href="#" target="_blank" rel="noreferrer">
-        <i class="fa-solid fa-map-location-dot"></i>
-        <span>OpenStreetMap</span>
-      </a>
-      <a class="location-modal-action" data-location-map="google" href="#" target="_blank" rel="noreferrer">
-        <i class="fa-brands fa-google"></i>
-        <span>Google Maps</span>
-      </a>
-      <a class="location-modal-action" data-location-map="apple" href="#" target="_blank" rel="noreferrer">
-        <i class="fa-brands fa-apple"></i>
-        <span>Apple Maps</span>
-      </a>
-      <a class="location-modal-action" data-location-map="bing" href="#" target="_blank" rel="noreferrer">
-        <i class="fa-brands fa-microsoft"></i>
-        <span>Bing Maps</span>
-      </a>
-    </div>
-  </div>
-</div>
+{% include "partials/location-modal.njk" %}
 
 <script>
   window.__SPACES__ = {{ spacesDataJson | safe }};
