@@ -82,6 +82,7 @@ async function copyJs() {
   await fs.copyFile(path.join(root, 'src', 'scripts', 'comments.js'), path.join(jsDir, 'comments.js'));
   await fs.copyFile(path.join(root, 'src', 'scripts', 'location-link.js'), path.join(jsDir, 'location-link.js'));
   await fs.copyFile(path.join(root, 'src', 'scripts', 'subscribe.js'), path.join(jsDir, 'subscribe.js'));
+  await fs.copyFile(path.join(root, 'src', 'scripts', 'menu-drawer.js'), path.join(jsDir, 'menu-drawer.js'));
   await fs.copyFile(path.join(root, 'src', 'scripts', 'saved-events.js'), path.join(jsDir, 'saved-events.js'));
   await fs.copyFile(path.join(root, 'src', 'scripts', 'spaces.js'), path.join(jsDir, 'spaces.js'));
   await fs.copyFile(path.join(root, 'src', 'scripts', 'theme.js'), path.join(jsDir, 'theme.js'));
@@ -417,6 +418,7 @@ async function computeAssetVersion() {
     path.join(root, 'src', 'scripts', 'home.js'),
     path.join(root, 'src', 'scripts', 'location-link.js'),
     path.join(root, 'src', 'scripts', 'subscribe.js'),
+    path.join(root, 'src', 'scripts', 'menu-drawer.js'),
     path.join(root, 'src', 'scripts', 'spaces.js'),
     path.join(root, 'src', 'scripts', 'saved-events.js'),
     path.join(root, 'src', 'scripts', 'event-detail.js'),

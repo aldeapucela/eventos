@@ -31,6 +31,7 @@
       <button class="detail-topbar-mobile-action inline-flex items-center justify-center md:hidden" type="button" data-share-event data-event-id="{{ event.id }}" data-event-url="{{ event.urlPath }}" data-event-title="{{ event.title }}" aria-label="Compartir"><i class="fa-solid fa-share-nodes"></i></button>
       <button class="hidden md:inline-flex h-11 w-11 items-center justify-center rounded-full text-slate-500 transition hover:bg-slate-100 hover:text-brand-700" type="button" data-save-event data-event-id="{{ event.id }}" aria-label="Guardar"><i class="fa-regular fa-bookmark"></i></button>
       <button class="hidden md:inline-flex h-11 w-11 items-center justify-center rounded-full text-slate-500 transition hover:bg-slate-100 hover:text-brand-700" type="button" data-share-event data-event-id="{{ event.id }}" data-event-url="{{ event.urlPath }}" data-event-title="{{ event.title }}" aria-label="Compartir"><i class="fa-solid fa-share-nodes"></i></button>
+      <button class="header-search-btn inline-flex h-11 w-11 items-center justify-center rounded-full text-slate-500 lg:hidden" type="button" data-menu-open aria-label="Abrir menú"><i class="fa-solid fa-bars"></i></button>
     </div>
   </div>
 </header>
@@ -310,6 +311,11 @@
 {% include "partials/location-modal.njk" %}
 
 {% include "partials/subscribe-modal.njk" %}
+
+{# Menú de navegación móvil (hamburguesa): mismo drawer que el resto, sin la
+   sección de filtros (no aplica a la ficha). #}
+{% set hideDrawerFilters = true %}
+{% include "partials/menu-drawer.njk" %}
 
 <script>
   window.__EVENT_DETAIL__ = {{ eventDetailJson | safe }};
