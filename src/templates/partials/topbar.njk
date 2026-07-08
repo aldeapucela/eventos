@@ -7,40 +7,7 @@
         <span class="home-brand-mobile-title">Eventos</span>
       </span>
     </a>
-    <nav class="header-main-nav hidden lg:flex" aria-label="Navegación principal">
-      <a class="nav-link {% if activeNav == 'home' %}nav-link-active{% endif %}" href="/">
-        <i class="fa-solid fa-house" aria-hidden="true"></i>
-        <span>Inicio</span>
-      </a>
-      <a class="nav-link {% if activeNav == 'spaces' %}nav-link-active{% endif %}" href="/espacios">
-        <i class="fa-solid fa-location-dot" aria-hidden="true"></i>
-        <span>Espacios</span>
-      </a>
-      <a class="nav-link {% if activeNav == 'saved' %}nav-link-active{% endif %}" href="/guardados">
-        <i class="fa-regular fa-bookmark" aria-hidden="true"></i>
-        <span>Mis guardados</span>
-      </a>
-      <a class="nav-link {% if activeNav == 'archive' %}nav-link-active{% endif %}" href="/archivo">
-        <i class="fa-solid fa-box-archive" aria-hidden="true"></i>
-        <span>Archivo</span>
-      </a>
-      <button class="nav-link" type="button" data-subscribe-open>
-        <i class="fa-solid fa-rss" aria-hidden="true"></i>
-        <span>Suscribirse</span>
-      </button>
-      <a class="nav-link" href="https://aldeapucela.org" target="_blank" rel="noopener noreferrer">
-        <i class="fa-solid fa-people-group" aria-hidden="true"></i>
-        <span>Comunidad</span>
-      </a>
-      <a class="nav-link" href="https://t.me/aldeapucela/244" target="_blank" rel="noopener noreferrer">
-        <i class="fa-brands fa-telegram" aria-hidden="true"></i>
-        <span>Chat</span>
-      </a>
-      <button class="nav-link nav-theme-toggle" type="button" data-theme-toggle aria-label="Cambiar tema" aria-pressed="false">
-        <i class="fa-regular fa-moon" aria-hidden="true"></i>
-        <span data-theme-toggle-label>Modo oscuro</span>
-      </button>
-    </nav>
+    {% include "partials/main-nav.njk" %}
     <button class="header-search-btn inline-flex h-11 w-11 items-center justify-center rounded-full text-slate-500 lg:hidden" type="button" data-menu-open aria-label="Abrir menú">
       <i class="fa-solid fa-bars"></i>
     </button>

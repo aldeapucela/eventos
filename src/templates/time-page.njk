@@ -14,8 +14,7 @@
           <h2 class="time-page-intro-subtitle text-sm font-normal leading-6 text-slate-500">{{ pageH2 }}</h2>
           {% if venue %}
           <p class="time-page-venue-meta text-sm leading-6 text-slate-500">
-            {% if venue.address %}<span>{{ venue.address }}</span>{% if venue.mapsUrl %} · {% endif %}{% endif %}
-            {% if venue.mapsUrl %}<a class="underline" href="{{ venue.mapsUrl }}" target="_blank" rel="noopener noreferrer">Ver en el mapa</a>{% endif %}
+            {% if venue.address %}<span>{{ venue.address }}</span> · {% endif %}<a class="underline" data-location-open data-location="{{ venue.address or venue.name }}" href="#">Ver en el mapa</a>
           </p>
           {% endif %}
         </header>
@@ -61,14 +60,29 @@
       </section>
       {% endif %}
 
+      {# Páginas de espacio y de tipo: "En curso" (multi-día que abarcan hoy) en un grid,
+         no en el carrusel de las páginas temporales. #}
+      {% if ongoingGrid and ongoingGrid.length %}
+      <section class="space-y-3" data-ongoing-section>
+        <div class="section-mobile-head">
+          <h2 class="section-mobile-title">En curso</h2>
+        </div>
+        <div class="event-row-list">
+          {%- for event in ongoingGrid %}
+          {% include "partials/event-compact.njk" %}
+          {%- endfor %}
+        </div>
+      </section>
+      {% endif %}
+
       <section class="space-y-3" id="results">
         <div class="section-mobile-head">
           <h2 class="section-mobile-title">{{ timeFilterKey or 'Próximos eventos' }}</h2>
           <a class="section-mobile-link hidden" href="/" data-clear-filters>Quitar filtros</a>
         </div>
         <div class="week-groups" id="week-groups" data-week-groups data-server-rendered="true">
-          {% if flatEvents %}
-          {# Páginas de espacio: todo en un grid, con la fecha en cada tarjeta. #}
+          {% if flatEvents and flatEvents.length %}
+          {# Páginas de espacio y de tipo: todo en un grid, con la fecha en cada tarjeta. #}
           <div class="event-row-list">
             {%- for event in flatEvents %}
             {% include "partials/event-compact.njk" %}
@@ -87,7 +101,7 @@
             </div>
           </section>
           {% endfor %}
-          {% else %}
+          {% elif not (ongoingGrid and ongoingGrid.length) %}
           <p class="text-sm leading-6 text-slate-500">Todavía no hay eventos publicados para estas fechas. Echa un vistazo a <a class="underline" href="/esta-semana/">esta semana</a> o a <a class="underline" href="/">toda la agenda</a>.</p>
           {% endif %}
         </div>
@@ -138,4 +152,7 @@
 {% include "partials/install-modal.njk" %}
 
 {% include "partials/filter-modals.njk" %}
+
+{# Solo en páginas de espacio: modal para elegir servicio de mapas en "Ver en el mapa". #}
+{% if venue %}{% include "partials/location-modal.njk" %}{% endif %}
 {% endblock %}

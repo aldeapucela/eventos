@@ -1,11 +1,7 @@
-import { setupLocationLinks } from './location-link.js';
-
 const spaces = Array.isArray(window.__SPACES__) ? window.__SPACES__ : [];
 const mapNode = document.querySelector('[data-spaces-map]');
 const VALLADOLID_CENTER = [41.6523, -4.7245];
 const VALLADOLID_METRO_ZOOM = window.matchMedia('(max-width: 767px)').matches ? 12 : 13;
-
-setupLocationLinks();
 
 if (mapNode && window.L && spaces.length) {
   const points = spaces.filter((space) => Number.isFinite(space.lat) && Number.isFinite(space.lon));

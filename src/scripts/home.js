@@ -1,4 +1,5 @@
 import { initTheme } from './theme.js';
+import { setupLocationLinks } from './location-link.js';
 
 const filters = Array.from(document.querySelectorAll('[data-filter]'));
 let cards = [];
@@ -98,6 +99,7 @@ setupScrollTopButton();
 setupCategoryPicker();
 setupInstallPrompt();
 setupTypeCheckboxes();
+setupLocationLinks();
 void initializeSiteData();
 
 document.addEventListener('click', async (event) => {
@@ -326,12 +328,8 @@ document.addEventListener('click', async (event) => {
 
   if (typeOnly) {
     event.preventDefault();
-    // Si la categoría tiene página propia (/cine/, /musica/...), "Solo" navega
-    // a ella; si no (p. ej. "Otro"), filtra en la home como antes.
-    if (typeOnly.dataset.typePage) {
-      window.location.href = typeOnly.dataset.typePage;
-      return;
-    }
+    // "Solo" deja seleccionado únicamente ese tipo en el filtro (in situ), sin
+    // navegar a su página (para explorar los tipos está el archivo /tipos/).
     const value = typeOnly.dataset.typeOnly;
     typeCheckboxes.forEach(cb => cb.checked = (cb.value === value));
     activeTypeFilters = [value];

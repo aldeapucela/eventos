@@ -1,6 +1,8 @@
 import { initTheme } from './theme.js';
 import { setupCommentsSection } from './comments.js';
 import { setupLocationLinks } from './location-link.js';
+import { setupSubscribe } from './subscribe.js';
+import { setupMenuDrawer } from './menu-drawer.js';
 
 const storageKey = 'aldeapucela_saved_events';
 
@@ -28,6 +30,8 @@ initTheme();
 syncSavedStates();
 setupLocationLinks();
 setupCommentsSection();
+setupSubscribe();
+setupMenuDrawer();
 
 document.addEventListener('click', async (event) => {
   const saveButton = event.target.closest('[data-save-event]');

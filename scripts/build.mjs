@@ -81,6 +81,8 @@ async function copyJs() {
   await fs.copyFile(path.join(root, 'src', 'scripts', 'event-detail.js'), path.join(jsDir, 'event-detail.js'));
   await fs.copyFile(path.join(root, 'src', 'scripts', 'comments.js'), path.join(jsDir, 'comments.js'));
   await fs.copyFile(path.join(root, 'src', 'scripts', 'location-link.js'), path.join(jsDir, 'location-link.js'));
+  await fs.copyFile(path.join(root, 'src', 'scripts', 'subscribe.js'), path.join(jsDir, 'subscribe.js'));
+  await fs.copyFile(path.join(root, 'src', 'scripts', 'menu-drawer.js'), path.join(jsDir, 'menu-drawer.js'));
   await fs.copyFile(path.join(root, 'src', 'scripts', 'saved-events.js'), path.join(jsDir, 'saved-events.js'));
   await fs.copyFile(path.join(root, 'src', 'scripts', 'spaces.js'), path.join(jsDir, 'spaces.js'));
   await fs.copyFile(path.join(root, 'src', 'scripts', 'theme.js'), path.join(jsDir, 'theme.js'));
@@ -287,6 +289,13 @@ function enrichEvent(event) {
         .replace(',', '')
         .replace(/\b\w/, (m) => m.toUpperCase())
     : '';
+  // Con año: solo para la ficha de evento (ya hay eventos de años futuros).
+  const startsAtDateYearLabel = startsAtDate
+    ? formatInMadrid(startsAtDate, { day: 'numeric', month: 'short', year: 'numeric' })
+        .format(startsAtDate)
+        .replace(',', '')
+        .replace(/\b\w/, (m) => m.toUpperCase())
+    : '';
   const startsAtTimeLabel = startsAtDate
     ? formatInMadrid(startsAtDate, { hour: '2-digit', minute: '2-digit' }).format(startsAtDate)
     : '';
@@ -305,6 +314,13 @@ function enrichEvent(event) {
       ? formatDateRange(event.startsAt, event.endsAt)
       : startsAtDate
         ? `${startsAtDateLabel}${startsAtTimeLabel ? ` · ${startsAtTimeLabel}` : ''}`
+        : '',
+    // Variantes con año para la ficha de evento (el resto de tarjetas van sin año).
+    detailDateRangeLabel: formatDateRange(event.startsAt, event.endsAt, 'es-ES', { withYear: true }),
+    detailScheduleLabel: isMultiDay
+      ? formatDateRange(event.startsAt, event.endsAt, 'es-ES', { withYear: true })
+      : startsAtDate
+        ? `${startsAtDateYearLabel}${startsAtTimeLabel ? ` · ${startsAtTimeLabel}` : ''}`
         : '',
     compactDateLabel,
     startsAtDayKey: startsAtDate ? toLocalDateKey(startsAtDate) : '',
@@ -401,6 +417,8 @@ async function computeAssetVersion() {
     path.join(root, 'src', 'styles', 'event-detail.css'),
     path.join(root, 'src', 'scripts', 'home.js'),
     path.join(root, 'src', 'scripts', 'location-link.js'),
+    path.join(root, 'src', 'scripts', 'subscribe.js'),
+    path.join(root, 'src', 'scripts', 'menu-drawer.js'),
     path.join(root, 'src', 'scripts', 'spaces.js'),
     path.join(root, 'src', 'scripts', 'saved-events.js'),
     path.join(root, 'src', 'scripts', 'event-detail.js'),
@@ -531,12 +549,12 @@ async function buildSite(events) {
   }));
 
   await writeFile('guardados/index.html', render('saved-events.njk', {
-    title: 'Mis guardados - Eventos Valladolid - Aldea Pucela',
+    title: 'Mis guardados | Eventos Valladolid | Aldea Pucela',
     meta: { description: 'Tus eventos guardados en Aldea Pucela Eventos.' },
     robotsMeta: 'noindex,follow',
     social: {
       type: 'website',
-      title: 'Mis guardados - Eventos Valladolid - Aldea Pucela',
+      title: 'Mis guardados | Eventos Valladolid | Aldea Pucela',
       description: 'Tus eventos guardados en Aldea Pucela Eventos.',
       image: `${publicBaseUrl}/assets/social-preview.jpg`,
       url: `${publicBaseUrl}/guardados/`
@@ -551,12 +569,12 @@ async function buildSite(events) {
   const groups = groupEventsByMonth(pastEvents);
 
   await writeFile('archivo/index.html', render('archivo.njk', {
-    title: 'Archivo de eventos - Eventos Valladolid - Aldea Pucela',
+    title: 'Archivo de eventos | Eventos Valladolid | Aldea Pucela',
     meta: { description: 'Histórico de eventos culturales pasados en Valladolid.' },
     canonicalUrl: `${publicBaseUrl}/archivo/`,
     social: {
       type: 'website',
-      title: 'Archivo de eventos - Eventos Valladolid - Aldea Pucela',
+      title: 'Archivo de eventos | Eventos Valladolid | Aldea Pucela',
       description: 'Histórico de eventos culturales pasados en Valladolid.',
       image: `${publicBaseUrl}/assets/social-preview.jpg`,
       url: `${publicBaseUrl}/archivo/`
@@ -569,18 +587,19 @@ async function buildSite(events) {
   }));
 
   await writeFile('espacios/index.html', render('spaces.njk', {
-    title: 'Espacios - Eventos Valladolid - Aldea Pucela',
+    title: 'Espacios | Eventos Valladolid | Aldea Pucela',
     meta: { description: 'Eventos en los próximos seis meses agrupados por espacio en Valladolid.' },
     canonicalUrl: `${publicBaseUrl}/espacios/`,
     social: {
       type: 'website',
-      title: 'Espacios - Eventos Valladolid - Aldea Pucela',
+      title: 'Espacios | Eventos Valladolid | Aldea Pucela',
       description: 'Eventos en los próximos seis meses agrupados por espacio en Valladolid.',
       image: `${publicBaseUrl}/assets/social-preview.jpg`,
       url: `${publicBaseUrl}/espacios/`
     },
     pageCss: 'home.css',
     pageJs: 'home.js',
+    activeNav: 'spaces',
     spaces: spaces.map((space) => ({
       ...space,
       pageHref: venuePageSlugs.has(space.slug) ? `/espacios/${space.slug}/` : null
@@ -650,16 +669,26 @@ async function buildSite(events) {
   // Páginas por categoría (/musica/, /cine/...): mismo patrón que las temporales
   // pero con ventana abierta (de hoy en adelante) filtrada por categoría.
   const categoryWindow = getOpenEndedWindow(buildNow);
+  // Archivo de tipos (/tipos/): un avance por categoría; el listado completo vive
+  // en cada página /<slug>/. Se alimenta de lo que ya calcula este bucle.
+  const typesArchive = [];
   for (const page of categoryPages) {
     const categoryEvents = events.filter((event) => page.labels.includes(event.categoryLabel));
     const { ongoing: pageOngoing, listed } = selectTimePageEvents(categoryEvents, categoryWindow, buildNow);
     const enrichedListed = sortEvents(listed).map(enrichEvent).map(withVenueKeys);
     const enrichedOngoing = sortEvents(pageOngoing).map(enrichEvent).map(withVenueKeys);
-    const dayGroups = buildTimePageDayGroups(enrichedListed, buildNow, {
-      windowStartKey: toLocalDateKey(categoryWindow.start)
-    });
+    const typeCount = enrichedOngoing.length + enrichedListed.length;
+    if (typeCount > 0) {
+      typesArchive.push({
+        label: page.labels[0],
+        slug: page.slug,
+        path: page.path,
+        count: typeCount,
+        events: [...enrichedOngoing, ...enrichedListed].slice(0, 6)
+      });
+    }
     const pageUrl = `${publicBaseUrl}${page.path}`;
-    const itemListItems = [...enrichedOngoing, ...dayGroups.flatMap((group) => group.events)].map((event) => ({
+    const itemListItems = [...enrichedOngoing, ...enrichedListed].map((event) => ({
       url: `${publicBaseUrl}/e/${event.id}/${event.slug}/`,
       name: event.title
     }));
@@ -684,16 +713,42 @@ async function buildSite(events) {
       },
       pageCss: 'home.css',
       pageJs: 'home.js',
-      activeNav: 'home',
+      activeNav: 'types',
       pageH1: page.h1,
       pageH2: page.h2,
-      ongoing: enrichedOngoing,
-      dayGroups,
+      ongoing: [],
+      ongoingGrid: enrichedOngoing,
+      flatEvents: enrichedListed,
+      cardWithYear: true,
       categories: filters,
       includeSiteData: true,
       ...sharedContext
     }));
   }
+
+  // Archivo de tipos (/tipos/), a imagen de /espacios/ pero por categoría. Más
+  // eventos vigentes primero; desempate alfabético.
+  const typesArchiveSorted = [...typesArchive].sort((a, b) => b.count - a.count || a.label.localeCompare(b.label, 'es'));
+  await writeFile('tipos/index.html', render('types.njk', {
+    title: 'Tipos de evento | Eventos Valladolid | Aldea Pucela',
+    meta: { description: 'Explora la agenda cultural de Valladolid por tipo de evento: música, cine, teatro, exposiciones y más, recopilados por la comunidad de Aldea Pucela.' },
+    canonicalUrl: `${publicBaseUrl}/tipos/`,
+    social: {
+      type: 'website',
+      title: 'Tipos de evento | Eventos Valladolid | Aldea Pucela',
+      description: 'Explora la agenda cultural de Valladolid por tipo de evento: música, cine, teatro, exposiciones y más.',
+      image: `${publicBaseUrl}/assets/social-preview.jpg`,
+      url: `${publicBaseUrl}/tipos/`
+    },
+    pageCss: 'home.css',
+    pageJs: 'home.js',
+    activeNav: 'types',
+    types: typesArchiveSorted,
+    typesCount: typesArchiveSorted.length,
+    futureEventsCount: typesArchiveSorted.reduce((total, type) => total + type.count, 0),
+    includeSiteData: true,
+    ...sharedContext
+  }));
 
   // Páginas por ubicación (/espacios/<slug>/): mismo patrón que las de categoría,
   // pero filtrando por el venue canónico. Igual que la cualificación del venue
@@ -705,22 +760,24 @@ async function buildSite(events) {
       normalizeVenueKey(canonicalizeVenue(event.venue || '')) === page.venueKey
     );
     const { ongoing: pageOngoing, listed } = selectTimePageEvents(venueEvents, categoryWindow, buildNow);
-    // Todos los eventos del espacio en un único grid (como en /espacios/), con la
-    // fecha en cada tarjeta; sin separar por día ni carrusel "En curso" aparte.
-    const flatEvents = sortEvents([...pageOngoing, ...listed]).map(enrichEvent).map(withVenueKeys);
+    // Dos grids con la fecha en cada tarjeta: "En curso" (multi-día que abarcan hoy)
+    // y "Próximos eventos"; sin separar por día ni carrusel aparte.
+    const ongoingGrid = sortEvents(pageOngoing).map(enrichEvent).map(withVenueKeys);
+    const upcomingEvents = sortEvents(listed).map(enrichEvent).map(withVenueKeys);
     // Sin eventos que mostrar (borde raro: cualificó por la ventana de 6 meses
     // pero no queda nada en la ventana abierta): no generamos una página vacía
     // indexable ni la anunciamos en el sitemap.
-    if (!flatEvents.length) continue;
+    if (!ongoingGrid.length && !upcomingEvents.length) continue;
     renderedVenuePages.push(page);
+    // "Tipo" en esta página solo ofrece las categorías presentes en el espacio,
+    // manteniendo el orden del catálogo global.
+    const venueCategoryLabels = new Set([...ongoingGrid, ...upcomingEvents].map((event) => event.categoryLabel).filter(Boolean));
+    const venueCategories = filters.filter((label) => venueCategoryLabels.has(label));
     const pageUrl = `${publicBaseUrl}${page.path}`;
-    const itemListItems = flatEvents.map((event) => ({
+    const itemListItems = [...ongoingGrid, ...upcomingEvents].map((event) => ({
       url: `${publicBaseUrl}/e/${event.id}/${event.slug}/`,
       name: event.title
     }));
-    const mapsUrl = page.hasMapPoint
-      ? `https://www.openstreetmap.org/?mlat=${page.lat}&mlon=${page.lon}#map=17/${page.lat}/${page.lon}`
-      : `https://www.openstreetmap.org/search?query=${encodeURIComponent(`${page.address || page.canonicalVenue} Valladolid`)}`;
     await writeFile(path.join('espacios', page.slug, 'index.html'), render('time-page.njk', {
       title: page.title,
       meta: { description: page.description },
@@ -743,13 +800,15 @@ async function buildSite(events) {
       },
       pageCss: 'home.css',
       pageJs: 'home.js',
-      activeNav: 'home',
+      activeNav: 'spaces',
       pageH1: page.h1,
       pageH2: page.h2,
-      venue: { name: page.canonicalVenue, address: page.address, mapsUrl },
+      venue: { name: page.canonicalVenue, address: page.address },
       ongoing: [],
-      flatEvents,
-      categories: filters,
+      ongoingGrid,
+      flatEvents: upcomingEvents,
+      cardWithYear: true,
+      categories: venueCategories,
       includeSiteData: true,
       ...sharedContext
     }));
@@ -775,7 +834,7 @@ async function buildSite(events) {
     const venueEntry = eventVenueKey ? spaceByVenueKey.get(eventVenueKey) || null : null;
 
     await writeFile(path.join('e', String(event.id), event.slug, 'index.html'), render('event-detail.njk', {
-      title: `${event.title} - Eventos Valladolid - Aldea Pucela`,
+      title: `${event.title} | Eventos Valladolid | Aldea Pucela`,
       meta: { description: event.excerpt },
       canonicalUrl: `${publicBaseUrl}/e/${event.id}/${event.slug}/`,
       jsonLd: serializeJsonLd(buildEventJsonLd(event, { publicBaseUrl, venueEntry })),
@@ -816,6 +875,7 @@ async function buildSite(events) {
       { path: '/', lastmod: toLocalDateKey(buildNow) },
       { path: '/archivo/', lastmod: toLocalDateKey(buildNow) },
       { path: '/espacios/', lastmod: toLocalDateKey(buildNow) },
+      { path: '/tipos/', lastmod: toLocalDateKey(buildNow) },
       ...getTimePages(buildNow).map((page) => ({ path: page.path, lastmod: toLocalDateKey(buildNow) })),
       ...categoryPages.map((page) => ({ path: page.path, lastmod: toLocalDateKey(buildNow) })),
       ...renderedVenuePages.map((page) => ({ path: page.path, lastmod: toLocalDateKey(buildNow) }))
