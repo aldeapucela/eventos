@@ -5,7 +5,7 @@
     <div class="event-compact-image" style="background-image:url('{{ event.image or '/assets/placeholder-event.svg' }}')"></div>
     <div class="event-compact-copy">
     <div class="event-compact-topline">
-      <span>{% if event.scheduleLabel %}{{ event.scheduleLabel }}{% else %}{{ event.compactDateLabel or '' }}{% if event.timeLabel %} · {{ event.timeLabel }}{% endif %}{% endif %}</span>
+      <span>{% if cardWithYear and event.detailScheduleLabel %}{{ event.detailScheduleLabel }}{% elif event.scheduleLabel %}{{ event.scheduleLabel }}{% else %}{{ event.compactDateLabel or '' }}{% if event.timeLabel %} · {{ event.timeLabel }}{% endif %}{% endif %}</span>
     </div>
     <h4 class="event-compact-title">{{ event.title or '' }}</h4>
     <p class="event-compact-meta">{{ event.location or '' }}</p>

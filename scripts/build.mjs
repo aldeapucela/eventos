@@ -719,6 +719,7 @@ async function buildSite(events) {
       ongoing: [],
       ongoingGrid: enrichedOngoing,
       flatEvents: enrichedListed,
+      cardWithYear: true,
       categories: filters,
       includeSiteData: true,
       ...sharedContext
@@ -806,6 +807,7 @@ async function buildSite(events) {
       ongoing: [],
       ongoingGrid,
       flatEvents: upcomingEvents,
+      cardWithYear: true,
       categories: venueCategories,
       includeSiteData: true,
       ...sharedContext
