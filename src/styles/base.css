@@ -1025,6 +1025,18 @@
     @apply mt-6 border-t border-line pt-5;
   }
 
+  .subscribe-section-featured {
+    @apply grid gap-4 rounded-[1.5rem] border border-brand-200 bg-brand-50/60 p-4 sm:grid-cols-[1fr_auto] sm:items-center;
+  }
+
+  .subscribe-section-featured .subscribe-section-copy {
+    @apply max-w-xl;
+  }
+
+  .subscribe-featured-copy {
+    @apply min-w-0;
+  }
+
   .subscribe-section-title {
     @apply inline-flex items-center gap-2 font-display text-xl font-bold text-ink;
   }
@@ -1047,6 +1059,10 @@
 
   .subscribe-copy-btn {
     @apply min-h-12 px-5;
+  }
+
+  .subscribe-newsletter-action {
+    @apply justify-center border-brand-200 bg-white px-5 text-brand-700 hover:border-brand-300 hover:bg-brand-50 hover:text-brand-800 sm:min-w-56;
   }
 
   .subscribe-links-grid {
@@ -2229,6 +2245,17 @@ html.dark .site-footer-copy a {
   html.dark .subscribe-url-input {
     border-color: var(--border-light);
     background: var(--bg-body);
+    color: var(--text-main);
+  }
+
+  html.dark .subscribe-section-featured {
+    border-color: color-mix(in srgb, var(--accent) 34%, var(--border-light));
+    background: color-mix(in srgb, var(--accent) 14%, var(--bg-card));
+  }
+
+  html.dark .subscribe-newsletter-action {
+    border-color: color-mix(in srgb, var(--accent) 42%, var(--border-light));
+    background: color-mix(in srgb, var(--accent) 18%, var(--bg-card));
     color: var(--text-main);
   }
 

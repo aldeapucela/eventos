@@ -1067,19 +1067,33 @@ function openSubscribeModal(section = 'calendar') {
   if (!subscribeModal) return;
   subscribeModal.hidden = false;
   document.body.style.overflow = 'hidden';
-  const targetSection = subscribeModal.querySelector(`[data-subscribe-section="${section}"]`);
-  if (targetSection) {
-    targetSection.scrollIntoView({ block: 'start', behavior: 'instant' });
-  } else {
-    subscribeModal.scrollTop = 0;
-  }
-  subscribeModal.querySelector('[data-subscribe-close]')?.focus();
+  scrollSubscribePanel(section);
+  subscribeModal.querySelector('[data-subscribe-close]')?.focus({ preventScroll: true });
+}
+
+function scrollSubscribePanel(section = 'calendar') {
+  const panel = subscribeModal.querySelector('.subscribe-modal-panel') || subscribeModal;
+  const syncScroll = () => {
+    const targetSection = subscribeModal.querySelector(`[data-subscribe-section="${section}"]`);
+    const shouldPinCalendar = section === 'calendar' && window.matchMedia('(max-width: 640px)').matches;
+    panel.scrollTop = 0;
+    if (!targetSection || (section === 'calendar' && !shouldPinCalendar)) {
+      return;
+    }
+    const panelTop = panel.getBoundingClientRect().top;
+    const targetTop = targetSection.getBoundingClientRect().top;
+    panel.scrollTop = Math.max(0, panel.scrollTop + targetTop - panelTop - 16);
+  };
+  syncScroll();
+  window.requestAnimationFrame(() => window.requestAnimationFrame(syncScroll));
 }
 
 function closeSubscribeModal() {
   if (!subscribeModal) return;
   subscribeModal.hidden = true;
   document.body.style.overflow = '';
+  const panel = subscribeModal.querySelector('.subscribe-modal-panel') || subscribeModal;
+  panel.scrollTop = 0;
 }
 
 function openInstallModal() {

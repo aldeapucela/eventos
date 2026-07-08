@@ -201,13 +201,29 @@ function openSubscribeModal() {
   if (!subscribeModal) return;
   subscribeModal.hidden = false;
   document.body.style.overflow = 'hidden';
-  subscribeModal.querySelector('[data-subscribe-close]')?.focus();
+  const panel = subscribeModal.querySelector('.subscribe-modal-panel') || subscribeModal;
+  const syncScroll = () => {
+    const target = subscribeModal.querySelector('[data-subscribe-section="calendar"]');
+    const shouldPinCalendar = window.matchMedia('(max-width: 640px)').matches;
+    panel.scrollTop = 0;
+    if (!target || !shouldPinCalendar) {
+      return;
+    }
+    const panelTop = panel.getBoundingClientRect().top;
+    const targetTop = target.getBoundingClientRect().top;
+    panel.scrollTop = Math.max(0, panel.scrollTop + targetTop - panelTop - 16);
+  };
+  syncScroll();
+  window.requestAnimationFrame(() => window.requestAnimationFrame(syncScroll));
+  subscribeModal.querySelector('[data-subscribe-close]')?.focus({ preventScroll: true });
 }
 
 function closeSubscribeModal() {
   if (!subscribeModal) return;
   subscribeModal.hidden = true;
   document.body.style.overflow = '';
+  const panel = subscribeModal.querySelector('.subscribe-modal-panel') || subscribeModal;
+  panel.scrollTop = 0;
 }
 
 async function copySubscribeUrl(button) {

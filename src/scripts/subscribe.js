@@ -9,15 +9,15 @@ export function setupSubscribe() {
   const open = (section = 'calendar') => {
     modal.hidden = false;
     document.body.style.overflow = 'hidden';
-    const target = modal.querySelector(`[data-subscribe-section="${section}"]`);
-    if (target) target.scrollIntoView({ block: 'start', behavior: 'instant' });
-    else modal.scrollTop = 0;
-    modal.querySelector('[data-subscribe-close]')?.focus();
+    scrollSubscribePanel(modal, section);
+    modal.querySelector('[data-subscribe-close]')?.focus({ preventScroll: true });
   };
 
   const close = () => {
     modal.hidden = true;
     document.body.style.overflow = '';
+    const panel = modal.querySelector('.subscribe-modal-panel') || modal;
+    panel.scrollTop = 0;
   };
 
   document.addEventListener('click', async (event) => {
@@ -44,6 +44,23 @@ export function setupSubscribe() {
   });
 
   setupCategoryPicker(modal);
+}
+
+function scrollSubscribePanel(modal, section = 'calendar') {
+  const panel = modal.querySelector('.subscribe-modal-panel') || modal;
+  const syncScroll = () => {
+    const target = modal.querySelector(`[data-subscribe-section="${section}"]`);
+    const shouldPinCalendar = section === 'calendar' && window.matchMedia('(max-width: 640px)').matches;
+    panel.scrollTop = 0;
+    if (!target || (section === 'calendar' && !shouldPinCalendar)) {
+      return;
+    }
+    const panelTop = panel.getBoundingClientRect().top;
+    const targetTop = target.getBoundingClientRect().top;
+    panel.scrollTop = Math.max(0, panel.scrollTop + targetTop - panelTop - 16);
+  };
+  syncScroll();
+  window.requestAnimationFrame(() => window.requestAnimationFrame(syncScroll));
 }
 
 async function copySubscribeUrl(button) {
