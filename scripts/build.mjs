@@ -880,11 +880,18 @@ async function buildSite(events) {
       ...categoryPages.map((page) => ({ path: page.path, lastmod: toLocalDateKey(buildNow) })),
       ...renderedVenuePages.map((page) => ({ path: page.path, lastmod: toLocalDateKey(buildNow) }))
     ],
-    events
+    // Fichas de evento (/e/) FUERA del sitemap a propósito: el sitio es nuevo y Google
+    // aún no indexa nada; concentramos el rastreo en portada/secciones/espacios/tipos.
+    // Reactivar (idealmente solo eventos futuros) cuando el core esté indexado — ver
+    // también el Disallow /e/ del robots.txt de abajo.
+    events: []
   }));
   await writeFile('robots.txt', [
     'User-agent: *',
     'Allow: /',
+    '# Fichas de evento fuera del rastreo temporalmente, para concentrar el',
+    '# rastreo en portada/secciones mientras se indexa el core del sitio.',
+    'Disallow: /e/',
     `Sitemap: ${publicBaseUrl}/sitemap.xml`,
     ''
   ].join('\n'));
