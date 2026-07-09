@@ -91,6 +91,18 @@
         </button>
       </div>
       {% endif %}
+      <div class="detail-ticket-search-mobile md:hidden">
+        <a
+          class="detail-clean-action"
+          href="https://aldeapucela.org/boletin/?mtm_campaign=webeventos"
+          target="_blank"
+          rel="noopener noreferrer"
+          aria-label="Recibir por email"
+        >
+          <i class="fa-regular fa-envelope"></i>
+          <span>Recibir por email</span>
+        </a>
+      </div>
 
       <div class="detail-clean-actions detail-clean-actions-sticky">
         <button class="detail-clean-action detail-clean-action-primary" type="button" data-calendar-open>
@@ -108,6 +120,16 @@
           <span>Entradas</span>
         </button>
         {% endif %}
+        <a
+          class="hidden md:flex detail-clean-action detail-clean-action-icon-only"
+          href="https://aldeapucela.org/boletin/?mtm_campaign=webeventos"
+          target="_blank"
+          rel="noopener noreferrer"
+          aria-label="Recibir por email"
+        >
+          <i class="fa-regular fa-envelope"></i>
+          <span>Recibir por email</span>
+        </a>
         <button class="detail-clean-action detail-clean-action-icon-only" type="button" data-share data-event-id="{{ event.id }}" aria-label="Compartir">
           <i class="fa-solid fa-share-nodes"></i>
           <span>Compartir</span>
