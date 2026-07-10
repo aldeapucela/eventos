@@ -745,6 +745,7 @@ async function buildSite(events) {
     pageCss: 'home.css',
     pageJs: 'home.js',
     activeNav: 'types',
+    cardWithYear: true,
     types: typesArchiveSorted,
     typesCount: typesArchiveSorted.length,
     futureEventsCount: typesArchiveSorted.reduce((total, type) => total + type.count, 0),
