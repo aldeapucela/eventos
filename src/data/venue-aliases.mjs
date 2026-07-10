@@ -135,7 +135,23 @@ export const VENUE_CANONICAL_MAP = {
   'carcamal': 'Carcamal',
   'carcamal tapas': 'Carcamal',
   'carcamal tapas groove': 'Carcamal',
-  'la terraza del carcamal': 'Carcamal'
+  'la terraza del carcamal': 'Carcamal',
+
+  // Museo Nacional de Escultura: su sede es el Colegio de San Gregorio, así que
+  // agrupamos el edificio y sus espacios internos (p. ej. "Rincón Rojo") bajo el museo.
+  'colegio de san gregorio': 'Museo Nacional de Escultura',
+  'rincon rojo colegio de san gregorio': 'Museo Nacional de Escultura',
+  'museo nacional de escultura': 'Museo Nacional de Escultura',
+
+  // Centro Cultural Miguel Delibes (el complejo entero; distinto del Auditorio, arriba).
+  // "C." y "CC Miguel Delibes" son entradas abreviadas del mismo espacio.
+  'c.': 'Centro Cultural Miguel Delibes',
+  'c': 'Centro Cultural Miguel Delibes',
+  'cc miguel delibes': 'Centro Cultural Miguel Delibes',
+
+  // Boca Agua (bar): "Roca Agua" es errata y "Puente Colgante, 75" es su dirección.
+  'roca agua puente colgante 75': 'Boca Agua',
+  'boca agua': 'Boca Agua'
 };
 
 export const VENUE_SLUG_MAP = {
