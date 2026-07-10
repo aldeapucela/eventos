@@ -135,7 +135,13 @@ export const VENUE_CANONICAL_MAP = {
   'carcamal': 'Carcamal',
   'carcamal tapas': 'Carcamal',
   'carcamal tapas groove': 'Carcamal',
-  'la terraza del carcamal': 'Carcamal'
+  'la terraza del carcamal': 'Carcamal',
+
+  // Museo Nacional de Escultura: su sede es el Colegio de San Gregorio, así que
+  // agrupamos el edificio y sus espacios internos (p. ej. "Rincón Rojo") bajo el museo.
+  'colegio de san gregorio': 'Museo Nacional de Escultura',
+  'rincon rojo colegio de san gregorio': 'Museo Nacional de Escultura',
+  'museo nacional de escultura': 'Museo Nacional de Escultura'
 };
 
 export const VENUE_SLUG_MAP = {
