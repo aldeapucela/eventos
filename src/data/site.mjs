@@ -171,8 +171,9 @@ export function groupEventsByMonth(events) {
 export function groupFutureEventsByVenue(events, options = {}) {
   const now = new Date();
   const horizonMonths = Number.isFinite(options.horizonMonths) ? options.horizonMonths : 6;
-  const horizonEnd = new Date(now);
-  horizonEnd.setMonth(horizonEnd.getMonth() + horizonMonths);
+  // openEnded: sin tope de horizonte (misma ventana abierta que las páginas de tipo).
+  const horizonEnd = options.openEnded ? null : new Date(now);
+  if (horizonEnd) horizonEnd.setMonth(horizonEnd.getMonth() + horizonMonths);
   const groups = new Map();
 
   for (const event of sortEvents(events)) {
@@ -181,7 +182,7 @@ export function groupFutureEventsByVenue(events, options = {}) {
     if (Number.isNaN(startsAt.getTime())) continue;
     const endsAt = event.endsAt ? new Date(event.endsAt) : startsAt;
     const referenceEnd = Number.isNaN(endsAt.getTime()) ? startsAt : endsAt;
-    if (startsAt > horizonEnd) continue;
+    if (horizonEnd && startsAt > horizonEnd) continue;
     if (referenceEnd < now) continue;
     if (!event.venue) continue;
 

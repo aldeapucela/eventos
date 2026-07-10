@@ -460,7 +460,9 @@ async function buildSite(events) {
   const sorted = sortEvents(events).map(enrichEvent);
   const filters = deriveFilters(events);
   const { featured, week, ongoing, today } = splitFeatured(events);
-  const groupedSpaces = groupFutureEventsByVenue(sorted, { horizonMonths: 6 });
+  // Ventana abierta (todo el futuro), igual que las páginas de tipo/espacio, para que
+  // el contador de /espacios/ sea coherente con /tipos/ y no se limite a 6 meses.
+  const groupedSpaces = groupFutureEventsByVenue(sorted, { openEnded: true });
   const venueCatalog = await enrichVenueCatalog(groupedSpaces);
   const spaces = mergeSpacesWithVenueCatalog(groupedSpaces, venueCatalog);
   const spaceSlugByVenueKey = new Map(
