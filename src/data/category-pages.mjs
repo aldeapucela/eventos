@@ -1,4 +1,4 @@
-// Páginas SEO por categoría (/musica/, /cine/...). La clave es el categoryLabel
+// Páginas SEO por tipo (/t/musica/, /t/cine/...). La clave es el categoryLabel
 // YA canónico (ver category-aliases.mjs: "Musica"→"Música", "Cine
 // Proyeccion"/"Proyección"→"Cine", etc.). "Otros" queda fuera a propósito
 // (cajón de sastre, sin valor SEO).
@@ -38,7 +38,7 @@ export function getCategoryPages(events) {
     .map(([label, meta]) => ({
       labels: pageLabels(label, meta),
       slug: meta.slug,
-      path: `/${meta.slug}/`,
+      path: `/t/${meta.slug}/`,
       title: `${meta.h1} | Aldea Pucela`,
       h1: meta.h1,
       h2: meta.h2,

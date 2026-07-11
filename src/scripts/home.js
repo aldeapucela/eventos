@@ -68,7 +68,7 @@ const PRETTY_TIME_PATHS = {
 const SERVER_RENDERED_TIME_FILTERS = new Map(
   Object.entries(PRETTY_TIME_PATHS).map(([filterKey, path]) => [path, filterKey])
 );
-// Las páginas por categoría (/cine/, /musica/...) también llegan server-rendered
+// Las páginas por tipo (/t/cine/, /t/musica/...) también llegan server-rendered
 // pero listan una ventana abierta (de hoy en adelante), así que los filtros
 // temporales pueden aplicarse en cliente sin salir de la categoría, en vez de
 // saltar a /hoy/ (que mostraría todos los eventos y perdería la categoría).

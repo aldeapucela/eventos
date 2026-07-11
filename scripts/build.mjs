@@ -668,11 +668,11 @@ async function buildSite(events) {
     }));
   }
 
-  // Páginas por categoría (/musica/, /cine/...): mismo patrón que las temporales
+  // Páginas por tipo (/t/musica/, /t/cine/...): mismo patrón que las temporales
   // pero con ventana abierta (de hoy en adelante) filtrada por categoría.
   const categoryWindow = getOpenEndedWindow(buildNow);
   // Archivo de tipos (/tipos/): un avance por categoría; el listado completo vive
-  // en cada página /<slug>/. Se alimenta de lo que ya calcula este bucle.
+  // en cada página /t/<slug>/. Se alimenta de lo que ya calcula este bucle.
   const typesArchive = [];
   for (const page of categoryPages) {
     const categoryEvents = events.filter((event) => page.labels.includes(event.categoryLabel));
@@ -694,7 +694,7 @@ async function buildSite(events) {
       url: `${publicBaseUrl}/e/${event.id}/${event.slug}/`,
       name: event.title
     }));
-    await writeFile(path.join(page.slug, 'index.html'), render('time-page.njk', {
+    await writeFile(path.join('t', page.slug, 'index.html'), render('time-page.njk', {
       title: page.title,
       meta: { description: page.description },
       canonicalUrl: pageUrl,
