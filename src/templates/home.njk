@@ -106,7 +106,7 @@
         </button>
         <button class="calendar-cta-chip hidden" type="button" data-install-app-open>
           <i class="fa-solid fa-mobile-screen-button" aria-hidden="true"></i>
-          <span>Añadir a pantalla de inicio</span>
+          <span data-install-app-label>Añadir al inicio</span>
         </button>
       </section>
 
@@ -146,12 +146,12 @@
       </span>
       <h2 class="add-event-modal-title" id="add-event-title">Añade un evento</h2>
     </div>
-    <p class="add-event-modal-copy">Sigue estos pasos para publicar un evento cultural en la agenda:</p>
+    <p class="add-event-modal-copy">Para publicarlo:</p>
     <ol class="add-event-steps">
-      <li><span class="add-event-step-number">1</span><span>Entra al grupo de Telegram de la comunidad.</span></li>
-      <li><span class="add-event-step-number">2</span><span>Deberás hablar un poco e interactuar con los usuarios para poder enviar imágenes.</span></li>
-      <li><span class="add-event-step-number">3</span><span>Envía el cartel del evento que quieras publicar al subtema de eventos culturales.</span></li>
-      <li><span class="add-event-step-number">4</span><span>Los admins lo revisarán y lo publicarán lo antes posible.</span></li>
+      <li><span class="add-event-step-number">1</span><span>Entra al chat de eventos.</span></li>
+      <li><span class="add-event-step-number">2</span><span>Interactúa para poder enviar imágenes.</span></li>
+      <li><span class="add-event-step-number">3</span><span>Envía el cartel en el subtema de eventos.</span></li>
+      <li><span class="add-event-step-number">4</span><span>Lo revisaremos antes de publicarlo.</span></li>
     </ol>
     <a class="add-event-modal-cta" href="https://t.me/AldeaPucela/244/10712" target="_blank" rel="noopener noreferrer">
       Entendido, ir al grupo de chat
@@ -160,8 +160,6 @@
 </div>
 
 {% include "partials/subscribe-modal.njk" %}
-
-{% include "partials/install-modal.njk" %}
 
 {% include "partials/filter-modals.njk" %}
 {% endblock %}

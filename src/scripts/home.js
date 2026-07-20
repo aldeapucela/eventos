@@ -37,11 +37,6 @@ const menuDrawer = document.querySelector('[data-menu-drawer]');
 const addEventOpenButton = document.querySelector('[data-add-event-open]');
 const addEventModal = document.querySelector('[data-add-event-modal]');
 const subscribeModal = document.querySelector('[data-subscribe-modal]');
-const installModal = document.querySelector('[data-install-modal]');
-const installAppCopy = document.querySelector('[data-install-app-copy]');
-const installAppSteps = document.querySelector('[data-install-app-steps]');
-const installAppConfirmButton = document.querySelector('[data-install-app-confirm]');
-const installAppTriggers = Array.from(document.querySelectorAll('[data-install-app-open]'));
 const categoryPicker = document.querySelector('[data-category-picker]');
 const categorySelect = document.querySelector('[data-category-select]');
 const categoryUrlInput = document.querySelector('[data-category-url]');
@@ -75,7 +70,6 @@ const SERVER_RENDERED_TIME_FILTERS = new Map(
 // ponytail: una lista server-rendered cuya ruta no es de página temporal es de
 // categoría; si se añaden otras páginas server-rendered, revisar esta heurística.
 const isTimeFilterableList = isServerRenderedList && !SERVER_RENDERED_TIME_FILTERS.has(window.location.pathname);
-let deferredInstallPrompt = null;
 let siteDataPromise = null;
 let didInitialFilterRowScroll = false;
 initTheme();
@@ -97,7 +91,6 @@ let activeVenueFilter = initialState.venue;
 
 setupScrollTopButton();
 setupCategoryPicker();
-setupInstallPrompt();
 setupTypeCheckboxes();
 setupLocationLinks();
 void initializeSiteData();
@@ -113,9 +106,6 @@ document.addEventListener('click', async (event) => {
   const addEventClose = event.target.closest('[data-add-event-close]');
   const subscribeOpen = event.target.closest('[data-subscribe-open]');
   const subscribeClose = event.target.closest('[data-subscribe-close]');
-  const installOpen = event.target.closest('[data-install-app-open]');
-  const installClose = event.target.closest('[data-install-app-close]');
-  const installConfirm = event.target.closest('[data-install-app-confirm]');
   const copyButton = event.target.closest('[data-copy-url]');
   const typeModalOpen = event.target.closest('[data-type-modal-open]');
   const typeModalClose = event.target.closest('[data-type-modal-close]');
@@ -247,21 +237,6 @@ document.addEventListener('click', async (event) => {
     closeSubscribeModal();
   }
 
-  if (installOpen) {
-    event.preventDefault();
-    await handleInstallAction();
-  }
-
-  if (installClose) {
-    event.preventDefault();
-    closeInstallModal();
-  }
-
-  if (installConfirm) {
-    event.preventDefault();
-    await confirmInstallAction();
-  }
-
   if (copyButton) {
     event.preventDefault();
     copySubscribeUrl(copyButton);
@@ -368,9 +343,6 @@ document.addEventListener('keydown', (event) => {
   }
   if (event.key === 'Escape' && subscribeModal && !subscribeModal.hidden) {
     closeSubscribeModal();
-  }
-  if (event.key === 'Escape' && installModal && !installModal.hidden) {
-    closeInstallModal();
   }
   if (event.key === 'Escape' && typeModal && !typeModal.hidden) {
     closeTypeModal();
@@ -1096,19 +1068,6 @@ function closeSubscribeModal() {
   panel.scrollTop = 0;
 }
 
-function openInstallModal() {
-  if (!installModal) return;
-  installModal.hidden = false;
-  document.body.style.overflow = 'hidden';
-  installModal.querySelector('[data-install-app-close]')?.focus();
-}
-
-function closeInstallModal() {
-  if (!installModal) return;
-  installModal.hidden = true;
-  document.body.style.overflow = '';
-}
-
 function openTypeModal() {
   if (!typeModal) return;
   typeModal.hidden = false;
@@ -1192,84 +1151,6 @@ function setupCategoryPicker() {
   };
   categorySelect.addEventListener('change', syncFeed);
   syncFeed();
-}
-
-function setupInstallPrompt() {
-  window.addEventListener('beforeinstallprompt', (event) => {
-    event.preventDefault();
-    deferredInstallPrompt = event;
-    syncInstallTriggerVisibility();
-    updateInstallModalCopy();
-  });
-  window.addEventListener('appinstalled', () => {
-    deferredInstallPrompt = null;
-    closeInstallModal();
-  });
-  syncInstallTriggerVisibility();
-  updateInstallModalCopy();
-}
-
-function isIosLike() {
-  const ua = window.navigator.userAgent || '';
-  return /iPhone|iPad|iPod/i.test(ua) || (window.navigator.platform === 'MacIntel' && window.navigator.maxTouchPoints > 1);
-}
-
-function updateInstallModalCopy() {
-  if (!installAppCopy || !installAppSteps || !installAppConfirmButton) return;
-  if (deferredInstallPrompt) {
-    installAppCopy.textContent = 'Instala la agenda como app para abrirla más rápido desde tu móvil.';
-    installAppSteps.innerHTML = [
-      '<li class="install-app-step"><span class="install-app-step-number">1</span><span>Se abrirá el diálogo del navegador para instalar la app.</span></li>',
-      '<li class="install-app-step"><span class="install-app-step-number">2</span><span>Confirma la instalación y la tendrás en tu pantalla de inicio.</span></li>'
-    ].join('');
-    installAppConfirmButton.hidden = false;
-    installAppConfirmButton.textContent = 'Instalar app';
-    return;
-  }
-  if (isIosLike()) {
-    installAppCopy.textContent = 'En iPhone o iPad puedes guardarla como app desde el menú de compartir de Safari.';
-    installAppSteps.innerHTML = [
-      '<li class="install-app-step"><span class="install-app-step-number">1</span><span>Abre esta página en Safari y toca el botón de compartir.</span></li>',
-      '<li class="install-app-step"><span class="install-app-step-number">2</span><span>Elige <strong>Añadir a pantalla de inicio</strong> y confirma.</span></li>'
-    ].join('');
-    installAppConfirmButton.hidden = true;
-    return;
-  }
-  installAppCopy.textContent = 'Tu navegador no está mostrando el instalador automático ahora mismo, pero la web ya es instalable cuando el navegador lo permita.';
-  installAppSteps.innerHTML = [
-    '<li class="install-app-step"><span class="install-app-step-number">1</span><span>Abre el menú del navegador.</span></li>',
-    '<li class="install-app-step"><span class="install-app-step-number">2</span><span>Busca la opción para instalar la app o añadirla a la pantalla de inicio.</span></li>'
-  ].join('');
-  installAppConfirmButton.hidden = true;
-}
-
-function syncInstallTriggerVisibility() {
-  const shouldShow = isIosLike() || Boolean(deferredInstallPrompt);
-  installAppTriggers.forEach((button) => {
-    button.classList.toggle('hidden', !shouldShow);
-  });
-}
-
-async function handleInstallAction() {
-  if (deferredInstallPrompt) {
-    openInstallModal();
-    return;
-  }
-  openInstallModal();
-}
-
-async function confirmInstallAction() {
-  if (!deferredInstallPrompt) {
-    closeInstallModal();
-    return;
-  }
-  const promptEvent = deferredInstallPrompt;
-  deferredInstallPrompt = null;
-  closeInstallModal();
-  await promptEvent.prompt();
-  if (promptEvent.userChoice) {
-    await promptEvent.userChoice.catch(() => {});
-  }
 }
 
 function closeAddEventModal() {

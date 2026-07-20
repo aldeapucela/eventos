@@ -4,7 +4,7 @@
     <div class="calendar-modal-header">
       <div>
         <h2 class="calendar-modal-title" id="subscribe-modal-title">Suscribirse</h2>
-        <p class="calendar-modal-copy">Copia las URL o abre tus apps favoritas para seguir los eventos y novedades.</p>
+        <p class="calendar-modal-copy">Elige cómo seguir la agenda.</p>
       </div>
       <button class="calendar-modal-close" type="button" data-subscribe-close aria-label="Cerrar">
         <i class="fa-solid fa-xmark"></i>
@@ -13,7 +13,7 @@
 
     <section class="subscribe-section" data-subscribe-section="calendar">
       <h3 class="subscribe-section-title"><i class="fa-regular fa-calendar"></i><span>Calendario completo</span></h3>
-      <p class="subscribe-section-copy">Suscríbete al calendario general con próximos eventos e histórico.</p>
+      <p class="subscribe-section-copy">Calendario con próximos eventos e histórico.</p>
       <div class="subscribe-url-row">
         <input class="subscribe-url-input" type="text" value="https://eventos.aldeapucela.org/calendar.ics" readonly data-copy-source="calendar" />
         <button class="calendar-modal-action calendar-modal-action-primary subscribe-copy-btn" type="button" data-copy-url="calendar">Copiar</button>
@@ -28,7 +28,7 @@
     <section class="subscribe-section subscribe-section-featured" data-subscribe-section="newsletter">
       <div class="subscribe-featured-copy">
         <h3 class="subscribe-section-title"><i class="fa-regular fa-envelope"></i><span>Boletín semanal</span></h3>
-        <p class="subscribe-section-copy">Recibe por email el resumen semanal de Aldea Pucela con los próximos eventos destacados.</p>
+        <p class="subscribe-section-copy">Resumen semanal por email.</p>
       </div>
       <a class="calendar-modal-action subscribe-newsletter-action" href="https://aldeapucela.org/boletin/" target="_blank" rel="noopener noreferrer">
         <i class="fa-regular fa-paper-plane" aria-hidden="true"></i>
@@ -39,7 +39,7 @@
     {% if categoryFeeds and categoryFeeds.length %}
     <section class="subscribe-section" data-subscribe-section="rss">
       <h3 class="subscribe-section-title"><i class="fa-solid fa-layer-group"></i><span>Por categoría</span></h3>
-      <p class="subscribe-section-copy">Suscríbete solo a una categoría para mantener tu calendario más limpio.</p>
+      <p class="subscribe-section-copy">Elige una categoría.</p>
       <div class="subscribe-category-picker" data-category-picker data-feeds='{{ categoryFeeds | dump | safe }}'>
         <label class="subscribe-category-field">
           <span class="subscribe-category-field-label">Categoría</span>

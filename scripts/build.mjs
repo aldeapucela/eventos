@@ -87,6 +87,7 @@ async function copyJs() {
   await fs.copyFile(path.join(root, 'src', 'scripts', 'spaces.js'), path.join(jsDir, 'spaces.js'));
   await fs.copyFile(path.join(root, 'src', 'scripts', 'theme.js'), path.join(jsDir, 'theme.js'));
   await fs.copyFile(path.join(root, 'src', 'scripts', 'matomo.js'), path.join(jsDir, 'matomo.js'));
+  await fs.copyFile(path.join(root, 'src', 'scripts', 'install-app.js'), path.join(jsDir, 'install-app.js'));
 }
 
 function slugify(value = '') {
@@ -425,6 +426,8 @@ async function computeAssetVersion() {
     path.join(root, 'src', 'scripts', 'comments.js'),
     path.join(root, 'src', 'scripts', 'theme.js'),
     path.join(root, 'src', 'scripts', 'matomo.js'),
+    path.join(root, 'src', 'scripts', 'install-app.js'),
+    path.join(root, 'src', 'templates', 'partials', 'install-modal.njk'),
     path.join(root, 'src', 'templates', 'layout.njk')
   ];
   const hash = createHash('sha1');
@@ -917,13 +920,13 @@ async function buildSite(events) {
     theme_color: '#6f59a8',
     icons: [
       {
-        src: '/assets/favicon.png',
+        src: '/assets/pwa-icon-192.png',
         sizes: '192x192',
         type: 'image/png',
         purpose: 'any'
       },
       {
-        src: '/assets/favicon.png',
+        src: '/assets/pwa-icon-512.png',
         sizes: '512x512',
         type: 'image/png',
         purpose: 'any'
