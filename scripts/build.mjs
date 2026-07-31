@@ -372,7 +372,10 @@ function siteDataPayload(events, filters = deriveFilters(events), options = {}) 
 // Índice de búsqueda ligero para el buscador global (src/scripts/search.js).
 // Solo eventos vigentes/próximos (no archivo), más el catálogo de espacios y
 // tipos. Se sirve como /search-index.json y se descarga de forma perezosa.
-function buildSearchIndex({ sorted, spaces, renderedVenueSlugs, typesArchive }) {
+// `events` debe llegar ya acotado a la ventana vigente/próxima con la misma
+// lógica que las páginas de tipo/espacio (selectTimePageEvents), no con
+// hasEnded: así los eventos de día completo siguen buscables toda su jornada.
+function buildSearchIndex({ events, spaces, renderedVenueSlugs, typesArchive }) {
   const seenSpace = new Set();
   return JSON.stringify({
     types: (typesArchive || []).map((type) => ({
@@ -391,15 +394,13 @@ function buildSearchIndex({ sorted, spaces, renderedVenueSlugs, typesArchive }) 
         url: renderedVenueSlugs.has(space.slug) ? `/espacios/${space.slug}/` : `/espacios#${space.slug}`,
         count: space.count || 0
       })),
-    events: (sorted || [])
-      .filter((event) => !event.hasEnded)
-      .map((event) => ({
-        title: event.title,
-        url: `/e/${event.id}/${event.slug}/`,
-        category: event.categoryLabel || '',
-        venue: canonicalizeVenue(event.venue || '') || event.venue || event.location || '',
-        date: event.scheduleLabel || event.startsAtDayLabel || ''
-      }))
+    events: (events || []).map((event) => ({
+      title: event.title,
+      url: `/e/${event.id}/${event.slug}/`,
+      category: event.categoryLabel || '',
+      venue: canonicalizeVenue(event.venue || '') || event.venue || event.location || '',
+      date: event.scheduleLabel || event.startsAtDayLabel || ''
+    }))
   });
 }
 
@@ -912,8 +913,14 @@ async function buildSite(events) {
   mark('feeds');
   await writeFile('site-data.json', siteDataPayload(events, filters, { spaces, spaceNameByVenueKey }));
   const renderedVenueSlugs = new Set(renderedVenuePages.map((page) => page.slug));
+  // Mismo conjunto vigente/próximo que muestran las páginas de tipo/espacio
+  // (ventana abierta con límites de día de Madrid), en vez del corte de
+  // medianoche de hasEnded, para no dejar fuera eventos de día completo aún
+  // vigentes cuando el build corre pasada la medianoche.
+  const { ongoing: searchOngoing, listed: searchListed } = selectTimePageEvents(events, categoryWindow, buildNow);
+  const searchableEvents = sortEvents([...searchOngoing, ...searchListed]).map(enrichEvent);
   await writeFile('search-index.json', buildSearchIndex({
-    sorted,
+    events: searchableEvents,
     spaces,
     renderedVenueSlugs,
     typesArchive: typesArchiveSorted
