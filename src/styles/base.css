@@ -2376,3 +2376,129 @@ html.dark .site-footer-copy a {
     }
   }
 }
+
+@layer components {
+  /* Buscador global (overlay). Reutiliza la base .calendar-modal para el
+     posicionamiento fijo y el backdrop; aquí se ajusta a un panel superior
+     tipo "spotlight" y se estilan campo y resultados. */
+  .search-modal {
+    @apply items-start;
+    padding-top: max(4.5rem, env(safe-area-inset-top));
+  }
+
+  .search-modal-panel {
+    @apply w-full max-w-2xl p-0;
+    max-height: min(80vh, 44rem);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  .search-modal-field {
+    @apply flex items-center gap-3 px-5 py-4;
+    border-bottom: 1px solid var(--border-light);
+  }
+
+  .search-modal-field-icon {
+    @apply text-lg;
+    color: var(--text-muted);
+  }
+
+  .search-modal-input {
+    @apply flex-1 border-0 bg-transparent text-base font-medium outline-none;
+    color: var(--text-main);
+    min-width: 0;
+  }
+
+  .search-modal-input::placeholder {
+    color: var(--text-muted);
+  }
+
+  /* Oculta la cruz nativa del input[type=search] (usamos el botón propio). */
+  .search-modal-input::-webkit-search-decoration,
+  .search-modal-input::-webkit-search-cancel-button {
+    -webkit-appearance: none;
+    appearance: none;
+  }
+
+  .search-modal-close {
+    @apply inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-line text-slate-500 transition;
+  }
+
+  .search-modal-close:hover {
+    @apply border-brand-300 text-brand-700;
+  }
+
+  .search-modal-results {
+    @apply overflow-y-auto px-2 py-2;
+  }
+
+  .search-modal-hint,
+  .search-modal-empty {
+    @apply px-3 py-6 text-center text-sm leading-6;
+    color: var(--text-secondary);
+  }
+
+  .search-modal-section {
+    @apply px-1 py-2;
+  }
+
+  .search-modal-section + .search-modal-section {
+    border-top: 1px solid var(--border-subtle);
+  }
+
+  .search-modal-section-title {
+    @apply flex items-center gap-2 px-3 pb-1 pt-1 text-xs font-bold uppercase tracking-wide;
+    color: var(--text-muted);
+  }
+
+  .search-modal-count {
+    @apply ml-auto rounded-full px-2 py-0.5 text-[11px] font-semibold;
+    background: var(--bg-highlight);
+    color: var(--text-secondary);
+  }
+
+  .search-modal-list {
+    @apply flex flex-col;
+  }
+
+  .search-modal-result {
+    @apply flex flex-col gap-0.5 rounded-2xl px-3 py-2.5 transition;
+    color: var(--text-main);
+  }
+
+  .search-modal-result:hover,
+  .search-modal-result:focus-visible {
+    background: var(--bg-card-hover);
+    outline: none;
+  }
+
+  .search-modal-result-main {
+    @apply flex items-center gap-2;
+  }
+
+  .search-modal-result-title {
+    @apply text-sm font-semibold;
+  }
+
+  .search-modal-badge {
+    @apply shrink-0 rounded-full px-2 py-0.5 text-[11px] font-semibold;
+    background: var(--bg-highlight);
+    color: var(--text-secondary);
+  }
+
+  .search-modal-result-meta {
+    @apply text-xs;
+    color: var(--text-muted);
+  }
+
+  .search-modal-more {
+    @apply px-3 pb-1 pt-1 text-xs;
+    color: var(--text-muted);
+  }
+
+  html.dark .search-modal-panel {
+    border-color: var(--border-light);
+    background: var(--bg-card);
+  }
+}
