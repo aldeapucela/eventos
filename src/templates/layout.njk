@@ -69,6 +69,7 @@
       </p>
     </div>
     {% include "partials/install-modal.njk" %}
+    {% include "partials/search-modal.njk" %}
     <script>
       {% if includeSiteData %}
       window.__EVENTS__ = {{ eventsJson | safe }};
@@ -120,6 +121,7 @@
     </script>
     <script type="module" src="/assets/js/{{ pageJs }}?v={{ assetVersion }}" defer></script>
     <script type="module" src="/assets/js/install-app.js?v={{ assetVersion }}" defer></script>
+    <script type="module" src="/assets/js/search.js?v={{ assetVersion }}" defer></script>
     {% block extraScripts %}{% endblock %}
   </body>
 </html>

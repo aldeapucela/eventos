@@ -88,6 +88,7 @@ async function copyJs() {
   await fs.copyFile(path.join(root, 'src', 'scripts', 'theme.js'), path.join(jsDir, 'theme.js'));
   await fs.copyFile(path.join(root, 'src', 'scripts', 'matomo.js'), path.join(jsDir, 'matomo.js'));
   await fs.copyFile(path.join(root, 'src', 'scripts', 'install-app.js'), path.join(jsDir, 'install-app.js'));
+  await fs.copyFile(path.join(root, 'src', 'scripts', 'search.js'), path.join(jsDir, 'search.js'));
 }
 
 function slugify(value = '') {
@@ -368,6 +369,40 @@ function siteDataPayload(events, filters = deriveFilters(events), options = {}) 
   });
 }
 
+// Índice de búsqueda ligero para el buscador global (src/scripts/search.js).
+// Solo eventos vigentes/próximos (no archivo), más el catálogo de espacios y
+// tipos. Se sirve como /search-index.json y se descarga de forma perezosa.
+function buildSearchIndex({ sorted, spaces, renderedVenueSlugs, typesArchive }) {
+  const seenSpace = new Set();
+  return JSON.stringify({
+    types: (typesArchive || []).map((type) => ({
+      title: type.label,
+      url: type.path,
+      count: type.count || 0
+    })),
+    spaces: (spaces || [])
+      .filter((space) => {
+        if (!space || !space.name || !space.slug || seenSpace.has(space.slug)) return false;
+        seenSpace.add(space.slug);
+        return true;
+      })
+      .map((space) => ({
+        title: space.name,
+        url: renderedVenueSlugs.has(space.slug) ? `/espacios/${space.slug}/` : `/espacios#${space.slug}`,
+        count: space.count || 0
+      })),
+    events: (sorted || [])
+      .filter((event) => !event.hasEnded)
+      .map((event) => ({
+        title: event.title,
+        url: `/e/${event.id}/${event.slug}/`,
+        category: event.categoryLabel || '',
+        venue: canonicalizeVenue(event.venue || '') || event.venue || event.location || '',
+        date: event.scheduleLabel || event.startsAtDayLabel || ''
+      }))
+  });
+}
+
 function dayKeyLabel(key) {
   const [year, month, day] = key.split('-').map(Number);
   const date = new Date(Date.UTC(year, month - 1, day, 12));
@@ -427,7 +462,9 @@ async function computeAssetVersion() {
     path.join(root, 'src', 'scripts', 'theme.js'),
     path.join(root, 'src', 'scripts', 'matomo.js'),
     path.join(root, 'src', 'scripts', 'install-app.js'),
+    path.join(root, 'src', 'scripts', 'search.js'),
     path.join(root, 'src', 'templates', 'partials', 'install-modal.njk'),
+    path.join(root, 'src', 'templates', 'partials', 'search-modal.njk'),
     path.join(root, 'src', 'templates', 'layout.njk')
   ];
   const hash = createHash('sha1');
@@ -874,6 +911,13 @@ async function buildSite(events) {
 
   mark('feeds');
   await writeFile('site-data.json', siteDataPayload(events, filters, { spaces, spaceNameByVenueKey }));
+  const renderedVenueSlugs = new Set(renderedVenuePages.map((page) => page.slug));
+  await writeFile('search-index.json', buildSearchIndex({
+    sorted,
+    spaces,
+    renderedVenueSlugs,
+    typesArchive: typesArchiveSorted
+  }));
   await writeFile('rss.xml', buildRssXml(events));
   // /guardados/ queda fuera a propósito (página personal, noindex).
   await writeFile('sitemap.xml', buildSitemapXml({
