@@ -73,7 +73,7 @@
   }
 
   .topbar-inner {
-    @apply page-shell flex h-20 items-center justify-start gap-6;
+    @apply page-shell flex h-20 items-center justify-between gap-6;
   }
 
   .header-brand {
@@ -101,14 +101,7 @@
   }
 
   .header-search-btn {
-    @apply ml-auto shrink-0;
-  }
-
-  /* En móvil la búsqueda se inyecta justo antes del menú: ambos deben leerse
-     como un único grupo de acciones, no como elementos repartidos por toda la
-     cabecera. Conservamos el área táctil de 44px de cada botón. */
-  .header-search-btn + .header-search-btn {
-    margin-left: 0.5rem;
+    @apply ml-1 shrink-0;
   }
 
   .header-main-nav {
@@ -1530,11 +1523,10 @@
     }
 
     .mobile-filter-bar .mobile-chip-row {
-      @apply m-0 flex w-full flex-nowrap justify-between gap-2 px-0 py-0;
+      @apply m-0 grid w-full grid-cols-3 gap-2 px-0 py-0;
       max-width: 100%;
-      overflow-x: auto;
+      overflow: visible;
       overflow-y: hidden;
-      scroll-snap-type: x proximity;
     }
 
     .mobile-filter-bar .mobile-chip-row > * {
@@ -1542,12 +1534,24 @@
     }
 
     .mobile-filter-bar .mobile-filter-modal-trigger {
-      @apply inline-flex h-11 shrink-0 gap-1.5 rounded-xl px-3 shadow-md;
+      @apply inline-flex h-11 gap-1 rounded-xl px-1.5 shadow-md;
+      min-width: 0;
+      width: 100%;
       white-space: nowrap;
     }
 
     .mobile-filter-bar .mobile-chip {
-      @apply px-3 text-sm;
+      @apply gap-1 px-1.5 text-sm;
+      min-width: 0;
+      width: 100%;
+    }
+
+    .mobile-filter-bar .mobile-chip-icon {
+      @apply h-4 w-4;
+    }
+
+    .mobile-filter-bar .mobile-chip span {
+      white-space: nowrap;
     }
 
     .mobile-filter-bar .mobile-filter-action-row {
@@ -1563,28 +1567,14 @@
     }
   }
 
-  @media (max-width: 374px) {
-    .mobile-filter-bar .mobile-chip-row {
-      @apply gap-0.5;
-    }
-
-    .mobile-filter-bar .mobile-chip,
-    .mobile-filter-bar .mobile-filter-modal-trigger {
-      @apply gap-1 px-2;
-    }
-  }
-
   @media (min-width: 375px) and (max-width: 767px) {
     .mobile-filter-bar .mobile-chip-row {
-      display: grid;
-      grid-template-columns: minmax(0, 1.2fr) minmax(0, 0.75fr) minmax(0, 1.1fr);
       gap: 0.75rem;
-      overflow: visible;
     }
 
     .mobile-filter-bar .mobile-chip-row > .mobile-chip,
     .mobile-filter-bar .mobile-chip-row > .mobile-filter-action-row > .mobile-filter-modal-trigger {
-      @apply h-12 gap-1.5 px-2 text-[0.95rem];
+      @apply h-12 gap-1 px-1.5 text-sm;
       min-width: 0;
       width: 100%;
     }
