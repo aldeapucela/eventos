@@ -1550,6 +1550,22 @@
     }
   }
 
+  @media (min-width: 375px) and (max-width: 767px) {
+    .mobile-filter-bar .mobile-chip-row {
+      display: grid;
+      grid-template-columns: minmax(0, 1.2fr) minmax(0, 0.75fr) minmax(0, 1.1fr);
+      gap: 0.75rem;
+      overflow: visible;
+    }
+
+    .mobile-filter-bar .mobile-chip-row > .mobile-chip,
+    .mobile-filter-bar .mobile-chip-row > .mobile-filter-action-row > .mobile-filter-modal-trigger {
+      @apply h-12 gap-1.5 px-2 text-[0.95rem];
+      min-width: 0;
+      width: 100%;
+    }
+  }
+
   @media (min-width: 1440px) {
     .hero-mobile-visual {
       min-height: 350px;
