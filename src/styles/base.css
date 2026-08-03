@@ -523,7 +523,24 @@
   }
 
   .mobile-filter-sheet-footer {
-    @apply sticky bottom-0 mt-5 border-t border-line/70 bg-white pt-3;
+    @apply sticky bottom-0 mt-5 grid border-t border-line/70 bg-white pt-3;
+  }
+
+  .mobile-filter-sheet-footer.has-filter-clear {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.35fr);
+    gap: 0.75rem;
+  }
+
+  .mobile-filter-sheet-footer .filter-modal-submit {
+    grid-column: 1 / -1;
+  }
+
+  .mobile-filter-sheet-footer.has-filter-clear .filter-modal-submit {
+    grid-column: auto;
+  }
+
+  .mobile-filter-sheet-clear {
+    @apply border-[#d8d0e8] bg-[#f6f2fb] text-[#4a3a70];
   }
 
   @keyframes mobile-filter-sheet-in {

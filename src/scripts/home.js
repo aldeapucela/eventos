@@ -13,7 +13,7 @@ const filterHint = document.querySelector('.mobile-filter-hint');
 const mobileFilterRow = document.querySelector('.mobile-chip-row');
 const resultsTitle = document.querySelector('[data-results-title]');
 const weekEmpty = document.querySelector('[data-week-empty]');
-const clearFilters = document.querySelector('[data-clear-filters]');
+const clearFilters = Array.from(document.querySelectorAll('[data-clear-filters]'));
 const weekGroups = document.querySelector('[data-week-groups]');
 const loadMoreEventsWrap = document.querySelector('[data-load-more-wrap]');
 const loadMoreEventsButton = document.querySelector('[data-load-more-events]');
@@ -24,6 +24,7 @@ const dateModal = document.querySelector('[data-date-modal]');
 const typeModal = document.querySelector('[data-type-modal]');
 const venueModal = document.querySelector('[data-venue-modal]');
 const filterModal = document.querySelector('[data-filter-modal]');
+const filterSheetFooter = document.querySelector('.mobile-filter-sheet-footer');
 const dateSelectButtons = Array.from(document.querySelectorAll('[data-date-modal-open]'));
 const dateSelectLabel = document.querySelector('[data-filter-date-label]');
 const filterSummaryLabel = document.querySelector('[data-filter-summary-label]');
@@ -452,10 +453,12 @@ function applyFilters(options = {}) {
   if (resultsTitle) {
     resultsTitle.textContent = getCombinedLabel();
   }
-  if (clearFilters) {
-    clearFilters.classList.toggle('hidden', activeTimeFilter === 'all' && !activeFreeFilter && activeTypeFilters.length === 0 && activeVenueFilter === 'all');
-    clearFilters.href = '/';
-  }
+  const hasActiveFilters = hasAppliedFilters();
+  clearFilters.forEach((clearFilter) => {
+    clearFilter.classList.toggle('hidden', !hasActiveFilters);
+    clearFilter.href = '/';
+  });
+  filterSheetFooter?.classList.toggle('has-filter-clear', hasActiveFilters);
   updateLoadMoreButton();
   if (updateUrl) {
     updateFilterUrl();
@@ -472,8 +475,8 @@ filters.forEach((button) => {
 
 
 
-if (clearFilters) {
-  clearFilters.addEventListener('click', (event) => {
+clearFilters.forEach((clearFilter) => {
+  clearFilter.addEventListener('click', (event) => {
     event.preventDefault();
     // En páginas de categoría limpiar mantiene la categoría (filtra en cliente);
     // en las temporales vuelve a la portada.
@@ -486,8 +489,9 @@ if (clearFilters) {
     activeTypeFilters = [];
     activeVenueFilter = 'all';
     applyFilters();
+    closeFilterModal();
   });
-}
+});
 
 function sameDay(a, b) {
   return toLocalDateKey(a) === toLocalDateKey(b);
@@ -1407,9 +1411,7 @@ function toggleQuickFilter(filterValue) {
 
 function updateFilterSummary() {
   if (!filterSummaryLabel || !filterSummaryTrigger) return;
-  const effectiveTimeFilter = activeTimeFilter !== 'all'
-    ? activeTimeFilter
-    : SERVER_RENDERED_TIME_FILTERS.get(window.location.pathname) || 'all';
+  const effectiveTimeFilter = getEffectiveTimeFilter();
   const primaryTimeFilters = new Set(['all', 'Hoy', 'Este finde', 'Esta semana']);
   const secondaryCount = [
     !primaryTimeFilters.has(effectiveTimeFilter),
@@ -1425,6 +1427,19 @@ function updateFilterSummary() {
     filterSheetFreeButton.classList.toggle('mobile-chip-active', activeFreeFilter);
     filterSheetFreeButton.setAttribute('aria-pressed', String(activeFreeFilter));
   }
+}
+
+function getEffectiveTimeFilter() {
+  return activeTimeFilter !== 'all'
+    ? activeTimeFilter
+    : SERVER_RENDERED_TIME_FILTERS.get(window.location.pathname) || 'all';
+}
+
+function hasAppliedFilters() {
+  return getEffectiveTimeFilter() !== 'all'
+    || activeFreeFilter
+    || activeTypeFilters.length > 0
+    || activeVenueFilter !== 'all';
 }
 
 function shouldAutoScrollToFirstVisibleBlock(filterValue) {
