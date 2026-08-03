@@ -47,8 +47,8 @@
       </div>
     </div>
 
-    <div class="mobile-filter-sheet-footer">
-      <a class="calendar-modal-action mobile-filter-sheet-clear hidden" href="/" data-clear-filters>
+    <div class="mobile-filter-sheet-footer{% if timeFilterKey %} has-filter-clear{% endif %}">
+      <a class="calendar-modal-action mobile-filter-sheet-clear{% if not timeFilterKey %} hidden{% endif %}" href="/" data-clear-filters>
         <i class="fa-solid fa-rotate-left" aria-hidden="true"></i>
         <span>Quitar filtros</span>
       </a>
