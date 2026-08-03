@@ -1506,7 +1506,7 @@
     }
 
     .mobile-filter-bar .mobile-chip-row {
-      @apply m-0 flex w-full flex-nowrap justify-start gap-2 px-0 py-0;
+      @apply m-0 flex w-full flex-nowrap justify-between gap-2 px-0 py-0;
       max-width: 100%;
       overflow-x: auto;
       overflow-y: hidden;
