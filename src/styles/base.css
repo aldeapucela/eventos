@@ -407,7 +407,11 @@
   }
 
   .mobile-chip-row {
-    @apply mt-5 flex flex-wrap justify-center gap-3 px-4 pb-1 pt-1 sm:px-6;
+    @apply mt-5 flex flex-nowrap justify-start gap-3 overflow-x-auto px-4 pb-1 pt-1 sm:px-6;
+  }
+
+  .mobile-filter-bar {
+    @apply block;
   }
 
   .mobile-chip-row::-webkit-scrollbar {
@@ -443,6 +447,84 @@
 
   .mobile-chip-active .mobile-chip-icon {
     @apply text-white;
+  }
+
+  .mobile-filter-secondary-chip {
+    display: none;
+  }
+
+  .mobile-filter-modal-trigger {
+    @apply border-[#d8d0e8] bg-[#f6f2fb] text-[#4a3a70];
+    display: none;
+  }
+
+  .mobile-filter-modal-trigger.mobile-chip-active {
+    @apply border-[#4a3a70] bg-[#4a3a70] text-white;
+  }
+
+  .mobile-filter-sheet {
+    align-items: flex-end;
+    padding: 0;
+  }
+
+  .mobile-filter-sheet-panel {
+    @apply relative z-10 w-full border border-line bg-white shadow-2xl;
+    max-height: min(82vh, 48rem);
+    overflow-y: auto;
+    border-radius: 1.75rem 1.75rem 0 0;
+    padding: 1.25rem 1rem calc(env(safe-area-inset-bottom) + 0.75rem);
+    animation: mobile-filter-sheet-in 180ms ease-out both;
+  }
+
+  .mobile-filter-sheet-header {
+    @apply items-center;
+  }
+
+  .mobile-filter-sheet-kicker {
+    @apply mb-1 text-[0.68rem] font-bold uppercase tracking-[0.16em] text-brand-600;
+  }
+
+  .mobile-filter-sheet-options {
+    @apply mt-5;
+  }
+
+  .mobile-filter-sheet-section-title {
+    @apply mb-2 mt-5 text-xs font-bold uppercase tracking-[0.12em] text-slate-500;
+  }
+
+  .mobile-filter-sheet-section-title:first-child {
+    @apply mt-0;
+  }
+
+  .mobile-filter-sheet-grid {
+    @apply grid grid-cols-2 gap-2;
+  }
+
+  .mobile-filter-sheet-option {
+    @apply inline-flex min-h-12 items-center gap-3 rounded-2xl border border-line bg-white px-4 py-3 text-left text-sm font-semibold text-ink shadow-sm transition hover:border-brand-300 hover:text-brand-700;
+  }
+
+  .mobile-filter-sheet-option i {
+    @apply w-5 shrink-0 text-center text-base text-[#7f90aa];
+  }
+
+  .mobile-filter-sheet-option.mobile-chip-active,
+  .mobile-filter-sheet-option.pill-active {
+    @apply border-[#4a3a70] bg-[#4a3a70] text-white;
+  }
+
+  .mobile-filter-sheet-option.mobile-chip-active i,
+  .mobile-filter-sheet-option.pill-active i {
+    @apply text-white;
+  }
+
+  .mobile-filter-sheet-footer {
+    @apply sticky bottom-0 mt-5 border-t border-line/70 bg-white pt-3;
+  }
+
+  @keyframes mobile-filter-sheet-in {
+    from { opacity: 0; transform: translateY(0.75rem); }
+    to { opacity: 1; transform: translateY(0); }
   }
 
   .mobile-chip-select-wrap {
@@ -1345,7 +1427,7 @@
     }
 
     .mobile-chip-row {
-      @apply mt-4 justify-start gap-4;
+      @apply mt-4 flex-wrap justify-start gap-4 overflow-visible;
     }
 
     .mobile-chip {
@@ -1386,6 +1468,49 @@
 
     .event-row-list {
       @apply grid gap-4;
+    }
+  }
+
+  @media (min-width: 768px) {
+    .mobile-chip-row {
+      @apply flex-wrap justify-center overflow-visible;
+    }
+
+    .mobile-filter-secondary-chip {
+      display: inline-flex;
+    }
+
+    .mobile-filter-modal-trigger {
+      display: none;
+    }
+
+    .mobile-filter-sheet {
+      align-items: center;
+      padding: 1.5rem;
+    }
+
+    .mobile-filter-sheet-panel {
+      max-width: 34rem;
+      border-radius: 2rem;
+      padding: 1.5rem;
+    }
+  }
+
+  @media (max-width: 767px) {
+    .mobile-filter-bar {
+      @apply mt-5 flex items-center gap-2 px-4;
+    }
+
+    .mobile-filter-bar .mobile-chip-row {
+      @apply m-0 min-w-0 flex-1 px-0;
+    }
+
+    .mobile-filter-bar .mobile-filter-modal-trigger {
+      @apply inline-flex h-11 shrink-0 gap-1.5 rounded-xl px-3;
+    }
+
+    .mobile-filter-bar .mobile-filter-modal-trigger .mobile-chip-icon {
+      @apply h-4 w-4;
     }
   }
 
@@ -2221,6 +2346,7 @@ html.dark .site-footer-copy a {
   }
 
   html.dark .calendar-modal-panel,
+  html.dark .mobile-filter-sheet-panel,
   html.dark .location-modal-panel,
   html.dark .add-event-modal-panel,
   html.dark .subscribe-modal-panel {
@@ -2245,12 +2371,37 @@ html.dark .site-footer-copy a {
     border-color: var(--border-light);
   }
 
+  html.dark .mobile-filter-sheet-footer {
+    border-color: var(--border-light);
+    background: var(--bg-container);
+  }
+
   html.dark .calendar-modal-action,
+  html.dark .mobile-filter-sheet-option,
   html.dark .location-modal-action,
   html.dark .add-event-modal-cta {
     border-color: var(--border-light);
     background: var(--bg-card);
     color: var(--text-main);
+  }
+
+  html.dark .mobile-filter-sheet-kicker,
+  html.dark .mobile-filter-sheet-section-title {
+    color: var(--text-muted);
+  }
+
+  html.dark .mobile-filter-sheet-option i {
+    color: var(--text-muted);
+  }
+
+  html.dark .mobile-filter-sheet-option.mobile-chip-active,
+  html.dark .mobile-filter-sheet-option.pill-active {
+    @apply border-[#7e5db5] bg-[#7e5db5] text-white;
+  }
+
+  html.dark .mobile-filter-sheet-option.mobile-chip-active i,
+  html.dark .mobile-filter-sheet-option.pill-active i {
+    @apply text-white;
   }
 
   html.dark .type-only-btn {

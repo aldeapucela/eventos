@@ -23,8 +23,15 @@ const isServerRenderedList = Boolean(weekGroups && weekGroups.dataset.serverRend
 const dateModal = document.querySelector('[data-date-modal]');
 const typeModal = document.querySelector('[data-type-modal]');
 const venueModal = document.querySelector('[data-venue-modal]');
+const filterModal = document.querySelector('[data-filter-modal]');
 const dateSelectButtons = Array.from(document.querySelectorAll('[data-date-modal-open]'));
 const dateSelectLabel = document.querySelector('[data-filter-date-label]');
+const filterSummaryLabel = document.querySelector('[data-filter-summary-label]');
+const filterSummaryTrigger = document.querySelector('[data-filter-modal-open]');
+const filterSheetDateLabel = document.querySelector('[data-filter-sheet-date-label]');
+const filterSheetTypeLabel = document.querySelector('[data-filter-sheet-type-label]');
+const filterSheetVenueLabel = document.querySelector('[data-filter-sheet-venue-label]');
+const filterSheetFreeButton = document.querySelector('[data-filter-sheet-free]');
 const drawerDateLabel = document.querySelector('[data-drawer-date-label]');
 const dateMonthSelect = document.querySelector('[data-date-month-select]');
 const typeSelectWrap = document.querySelector('.mobile-chip-type-trigger');
@@ -115,6 +122,8 @@ document.addEventListener('click', async (event) => {
   const typeModalClose = event.target.closest('[data-type-modal-close]');
   const dateModalOpen = event.target.closest('[data-date-modal-open]');
   const dateModalClose = event.target.closest('[data-date-modal-close]');
+  const filterModalOpen = event.target.closest('[data-filter-modal-open]');
+  const filterModalClose = event.target.closest('[data-filter-modal-close]');
   const dateFilterOption = event.target.closest('[data-date-filter-value]');
   const dateClear = event.target.closest('[data-date-clear]');
   const typeSelectAll = event.target.closest('[data-type-select-all]');
@@ -128,6 +137,17 @@ document.addEventListener('click', async (event) => {
   const venueClear = event.target.closest('[data-venue-clear]');
   const timeLink = event.target.closest('a[data-time-link]');
   const loadMoreEvents = event.target.closest('[data-load-more-events]');
+
+  if (filterModalOpen) {
+    event.preventDefault();
+    closeMenu();
+    openFilterModal();
+  }
+
+  if (filterModalClose) {
+    event.preventDefault();
+    closeFilterModal();
+  }
 
   if (loadMoreEvents) {
     event.preventDefault();
@@ -146,6 +166,7 @@ document.addEventListener('click', async (event) => {
       // para que no queden abiertos tapando el resultado.
       if (timeLink.closest('[data-menu-drawer]')) closeMenu();
       if (timeLink.closest('[data-date-modal]')) closeDateModal();
+      if (timeLink.closest('[data-filter-modal]')) closeFilterModal();
       const key = SERVER_RENDERED_TIME_FILTERS.get(href);
       if (key) toggleQuickFilter(key);
     } else {
@@ -256,6 +277,7 @@ document.addEventListener('click', async (event) => {
   if (dateModalOpen) {
     event.preventDefault();
     closeMenu();
+    closeFilterModal();
     openDateModal();
   }
 
@@ -290,6 +312,7 @@ document.addEventListener('click', async (event) => {
 
   if (typeModalOpen) {
     event.preventDefault();
+    closeFilterModal();
     openTypeModal();
   }
 
@@ -324,6 +347,7 @@ document.addEventListener('click', async (event) => {
   if (venueModalOpen) {
     event.preventDefault();
     closeMenu();
+    closeFilterModal();
     openVenueModal();
   }
   if (venueModalClose) {
@@ -348,6 +372,9 @@ document.addEventListener('click', async (event) => {
 document.addEventListener('keydown', (event) => {
   if (event.key === 'Escape' && dateModal && !dateModal.hidden) {
     closeDateModal();
+  }
+  if (event.key === 'Escape' && filterModal && !filterModal.hidden) {
+    closeFilterModal();
   }
   if (event.key === 'Escape' && addEventModal && !addEventModal.hidden) {
     closeAddEventModal();
@@ -396,6 +423,7 @@ function applyFilters(options = {}) {
   updateVenuePill();
   renderVenueOptions();
   updateDateFilterUi();
+  updateFilterSummary();
   cards.forEach((card) => {
     const category = card.dataset.category || '';
     const isFree = card.dataset.free === 'true';
@@ -754,6 +782,9 @@ function updateTypePill() {
   const active = activeTypeFilters.length > 0;
   typeSelectWrap.classList.toggle('mobile-chip-active', Boolean(active));
   typeSelectLabel.textContent = active && activeTypeFilters[0] !== '__NONE__' ? `Tipo (${activeTypeFilters.length})` : 'Tipo';
+  if (filterSheetTypeLabel) {
+    filterSheetTypeLabel.textContent = active && activeTypeFilters[0] !== '__NONE__' ? `Tipo (${activeTypeFilters.length})` : 'Tipo';
+  }
 }
 
 function updateDateFilterUi() {
@@ -761,6 +792,9 @@ function updateDateFilterUi() {
   const active = DATE_MODAL_FILTERS.has(activeTimeFilter) || isDateMonthFilter(activeTimeFilter);
   if (dateSelectLabel) {
     dateSelectLabel.textContent = active ? `Fecha · ${getLabel(activeTimeFilter)}` : 'Fecha';
+  }
+  if (filterSheetDateLabel) {
+    filterSheetDateLabel.textContent = active ? `Fecha · ${getLabel(activeTimeFilter)}` : 'Más fechas';
   }
   if (drawerDateLabel) {
     drawerDateLabel.textContent = active ? `Fecha · ${getLabel(activeTimeFilter)}` : 'Fecha';
@@ -786,6 +820,7 @@ function updateVenuePill() {
   venueSelectWrap.setAttribute('aria-pressed', String(active));
   if (!active) {
     venueSelectLabel.textContent = 'Espacio';
+    if (filterSheetVenueLabel) filterSheetVenueLabel.textContent = 'Espacio';
     venueSelectWrap.setAttribute('aria-label', 'Filtrar por espacio');
     venueSelectWrap.removeAttribute('title');
     return;
@@ -793,6 +828,7 @@ function updateVenuePill() {
   const selectedLabel = availableVenues.find((venue) => normalizeVenueKey(venue) === activeVenueFilter) || 'Espacio';
   const visibleLabel = truncateVenueChipLabel(selectedLabel);
   venueSelectLabel.textContent = `Espacio · ${visibleLabel}`;
+  if (filterSheetVenueLabel) filterSheetVenueLabel.textContent = `Espacio · ${visibleLabel}`;
   venueSelectWrap.setAttribute('aria-label', `Filtrar por espacio. Activo: ${selectedLabel}`);
   venueSelectWrap.setAttribute('title', selectedLabel);
 }
@@ -1111,6 +1147,21 @@ function closeSubscribeModal() {
   panel.scrollTop = 0;
 }
 
+function openFilterModal() {
+  if (!filterModal) return;
+  updateFilterSummary();
+  filterModal.hidden = false;
+  filterSummaryTrigger?.setAttribute('aria-expanded', 'true');
+  document.body.style.overflow = 'hidden';
+}
+
+function closeFilterModal() {
+  if (!filterModal) return;
+  filterModal.hidden = true;
+  filterSummaryTrigger?.setAttribute('aria-expanded', 'false');
+  document.body.style.overflow = '';
+}
+
 function openTypeModal() {
   if (!typeModal) return;
   typeModal.hidden = false;
@@ -1351,6 +1402,28 @@ function toggleQuickFilter(filterValue) {
   applyFilters();
   if (shouldAutoScroll) {
     scrollToFirstVisibleResultsBlock();
+  }
+}
+
+function updateFilterSummary() {
+  if (!filterSummaryLabel || !filterSummaryTrigger) return;
+  const effectiveTimeFilter = activeTimeFilter !== 'all'
+    ? activeTimeFilter
+    : SERVER_RENDERED_TIME_FILTERS.get(window.location.pathname) || 'all';
+  const primaryTimeFilters = new Set(['all', 'Hoy', 'Este finde', 'Esta semana']);
+  const secondaryCount = [
+    !primaryTimeFilters.has(effectiveTimeFilter),
+    activeFreeFilter,
+    activeTypeFilters.length > 0,
+    activeVenueFilter !== 'all'
+  ].filter(Boolean).length;
+  filterSummaryLabel.textContent = secondaryCount ? `Filtros (${secondaryCount})` : 'Filtros';
+  filterSummaryTrigger.classList.toggle('mobile-chip-active', secondaryCount > 0);
+  filterSummaryTrigger.setAttribute('aria-pressed', String(secondaryCount > 0));
+  filterSummaryTrigger.setAttribute('aria-label', secondaryCount ? `Filtros. ${secondaryCount} activos` : 'Abrir filtros');
+  if (filterSheetFreeButton) {
+    filterSheetFreeButton.classList.toggle('mobile-chip-active', activeFreeFilter);
+    filterSheetFreeButton.setAttribute('aria-pressed', String(activeFreeFilter));
   }
 }
 

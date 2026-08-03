@@ -1,3 +1,54 @@
+<div class="calendar-modal mobile-filter-sheet" id="mobile-filter-modal" data-filter-modal hidden>
+  <button class="calendar-modal-backdrop" type="button" data-filter-modal-close aria-label="Cerrar filtros"></button>
+  <aside class="mobile-filter-sheet-panel" role="dialog" aria-modal="true" aria-labelledby="mobile-filter-title">
+    <div class="calendar-modal-header mobile-filter-sheet-header">
+      <div>
+        <p class="mobile-filter-sheet-kicker">Explorar eventos</p>
+        <h2 class="calendar-modal-title" id="mobile-filter-title">Filtros</h2>
+      </div>
+      <button class="calendar-modal-close" type="button" data-filter-modal-close aria-label="Cerrar filtros">
+        <i class="fa-solid fa-xmark"></i>
+      </button>
+    </div>
+
+    <div class="mobile-filter-sheet-options">
+      <p class="mobile-filter-sheet-section-title">Cuándo</p>
+      <div class="mobile-filter-sheet-grid">
+        <a class="mobile-filter-sheet-option" href="{% if timeFilterKey == 'Próxima semana' %}/{% else %}/proxima-semana/{% endif %}" data-time-link{% if timeFilterKey == 'Próxima semana' %} aria-current="page"{% endif %}>
+          <i class="fa-solid fa-calendar-plus" aria-hidden="true"></i>
+          <span>Próxima semana</span>
+        </a>
+        <button class="mobile-filter-sheet-option" type="button" data-date-modal-open aria-label="Más opciones de fecha">
+          <i class="fa-regular fa-calendar-days" aria-hidden="true"></i>
+          <span data-filter-sheet-date-label>Más fechas</span>
+        </button>
+      </div>
+
+      <p class="mobile-filter-sheet-section-title">Preferencias</p>
+      <div class="mobile-filter-sheet-grid">
+        <button class="mobile-filter-sheet-option" type="button" data-filter="free" data-filter-sheet-free>
+          <i class="fa-solid fa-ticket" aria-hidden="true"></i>
+          <span>Gratis</span>
+        </button>
+        <button class="mobile-filter-sheet-option" type="button" data-type-modal-open>
+          <i class="fa-solid fa-filter" aria-hidden="true"></i>
+          <span data-filter-sheet-type-label>Tipo</span>
+        </button>
+        {% if not venue %}
+        <button class="mobile-filter-sheet-option" type="button" data-venue-modal-open>
+          <i class="fa-solid fa-location-dot" aria-hidden="true"></i>
+          <span data-filter-sheet-venue-label>Espacio</span>
+        </button>
+        {% endif %}
+      </div>
+    </div>
+
+    <div class="mobile-filter-sheet-footer">
+      <button class="calendar-modal-action calendar-modal-action-primary filter-modal-submit" type="button" data-filter-modal-close>Ver resultados</button>
+    </div>
+  </aside>
+</div>
+
 <div class="calendar-modal" data-type-modal hidden>
   <button class="calendar-modal-backdrop" type="button" data-type-modal-close aria-label="Cerrar diálogo"></button>
   <aside class="calendar-modal-panel subscribe-modal-panel" role="dialog" aria-modal="true" aria-labelledby="type-modal-title">
