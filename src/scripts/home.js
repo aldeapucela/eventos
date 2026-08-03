@@ -15,6 +15,8 @@ const resultsTitle = document.querySelector('[data-results-title]');
 const weekEmpty = document.querySelector('[data-week-empty]');
 const clearFilters = document.querySelector('[data-clear-filters]');
 const weekGroups = document.querySelector('[data-week-groups]');
+const loadMoreEventsWrap = document.querySelector('[data-load-more-wrap]');
+const loadMoreEventsButton = document.querySelector('[data-load-more-events]');
 // En las páginas temporales (/hoy/, /fin-de-semana/...) la lista llega
 // renderizada del servidor y no debe re-renderizarse en cliente.
 const isServerRenderedList = Boolean(weekGroups && weekGroups.dataset.serverRendered === 'true');
@@ -48,6 +50,8 @@ let availableSpaces = Array.isArray(window.__EVENTS__?.spaces) ? window.__EVENTS
 let availableVenues = [];
 const storageKey = 'aldeapucela_saved_events';
 const DEFAULT_HORIZON_DAYS = 30;
+const LOAD_MORE_DAYS = 7;
+let visibleHorizonDays = DEFAULT_HORIZON_DAYS;
 const DATE_MODAL_FILTERS = new Set(['Este mes', 'Próximos 3 meses', 'Este año']);
 const DATE_MONTH_PREFIX = 'Mes:';
 const TIME_FILTERS = new Set(['all', 'Hoy', 'Este finde', 'Esta semana', 'Próxima semana', ...DATE_MODAL_FILTERS]);
@@ -123,6 +127,13 @@ document.addEventListener('click', async (event) => {
   const venueFilterOption = event.target.closest('[data-venue-filter-value]');
   const venueClear = event.target.closest('[data-venue-clear]');
   const timeLink = event.target.closest('a[data-time-link]');
+  const loadMoreEvents = event.target.closest('[data-load-more-events]');
+
+  if (loadMoreEvents) {
+    event.preventDefault();
+    visibleHorizonDays += LOAD_MORE_DAYS;
+    applyFilters();
+  }
 
   // En páginas de categoría el chip temporal filtra en cliente (sin salir de la
   // categoría). En el resto arrastra los filtros activos (?free, ?type, ?venue).
@@ -417,6 +428,7 @@ function applyFilters(options = {}) {
     clearFilters.classList.toggle('hidden', activeTimeFilter === 'all' && !activeFreeFilter && activeTypeFilters.length === 0 && activeVenueFilter === 'all');
     clearFilters.href = '/';
   }
+  updateLoadMoreButton();
   if (updateUrl) {
     updateFilterUrl();
   }
@@ -978,6 +990,8 @@ function renderWeekGroups() {
   const keys = Object.keys(grouped);
   if (!keys.length) {
     weekGroups.innerHTML = '<p class="text-sm leading-6 text-slate-500">No hay eventos en este periodo.</p>';
+    updateCards();
+    updateLoadMoreButton();
     return;
   }
 
@@ -1002,6 +1016,35 @@ function renderWeekGroups() {
   
   updateCards();
   syncSavedStates();
+  updateLoadMoreButton();
+}
+
+function updateLoadMoreButton() {
+  if (!loadMoreEventsWrap || !loadMoreEventsButton) return;
+
+  const shouldShow = !isServerRenderedList && activeTimeFilter === 'all' && hasMoreEventsForCurrentFilters();
+  loadMoreEventsWrap.hidden = !shouldShow;
+  loadMoreEventsButton.disabled = !shouldShow;
+}
+
+function hasMoreEventsForCurrentFilters() {
+  if (activeTimeFilter !== 'all') return false;
+  const currentEnd = getListingWindowEnd('all', today);
+  const windowStart = startOfToday(today);
+
+  return events.some((event) => {
+    if (!event?.startsAtIso) return false;
+    const startsAt = new Date(event.startsAtIso);
+    if (Number.isNaN(startsAt.getTime()) || startsAt < windowStart || startsAt <= currentEnd) return false;
+    if (shouldHideFromUpcomingList(event, startsAt)) return false;
+
+    const isFree = event.isFree === true || event.isFree === 'true';
+    const typeVisible = activeTypeFilters.length === 0 || activeTypeFilters.includes(event.categoryLabel || '');
+    const freeVisible = !activeFreeFilter || isFree;
+    const venue = normalizeVenueKey(event.venueKey || event.venueLabel || event.location || '');
+    const venueVisible = activeVenueFilter === 'all' || venue === activeVenueFilter;
+    return typeVisible && freeVisible && venueVisible;
+  });
 }
 
 function openMenu() {
@@ -1221,7 +1264,7 @@ function getListingWindowEnd(filterValue, date) {
       return endOfYear(date);
     case 'all':
     default:
-      return endOfHorizon(date, DEFAULT_HORIZON_DAYS);
+      return endOfHorizon(date, visibleHorizonDays);
   }
 }
 

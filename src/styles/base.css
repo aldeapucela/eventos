@@ -587,6 +587,14 @@
     @apply space-y-6;
   }
 
+  .load-more-events {
+    @apply flex justify-center pt-1;
+  }
+
+  .load-more-events-btn {
+    @apply gap-2;
+  }
+
   .saved-day-groups {
     @apply space-y-8;
   }
