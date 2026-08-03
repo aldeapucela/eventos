@@ -458,6 +458,10 @@
     display: none;
   }
 
+  .mobile-filter-action-row {
+    display: contents;
+  }
+
   .mobile-filter-modal-trigger.mobile-chip-active {
     @apply border-[#4a3a70] bg-[#4a3a70] text-white;
   }
@@ -1498,19 +1502,51 @@
 
   @media (max-width: 767px) {
     .mobile-filter-bar {
-      @apply mt-5 flex items-center gap-2 px-4;
+      @apply mt-5 px-4;
     }
 
     .mobile-filter-bar .mobile-chip-row {
-      @apply m-0 min-w-0 flex-1 px-0;
+      @apply m-0 flex w-full flex-nowrap justify-start gap-2 px-0 py-0;
+      max-width: 100%;
+      overflow-x: auto;
+      overflow-y: hidden;
+      scroll-snap-type: x proximity;
+    }
+
+    .mobile-filter-bar .mobile-chip-row > * {
+      scroll-snap-align: start;
     }
 
     .mobile-filter-bar .mobile-filter-modal-trigger {
-      @apply inline-flex h-11 shrink-0 gap-1.5 rounded-xl px-3;
+      @apply inline-flex h-11 shrink-0 gap-1.5 rounded-xl px-3 shadow-md;
+      white-space: nowrap;
+    }
+
+    .mobile-filter-bar .mobile-chip {
+      @apply px-3 text-sm;
+    }
+
+    .mobile-filter-bar .mobile-filter-action-row {
+      display: contents;
+    }
+
+    .mobile-filter-bar .mobile-chip-week {
+      display: none;
     }
 
     .mobile-filter-bar .mobile-filter-modal-trigger .mobile-chip-icon {
       @apply h-4 w-4;
+    }
+  }
+
+  @media (max-width: 374px) {
+    .mobile-filter-bar .mobile-chip-row {
+      @apply gap-0.5;
+    }
+
+    .mobile-filter-bar .mobile-chip,
+    .mobile-filter-bar .mobile-filter-modal-trigger {
+      @apply gap-1 px-2;
     }
   }
 

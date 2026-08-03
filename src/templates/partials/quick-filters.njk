@@ -10,7 +10,13 @@
       <i class="mobile-chip-icon fa-regular fa-sun" aria-hidden="true"></i>
       <span>Hoy</span>
     </a>
-    <a class="mobile-chip{% if timeFilterKey == 'Esta semana' %} mobile-chip-active{% endif %}" href="{% if timeFilterKey == 'Esta semana' %}/{% else %}/esta-semana/{% endif %}" data-time-link{% if timeFilterKey == 'Esta semana' %} aria-current="page"{% endif %}>
+    <div class="mobile-filter-action-row">
+      <button class="mobile-chip mobile-filter-modal-trigger" type="button" data-filter-modal-open aria-expanded="false" aria-controls="mobile-filter-modal">
+        <i class="mobile-chip-icon fa-solid fa-sliders" aria-hidden="true"></i>
+        <span data-filter-summary-label>Filtros</span>
+      </button>
+    </div>
+    <a class="mobile-chip mobile-chip-week{% if timeFilterKey == 'Esta semana' %} mobile-chip-active{% endif %}" href="{% if timeFilterKey == 'Esta semana' %}/{% else %}/esta-semana/{% endif %}" data-time-link{% if timeFilterKey == 'Esta semana' %} aria-current="page"{% endif %}>
       <i class="mobile-chip-icon fa-regular fa-calendar" aria-hidden="true"></i>
       <span>Esta semana</span>
     </a>
@@ -38,8 +44,4 @@
     </button>
     {% endif %}
   </div>
-  <button class="mobile-chip mobile-filter-modal-trigger" type="button" data-filter-modal-open aria-expanded="false" aria-controls="mobile-filter-modal">
-    <i class="mobile-chip-icon fa-solid fa-sliders" aria-hidden="true"></i>
-    <span data-filter-summary-label>Filtros</span>
-  </button>
 </div>

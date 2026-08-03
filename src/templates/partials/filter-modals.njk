@@ -14,6 +14,10 @@
     <div class="mobile-filter-sheet-options">
       <p class="mobile-filter-sheet-section-title">Cuándo</p>
       <div class="mobile-filter-sheet-grid">
+        <a class="mobile-filter-sheet-option" href="{% if timeFilterKey == 'Esta semana' %}/{% else %}/esta-semana/{% endif %}" data-time-link{% if timeFilterKey == 'Esta semana' %} aria-current="page"{% endif %}>
+          <i class="fa-regular fa-calendar" aria-hidden="true"></i>
+          <span>Esta semana</span>
+        </a>
         <a class="mobile-filter-sheet-option" href="{% if timeFilterKey == 'Próxima semana' %}/{% else %}/proxima-semana/{% endif %}" data-time-link{% if timeFilterKey == 'Próxima semana' %} aria-current="page"{% endif %}>
           <i class="fa-solid fa-calendar-plus" aria-hidden="true"></i>
           <span>Próxima semana</span>
