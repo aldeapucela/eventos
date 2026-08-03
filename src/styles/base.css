@@ -101,7 +101,12 @@
   }
 
   .header-search-btn {
-    @apply ml-1 shrink-0;
+    @apply ml-auto shrink-0;
+  }
+
+  /* La búsqueda y el menú forman un único grupo de acciones en móvil. */
+  .header-search-btn + .header-search-btn {
+    margin-left: -0.25rem;
   }
 
   .header-main-nav {
