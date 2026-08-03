@@ -73,7 +73,7 @@
   }
 
   .topbar-inner {
-    @apply page-shell flex h-20 items-center justify-between gap-6;
+    @apply page-shell flex h-20 items-center justify-start gap-6;
   }
 
   .header-brand {
@@ -101,7 +101,14 @@
   }
 
   .header-search-btn {
-    @apply ml-1 shrink-0;
+    @apply ml-auto shrink-0;
+  }
+
+  /* En móvil la búsqueda se inyecta justo antes del menú: ambos deben leerse
+     como un único grupo de acciones, no como elementos repartidos por toda la
+     cabecera. Conservamos el área táctil de 44px de cada botón. */
+  .header-search-btn + .header-search-btn {
+    margin-left: 0.5rem;
   }
 
   .header-main-nav {
