@@ -723,6 +723,7 @@ async function buildSite(events) {
       activeNav: 'home',
       pageH1: page.h1,
       pageH2: page.h2,
+      pageIntro: page.intro,
       timeFilterKey: page.filterKey,
       ongoing: enrichedOngoing,
       dayGroups,

@@ -183,6 +183,9 @@ export function isWeekendDayKey(dayKey) {
   return WEEKEND_DAYS.has(weekday);
 }
 
+// `intro` (ver getTimePages): párrafo visible sobre el listado, el único texto
+// propio de estas páginas. Interpola la etiqueta de la ventana, así que cambia
+// con la fecha igual que el h2.
 export function getTimePages(now) {
   const todayWindow = getTimeWindow('Hoy', now);
   const weekendWindow = getTimeWindow('Este finde', now);
@@ -208,7 +211,8 @@ export function getTimePages(now) {
       title: 'Qué hacer hoy en Valladolid | Aldea Pucela',
       h1: 'Qué hacer hoy en Valladolid',
       h2: `Planes para hoy, ${todayLabel}`,
-      description: `Agenda de eventos en Valladolid para hoy, ${todayLabel}: conciertos, exposiciones, cine, charlas y planes gratis publicados por la comunidad de Aldea Pucela.`
+      description: `Agenda de eventos en Valladolid para hoy, ${todayLabel}: conciertos, exposiciones, cine, charlas y planes gratis publicados por la comunidad de Aldea Pucela.`,
+      intro: `Lo que se puede hacer hoy, ${todayLabel}, sin planificar nada: incluye tanto lo que arranca a lo largo del día como lo que ya está en marcha desde antes, como exposiciones y ciclos de varios días. Si vas con poco margen, el filtro Gratis deja a la vista la parte de la agenda que no cuesta nada, que suele ser bastante.`
     },
     {
       slug: 'fin-de-semana',
@@ -219,7 +223,8 @@ export function getTimePages(now) {
       title: 'Qué hacer este fin de semana en Valladolid | Aldea Pucela',
       h1: 'Qué hacer este fin de semana en Valladolid',
       h2: `Planes culturales para el fin de semana ${weekendRange}`,
-      description: `Eventos en Valladolid el fin de semana ${weekendRange}: conciertos, teatro, exposiciones y actividades gratis recopiladas por vecinos en Aldea Pucela.`
+      description: `Eventos en Valladolid el fin de semana ${weekendRange}: conciertos, teatro, exposiciones y actividades gratis recopiladas por vecinos en Aldea Pucela.`,
+      intro: `El fin de semana ${weekendRange}, de viernes por la tarde a domingo por la noche. Es cuando se concentran los conciertos, el teatro y las actividades al aire libre, así que suele ser la página más llena de la agenda. Conviene mirarla el jueves: lo que pide reserva se llena antes del viernes.`
     },
     {
       slug: 'esta-semana',
@@ -230,7 +235,8 @@ export function getTimePages(now) {
       title: 'Qué hacer esta semana en Valladolid | Aldea Pucela',
       h1: 'Qué hacer esta semana en Valladolid',
       h2: `Agenda de la semana ${weekRange}`,
-      description: `Todos los eventos culturales de la semana ${weekRange} en Valladolid: música, cine, charlas, talleres y planes gratuitos, organizados día a día.`
+      description: `Todos los eventos culturales de la semana ${weekRange} en Valladolid: música, cine, charlas, talleres y planes gratuitos, organizados día a día.`,
+      intro: `Toda la semana ${weekRange} de un vistazo, agrupada día a día de lunes a domingo. Sirve para ver de golpe qué días tienes libres y qué se solapa, algo que no se aprecia mirando solo hoy o el fin de semana.`
     },
     {
       slug: 'proxima-semana',
@@ -241,7 +247,8 @@ export function getTimePages(now) {
       title: 'Qué hacer la próxima semana en Valladolid | Aldea Pucela',
       h1: 'Qué hacer la próxima semana en Valladolid',
       h2: `Agenda de la semana ${nextWeekRange}`,
-      description: `Organiza tus planes con tiempo: eventos en Valladolid la semana ${nextWeekRange}. Conciertos, exposiciones, teatro y actividades para todos los públicos.`
+      description: `Organiza tus planes con tiempo: eventos en Valladolid la semana ${nextWeekRange}. Conciertos, exposiciones, teatro y actividades para todos los públicos.`,
+      intro: `La semana ${nextWeekRange}, todavía por venir. Es la página para lo que hay que preparar con margen: talleres y visitas guiadas con plazas limitadas, entradas que se agotan y planes que hay que cuadrar con alguien más.`
     },
     {
       slug: 'este-mes',
@@ -252,7 +259,8 @@ export function getTimePages(now) {
       title: 'Qué hacer este mes en Valladolid | Aldea Pucela',
       h1: 'Qué hacer este mes en Valladolid',
       h2: `Eventos en ${monthLabel}`,
-      description: `Agenda cultural de Valladolid en ${monthLabel}: conciertos, festivales, exposiciones, cine y talleres publicados por la comunidad de Aldea Pucela.`
+      description: `Agenda cultural de Valladolid en ${monthLabel}: conciertos, festivales, exposiciones, cine y talleres publicados por la comunidad de Aldea Pucela.`,
+      intro: `Todo lo que queda de ${monthLabel} en Valladolid, de hoy hasta fin de mes. A esta escala se ven bien las cosas largas (exposiciones, ciclos, festivales de varios días) que en las páginas de hoy o del fin de semana aparecen sueltas y sin contexto.`
     },
     {
       slug: 'proximos-3-meses',
@@ -263,7 +271,26 @@ export function getTimePages(now) {
       title: 'Agenda de los próximos 3 meses en Valladolid | Aldea Pucela',
       h1: 'Qué hacer en Valladolid los próximos 3 meses',
       h2: `Eventos ${quarterRange}`,
-      description: `Planifica con tiempo: eventos culturales en Valladolid ${quarterRange}. Conciertos, festivales, ferias y exposiciones en una sola agenda vecinal.`
+      description: `Planifica con tiempo: eventos culturales en Valladolid ${quarterRange}. Conciertos, festivales, ferias y exposiciones en una sola agenda vecinal.`,
+      intro: `La vista larga: ${quarterRange}. Aquí aparecen las temporadas de los teatros, los festivales y los conciertos que se anuncian con meses de antelación, justo lo que conviene tener fichado antes de que se pongan las entradas a la venta.`
     }
   ];
+}
+
+// ponytail: self-check (ventanas coherentes y cada página con su texto propio).
+if (process.argv[1] && (await import('node:url')).fileURLToPath(import.meta.url) === process.argv[1]) {
+  const now = new Date('2026-08-10T10:00:00+02:00'); // lunes
+  const pages = getTimePages(now);
+  console.assert(pages.length === 6, `esperadas 6 páginas temporales, hay ${pages.length}`);
+  const sinIntro = pages.filter((page) => !page.intro || page.intro.length < 120);
+  console.assert(!sinIntro.length, `páginas temporales sin intro propia: ${sinIntro.map((p) => p.slug).join(', ')}`);
+  const intros = pages.map((page) => page.intro);
+  console.assert(new Set(intros).size === intros.length, 'dos páginas temporales comparten la misma intro');
+  const sinInterpolar = pages.filter((page) => page.intro.includes('${'));
+  console.assert(!sinInterpolar.length, `intro sin interpolar: ${sinInterpolar.map((p) => p.slug).join(', ')}`);
+  // El finde empieza el viernes por la tarde, que es lo que dice su intro.
+  const weekend = getTimeWindow('Este finde', now);
+  console.assert(getMadridDateParts(weekend.start).day === 14, 'la ventana del finde no arranca el viernes');
+  console.assert(pages.every((page) => page.window.start <= page.window.end), 'ventana con inicio posterior al fin');
+  console.log(`ok: ${pages.length} páginas temporales, todas con intro`);
 }
