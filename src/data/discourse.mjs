@@ -146,7 +146,10 @@ export function normalizeDiscourseTopic(topic, detail) {
   return {
     id: topic.id,
     slug,
-    urlPath: `/e/${topic.id}/${slug}`,
+    // Con barra final: es la URL que sirve GitHub Pages y la que anuncian el
+    // canonical, el sitemap y el JSON-LD. Sin ella cada enlace interno se comía
+    // un 301.
+    urlPath: `/e/${topic.id}/${slug}/`,
     sourceUrl: `${FORUM_BASE}/t/${slug}/${topic.id}`,
     title,
     excerpt: buildExcerpt(summary || descriptionHtml, 160),

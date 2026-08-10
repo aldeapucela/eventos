@@ -340,7 +340,13 @@ function enrichEvent(event) {
     updatedAtLabel: formatDateTime(event.updatedAt),
     monthLabel: startsAtDate ? formatInMadrid(startsAtDate, { month: 'short' }).format(startsAtDate).toUpperCase() : '',
     dayLabel: startsAtDate ? formatInMadrid(startsAtDate, { day: 'numeric' }).format(startsAtDate) : '',
-    hasEnded: endsAtDate ? endsAtDate < new Date() : startsAtDate ? startsAtDate < new Date() : false
+    hasEnded: endsAtDate ? endsAtDate < new Date() : startsAtDate ? startsAtDate < new Date() : false,
+    // discourse.mjs ya genera urlPath con barra final, pero los ~1.100 registros
+    // de cache/data/ se escribieron sin ella y solo se re-normalizan si cambia su
+    // firma en el foro (sync-lib.mjs), lo que implicaría refetchearlos todos.
+    // Normalizar aquí, que es por donde pasa todo evento antes de una plantilla,
+    // los arregla sin re-sincronizar. Idempotente.
+    urlPath: `${String(event.urlPath || `/e/${event.id}/${event.slug}`).replace(/\/+$/, '')}/`
   };
 }
 
