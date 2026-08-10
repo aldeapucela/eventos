@@ -263,6 +263,29 @@
     @apply max-w-[32ch] text-base leading-[1.6] text-slate-500 sm:max-w-[46ch];
   }
 
+  .page-intro {
+    @apply mt-3 px-4 text-sm leading-6 text-slate-600 sm:px-0;
+  }
+
+  /* La tarjeta ya no está envuelta en un <a>: el único enlace es el título, y su
+     ::after se estira sobre toda la ficha para que siga siendo clicable entera.
+     Así el anchor text que ve Google es el título del evento y no "12 ago ·
+     20:00 Título Teatro Calderón Teatro Gratis". .event-compact es relative y
+     .event-compact-actions ya va en z-20, así que el botón de guardar queda por
+     encima de la capa. */
+  .event-compact-title a {
+    @apply text-inherit no-underline;
+  }
+
+  .event-compact-title a::after {
+    content: '';
+    @apply absolute inset-0 z-10;
+  }
+
+  .page-intro a {
+    @apply underline decoration-slate-300 underline-offset-2 hover:text-brand-700;
+  }
+
   .hero-mobile-title {
     @apply relative z-20 max-w-[12ch] font-display text-[2.65rem] font-bold leading-[0.94] tracking-tight text-[#2f3b54] sm:text-5xl lg:text-6xl;
   }

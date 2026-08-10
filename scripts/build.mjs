@@ -14,7 +14,7 @@ import { canonicalizeVenue, normalizeVenueKey } from '../src/data/venue-aliases.
 import { buildCollectionPageJsonLd, buildEventJsonLd, buildVenuePageJsonLd, serializeJsonLd } from '../src/data/structured-data.mjs';
 import { getOpenEndedWindow, getTimePages, isWeekendDayKey, resolveBuildNow, selectTimePageEvents } from '../src/data/time-windows.mjs';
 import { getCategoryPages, mappedCategoryLabels } from '../src/data/category-pages.mjs';
-import { getVenuePages } from '../src/data/venue-pages.mjs';
+import { getVenuePages, buildVenueIntro } from '../src/data/venue-pages.mjs';
 import { canonicalizeCategory } from '../src/data/category-aliases.mjs';
 import { syncEvents } from './sync-lib.mjs';
 
@@ -340,7 +340,13 @@ function enrichEvent(event) {
     updatedAtLabel: formatDateTime(event.updatedAt),
     monthLabel: startsAtDate ? formatInMadrid(startsAtDate, { month: 'short' }).format(startsAtDate).toUpperCase() : '',
     dayLabel: startsAtDate ? formatInMadrid(startsAtDate, { day: 'numeric' }).format(startsAtDate) : '',
-    hasEnded: endsAtDate ? endsAtDate < new Date() : startsAtDate ? startsAtDate < new Date() : false
+    hasEnded: endsAtDate ? endsAtDate < new Date() : startsAtDate ? startsAtDate < new Date() : false,
+    // discourse.mjs ya genera urlPath con barra final, pero los ~1.100 registros
+    // de cache/data/ se escribieron sin ella y solo se re-normalizan si cambia su
+    // firma en el foro (sync-lib.mjs), lo que implicaría refetchearlos todos.
+    // Normalizar aquí, que es por donde pasa todo evento antes de una plantilla,
+    // los arregla sin re-sincronizar. Idempotente.
+    urlPath: `${String(event.urlPath || `/e/${event.id}/${event.slug}`).replace(/\/+$/, '')}/`
   };
 }
 
@@ -529,6 +535,7 @@ async function buildSite(events) {
     return { ...event, venueKey, venueLabel: spaceNameByVenueKey.get(venueKey) || '' };
   };
   const assetVersion = await computeAssetVersion();
+  // Se sirve solo como /site-data.json (ver layout.njk): ya no se inyecta inline.
   const eventsPayload = siteDataPayload(events, filters, { spaces, spaceNameByVenueKey });
   console.log(`build: data ${elapsedMs('data').toFixed(1)}ms`);
   const categoryFeeds = filters.map((category) => ({
@@ -558,7 +565,6 @@ async function buildSite(events) {
 
   const sharedContext = {
     filtersJson: JSON.stringify(filters),
-    eventsJson: eventsPayload,
     filters,
     categoryFeeds,
     categoryPagePaths,
@@ -566,11 +572,28 @@ async function buildSite(events) {
   };
 
   mark('pages');
+  const homeFeatured = featured ? enrichEvent(featured) : null;
+  const homeOngoing = ongoing.map(enrichEvent).map(withVenueKeys);
+  // ItemList de la portada: solo lo que está de verdad en el HTML servido (el
+  // destacado y el carrusel "En curso"). El listado de #week-groups lo rellena
+  // home.js, así que no se anuncia aquí. Dedupe por id: el destacado puede estar
+  // también en "En curso".
+  const homeItems = [...(homeFeatured ? [homeFeatured] : []), ...homeOngoing]
+    .filter((event, index, list) => list.findIndex((other) => other.id === event.id) === index)
+    .map((event) => ({ url: `${publicBaseUrl}/e/${event.id}/${event.slug}/`, name: event.title }));
   await writeFile('index.html', render('home.njk', {
     title: 'Qué hacer en Valladolid | Aldea Pucela',
     meta: { description: 'Agenda cultural de Valladolid alimentada desde el foro de Aldea Pucela.' },
     canonicalUrl: `${publicBaseUrl}/`,
     googleSiteVerification,
+    jsonLd: homeItems.length
+      ? serializeJsonLd(buildCollectionPageJsonLd({
+          name: 'Qué hacer en Valladolid',
+          description: 'Agenda cultural de Valladolid alimentada desde el foro de Aldea Pucela.',
+          url: `${publicBaseUrl}/`,
+          items: homeItems
+        }))
+      : null,
     social: {
       type: 'website',
       title: 'Qué hacer en Valladolid | Aldea Pucela',
@@ -581,9 +604,9 @@ async function buildSite(events) {
     pageCss: 'home.css',
     pageJs: 'home.js',
     activeNav: 'home',
-    featured: featured ? enrichEvent(featured) : null,
+    featured: homeFeatured,
     week: week.map(enrichEvent),
-    ongoing: ongoing.map(enrichEvent).map(withVenueKeys),
+    ongoing: homeOngoing,
     today: today.map(enrichEvent),
     todayCount: today.length,
     categories: filters,
@@ -700,6 +723,7 @@ async function buildSite(events) {
       activeNav: 'home',
       pageH1: page.h1,
       pageH2: page.h2,
+      pageIntro: page.intro,
       timeFilterKey: page.filterKey,
       ongoing: enrichedOngoing,
       dayGroups,
@@ -759,6 +783,7 @@ async function buildSite(events) {
       activeNav: 'types',
       pageH1: page.h1,
       pageH2: page.h2,
+      pageIntro: page.intro,
       ongoing: [],
       ongoingGrid: enrichedOngoing,
       flatEvents: enrichedListed,
@@ -847,6 +872,12 @@ async function buildSite(events) {
       activeNav: 'spaces',
       pageH1: page.h1,
       pageH2: page.h2,
+      pageIntro: buildVenueIntro({
+        name: page.canonicalVenue,
+        address: page.address,
+        categories: venueCategories,
+        count: ongoingGrid.length + upcomingEvents.length
+      }),
       venue: { name: page.canonicalVenue, address: page.address },
       ongoing: [],
       ongoingGrid,
@@ -911,7 +942,7 @@ async function buildSite(events) {
   console.log(`build: pages ${elapsedMs('pages').toFixed(1)}ms`);
 
   mark('feeds');
-  await writeFile('site-data.json', siteDataPayload(events, filters, { spaces, spaceNameByVenueKey }));
+  await writeFile('site-data.json', eventsPayload);
   const renderedVenueSlugs = new Set(renderedVenuePages.map((page) => page.slug));
   // Mismo conjunto vigente/próximo que muestran las páginas de tipo/espacio
   // (ventana abierta con límites de día de Madrid), en vez del corte de
@@ -937,18 +968,15 @@ async function buildSite(events) {
       ...categoryPages.map((page) => ({ path: page.path, lastmod: toLocalDateKey(buildNow) })),
       ...renderedVenuePages.map((page) => ({ path: page.path, lastmod: toLocalDateKey(buildNow) }))
     ],
-    // Fichas de evento (/e/) FUERA del sitemap a propósito: el sitio es nuevo y Google
-    // aún no indexa nada; concentramos el rastreo en portada/secciones/espacios/tipos.
-    // Reactivar (idealmente solo eventos futuros) cuando el core esté indexado — ver
-    // también el Disallow /e/ del robots.txt de abajo.
-    events: []
+    // Fichas de evento vigentes y próximas: son las únicas páginas del sitio con
+    // contenido propio (descripción, cartel, JSON-LD de Event) y las que sostienen
+    // el long tail. Solo la ventana vigente/próxima, la misma que ven las páginas
+    // de tipo/espacio: las pasadas viven en /archivo/ y no se anuncian.
+    events: searchableEvents
   }));
   await writeFile('robots.txt', [
     'User-agent: *',
     'Allow: /',
-    '# Fichas de evento fuera del rastreo temporalmente, para concentrar el',
-    '# rastreo en portada/secciones mientras se indexa el core del sitio.',
-    'Disallow: /e/',
     `Sitemap: ${publicBaseUrl}/sitemap.xml`,
     ''
   ].join('\n'));
