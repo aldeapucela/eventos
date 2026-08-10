@@ -18,6 +18,8 @@
           </p>
           {% endif %}
         </header>
+        {# Único texto propio de la página: todo lo demás son tarjetas de evento. #}
+        {% if pageIntro %}<p class="page-intro">{{ pageIntro }}</p>{% endif %}
         {% include "partials/quick-filters.njk" %}
       </section>
 

@@ -263,6 +263,14 @@
     @apply max-w-[32ch] text-base leading-[1.6] text-slate-500 sm:max-w-[46ch];
   }
 
+  .page-intro {
+    @apply mt-3 max-w-[68ch] px-4 text-sm leading-6 text-slate-600 sm:px-0;
+  }
+
+  .page-intro a {
+    @apply underline decoration-slate-300 underline-offset-2 hover:text-brand-700;
+  }
+
   .hero-mobile-title {
     @apply relative z-20 max-w-[12ch] font-display text-[2.65rem] font-bold leading-[0.94] tracking-tight text-[#2f3b54] sm:text-5xl lg:text-6xl;
   }
