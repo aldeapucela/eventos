@@ -566,11 +566,28 @@ async function buildSite(events) {
   };
 
   mark('pages');
+  const homeFeatured = featured ? enrichEvent(featured) : null;
+  const homeOngoing = ongoing.map(enrichEvent).map(withVenueKeys);
+  // ItemList de la portada: solo lo que está de verdad en el HTML servido (el
+  // destacado y el carrusel "En curso"). El listado de #week-groups lo rellena
+  // home.js, así que no se anuncia aquí. Dedupe por id: el destacado puede estar
+  // también en "En curso".
+  const homeItems = [...(homeFeatured ? [homeFeatured] : []), ...homeOngoing]
+    .filter((event, index, list) => list.findIndex((other) => other.id === event.id) === index)
+    .map((event) => ({ url: `${publicBaseUrl}/e/${event.id}/${event.slug}/`, name: event.title }));
   await writeFile('index.html', render('home.njk', {
     title: 'Qué hacer en Valladolid | Aldea Pucela',
     meta: { description: 'Agenda cultural de Valladolid alimentada desde el foro de Aldea Pucela.' },
     canonicalUrl: `${publicBaseUrl}/`,
     googleSiteVerification,
+    jsonLd: homeItems.length
+      ? serializeJsonLd(buildCollectionPageJsonLd({
+          name: 'Qué hacer en Valladolid',
+          description: 'Agenda cultural de Valladolid alimentada desde el foro de Aldea Pucela.',
+          url: `${publicBaseUrl}/`,
+          items: homeItems
+        }))
+      : null,
     social: {
       type: 'website',
       title: 'Qué hacer en Valladolid | Aldea Pucela',
@@ -581,9 +598,9 @@ async function buildSite(events) {
     pageCss: 'home.css',
     pageJs: 'home.js',
     activeNav: 'home',
-    featured: featured ? enrichEvent(featured) : null,
+    featured: homeFeatured,
     week: week.map(enrichEvent),
-    ongoing: ongoing.map(enrichEvent).map(withVenueKeys),
+    ongoing: homeOngoing,
     today: today.map(enrichEvent),
     todayCount: today.length,
     categories: filters,
