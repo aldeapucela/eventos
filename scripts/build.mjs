@@ -529,6 +529,7 @@ async function buildSite(events) {
     return { ...event, venueKey, venueLabel: spaceNameByVenueKey.get(venueKey) || '' };
   };
   const assetVersion = await computeAssetVersion();
+  // Se sirve solo como /site-data.json (ver layout.njk): ya no se inyecta inline.
   const eventsPayload = siteDataPayload(events, filters, { spaces, spaceNameByVenueKey });
   console.log(`build: data ${elapsedMs('data').toFixed(1)}ms`);
   const categoryFeeds = filters.map((category) => ({
@@ -558,7 +559,6 @@ async function buildSite(events) {
 
   const sharedContext = {
     filtersJson: JSON.stringify(filters),
-    eventsJson: eventsPayload,
     filters,
     categoryFeeds,
     categoryPagePaths,
@@ -911,7 +911,7 @@ async function buildSite(events) {
   console.log(`build: pages ${elapsedMs('pages').toFixed(1)}ms`);
 
   mark('feeds');
-  await writeFile('site-data.json', siteDataPayload(events, filters, { spaces, spaceNameByVenueKey }));
+  await writeFile('site-data.json', eventsPayload);
   const renderedVenueSlugs = new Set(renderedVenuePages.map((page) => page.slug));
   // Mismo conjunto vigente/próximo que muestran las páginas de tipo/espacio
   // (ventana abierta con límites de día de Madrid), en vez del corte de

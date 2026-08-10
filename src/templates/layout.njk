@@ -71,8 +71,11 @@
     {% include "partials/install-modal.njk" %}
     {% include "partials/search-modal.njk" %}
     <script>
+      {# El dataset completo NO va inline: son ~2,7 MB que multiplicaban por 35 el
+         peso de cada página y dejaban las 50+ URLs indexables idénticas al 97% en
+         bytes. home.js/saved-events.js lo piden a /site-data.json (loadSiteData()).
+         Solo el catálogo de filtros, que son unos cientos de bytes, sigue inline. #}
       {% if includeSiteData %}
-      window.__EVENTS__ = {{ eventsJson | safe }};
       window.__FILTERS__ = {{ filtersJson | safe }};
       {% endif %}
       (function () {
