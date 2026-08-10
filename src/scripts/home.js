@@ -1263,20 +1263,20 @@ function closeAddEventModal() {
 function renderWeekItem(event) {
     return `
       <article class="event-compact" data-category="${event.categoryLabel || ''}" data-free="${event.isFree ? 'true' : 'false'}" data-venue="${event.venueLabel || event.location || ''}" data-venue-key="${event.venueKey || ''}" data-starts-at="${event.startsAtIso || ''}" data-ends-at="${event.endsAtIso || ''}">
-        <a href="${event.urlPath}" class="event-compact-link">
+        <div class="event-compact-link">
           <div class="event-compact-image" style="background-image:url('${event.image || '/assets/placeholder-event.svg'}')"></div>
           <div class="event-compact-copy">
           <div class="event-compact-topline">
             <span>${event.scheduleLabel || `${event.compactDateLabel || ''}${event.timeLabel ? ` · ${event.timeLabel}` : ''}`}</span>
           </div>
-          <h4 class="event-compact-title">${event.title || ''}</h4>
+          <h4 class="event-compact-title"><a href="${event.urlPath}">${event.title || ''}</a></h4>
           <p class="event-compact-meta">${event.location || ''}</p>
           <div class="event-compact-badges">
             <span class="compact-badge">${event.categoryLabel || 'Evento'}</span>
             ${event.isFree ? '<span class="compact-badge compact-badge-success">Gratis</span>' : ''}
           </div>
           </div>
-        </a>
+        </div>
         <div class="event-compact-actions">
           <button class="event-compact-action" type="button" data-save-event data-event-id="${event.id}" aria-label="Guardar evento">
             <i class="fa-regular fa-bookmark"></i>

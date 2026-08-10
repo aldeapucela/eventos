@@ -83,13 +83,13 @@
         <div class="event-row-list">
           {% for event in space.events %}
           <article class="event-compact" data-category="{{ event.categoryLabel }}" data-free="{{ 'true' if event.isFree else 'false' }}" data-starts-at="{{ event.startsAt }}">
-            <a href="{{ event.urlPath }}" class="event-compact-link">
+            <div class="event-compact-link">
               <div class="event-compact-image" style="background-image:url('{{ event.image or '/assets/placeholder-event.svg' }}')"></div>
               <div class="event-compact-copy">
                 <div class="event-compact-topline">
                   <span>{% if event.detailScheduleLabel %}{{ event.detailScheduleLabel }}{% else %}{{ event.compactDateLabel }}{% if event.timeLabel %} · {{ event.timeLabel }}{% endif %}{% endif %}</span>
                 </div>
-                <h4 class="event-compact-title">{{ event.title }}</h4>
+                <h4 class="event-compact-title"><a href="{{ event.urlPath }}">{{ event.title }}</a></h4>
                 <p class="event-compact-meta">
                   {% if event.location and event.location != space.name %}{{ event.location }}{% elseif event.address %}{{ event.address }}{% else %}{{ event.location }}{% endif %}
                 </p>
@@ -98,7 +98,7 @@
                   {% if event.isFree %}<span class="compact-badge compact-badge-success">Gratis</span>{% endif %}
                 </div>
               </div>
-            </a>
+            </div>
             <div class="event-compact-actions">
               <button class="event-compact-action" type="button" data-save-event data-event-id="{{ event.id }}" aria-label="Guardar evento">
                 <i class="fa-regular fa-bookmark"></i>

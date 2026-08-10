@@ -162,20 +162,20 @@ function renderCard(event) {
   const schedule = `${prefix ? `${prefix}, ` : ''}${event.scheduleLabel || `${event.compactDateLabel || ''}${event.timeLabel ? ` · ${event.timeLabel}` : ''}`}`;
   return `
     <article class="event-compact" data-starts-at="${event.startsAtIso || ''}">
-      <a href="${event.urlPath}" class="event-compact-link">
+      <div class="event-compact-link">
         <div class="event-compact-image" style="background-image:url('${image}')"></div>
         <div class="event-compact-copy">
           <div class="event-compact-topline">
             <span>${schedule}</span>
           </div>
-          <h3 class="event-compact-title">${event.title || ''}</h3>
+          <h3 class="event-compact-title"><a href="${event.urlPath}">${event.title || ''}</a></h3>
           <p class="event-compact-meta">${event.location || ''}</p>
           <div class="event-compact-badges">
             <span class="compact-badge">${event.categoryLabel || 'Evento'}</span>
             ${event.isFree ? '<span class="compact-badge compact-badge-success">Gratis</span>' : ''}
           </div>
         </div>
-      </a>
+      </div>
       <div class="event-compact-actions">
         <button class="event-compact-action" type="button" data-save-event data-event-id="${event.id}" aria-label="Quitar de guardados">
           <i class="fa-regular fa-bookmark"></i>
