@@ -264,7 +264,7 @@
   }
 
   .page-intro {
-    @apply mt-3 max-w-[68ch] px-4 text-sm leading-6 text-slate-600 sm:px-0;
+    @apply mt-3 px-4 text-sm leading-6 text-slate-600 sm:px-0;
   }
 
   /* La tarjeta ya no está envuelta en un <a>: el único enlace es el título, y su
