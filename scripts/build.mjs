@@ -405,7 +405,10 @@ function buildSearchIndex({ events, spaces, renderedVenueSlugs, typesArchive }) 
       url: `/e/${event.id}/${event.slug}/`,
       category: event.categoryLabel || '',
       venue: canonicalizeVenue(event.venue || '') || event.venue || event.location || '',
-      date: event.scheduleLabel || event.startsAtDayLabel || ''
+      date: event.scheduleLabel || event.startsAtDayLabel || '',
+      // No se muestra: solo alimenta el haystack del buscador, para que
+      // "Festival Tonal" o un nombre de calle encuentren el evento.
+      extra: [event.organizer, event.address].filter(Boolean).join(' ')
     }))
   });
 }
