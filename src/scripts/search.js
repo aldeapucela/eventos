@@ -55,7 +55,7 @@ if (modal) {
           };
           // Precalcula el texto normalizado sobre el que se busca cada ítem.
           index.events.forEach((item) => {
-            item._h = normalize(`${item.title} ${item.category || ''} ${item.venue || ''}`);
+            item._h = normalize(`${item.title} ${item.category || ''} ${item.venue || ''} ${item.extra || ''}`);
             item._t = normalize(item.title);
           });
           index.spaces.forEach((item) => { item._h = item._t = normalize(item.title); });
