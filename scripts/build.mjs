@@ -148,7 +148,7 @@ function buildRssXml(events) {
     ? toRfc2822(sortedByPublishedDesc[0].publishedAt || sortedByPublishedDesc[0].updatedAt || sortedByPublishedDesc[0].startsAt)
     : new Date().toUTCString();
   const items = sortedByPublishedDesc.map((event) => {
-    const eventUrl = toAbsoluteUrl(`/e/${event.id}/${event.slug}`);
+    const eventUrl = toAbsoluteUrl(`/e/${event.id}/${event.slug}/`);
     const title = escapeHtml(event.title || 'Evento');
     const description = buildRssItemDescription(event, eventUrl);
     const pubDate = toRfc2822(event.publishedAt || event.updatedAt || event.startsAt);
@@ -252,7 +252,7 @@ function buildCalendarIcs(events, options = {}) {
     const endDate = endDateRaw && !Number.isNaN(endDateRaw.getTime())
       ? endDateRaw
       : new Date(startDate.getTime() + 60 * 60 * 1000);
-    const eventUrl = toAbsoluteUrl(`/e/${event.id}/${event.slug}`);
+    const eventUrl = toAbsoluteUrl(`/e/${event.id}/${event.slug}/`);
     const uid = `${event.id}@eventos.aldeapucela.org`;
     const description = String(event.summary || event.excerpt || '').trim();
     const attachment = event.image ? `ATTACH;FMTTYPE=image/jpeg:${escapeIcs(event.image)}` : null;
@@ -397,7 +397,7 @@ function buildSearchIndex({ events, spaces, renderedVenueSlugs, typesArchive }) 
       })
       .map((space) => ({
         title: space.name,
-        url: renderedVenueSlugs.has(space.slug) ? `/espacios/${space.slug}/` : `/espacios#${space.slug}`,
+        url: renderedVenueSlugs.has(space.slug) ? `/espacios/${space.slug}/` : `/espacios/#${space.slug}`,
         count: space.count || 0
       })),
     events: (events || []).map((event) => ({
@@ -907,8 +907,8 @@ async function buildSite(events) {
     const moreInVenueTitle = canonicalizeVenue(event.venue || '') || event.venue || '';
     const venueSlug = eventVenueKey ? spaceSlugByVenueKey.get(eventVenueKey) : '';
     const moreInVenueHref = venueSlug
-      ? (venuePageSlugs.has(venueSlug) ? `/espacios/${venueSlug}/` : `/espacios#${venueSlug}`)
-      : '/espacios';
+      ? (venuePageSlugs.has(venueSlug) ? `/espacios/${venueSlug}/` : `/espacios/#${venueSlug}`)
+      : '/espacios/';
     const venueEntry = eventVenueKey ? spaceByVenueKey.get(eventVenueKey) || null : null;
 
     await writeFile(path.join('e', String(event.id), event.slug, 'index.html'), render('event-detail.njk', {
