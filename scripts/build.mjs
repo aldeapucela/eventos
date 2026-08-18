@@ -148,7 +148,13 @@ function buildRssXml(events) {
     ? toRfc2822(sortedByPublishedDesc[0].publishedAt || sortedByPublishedDesc[0].updatedAt || sortedByPublishedDesc[0].startsAt)
     : new Date().toUTCString();
   const items = sortedByPublishedDesc.map((event) => {
-    const eventUrl = toAbsoluteUrl(`/e/${event.id}/${event.slug}`);
+    const eventUrl = toAbsoluteUrl(`/e/${event.id}/${event.slug}/`);
+    // OJO: el guid es la identidad del item para los lectores de RSS, no un
+    // enlace. Se queda SIN barra final, que es como se publicó desde el
+    // principio: cambiarlo renombraría de golpe los ~1.100 items del feed y
+    // los suscriptores lo verían entero como no leído. La barra solo va en
+    // <link>, que es el que se sigue y se rastrea.
+    const eventGuid = toAbsoluteUrl(`/e/${event.id}/${event.slug}`);
     const title = escapeHtml(event.title || 'Evento');
     const description = buildRssItemDescription(event, eventUrl);
     const pubDate = toRfc2822(event.publishedAt || event.updatedAt || event.startsAt);
@@ -156,7 +162,7 @@ function buildRssXml(events) {
       '    <item>',
       `      <title>${title}</title>`,
       `      <link>${eventUrl}</link>`,
-      `      <guid isPermaLink="true">${eventUrl}</guid>`,
+      `      <guid isPermaLink="true">${eventGuid}</guid>`,
       `      <pubDate>${pubDate}</pubDate>`,
       `      <description><![CDATA[${description}]]></description>`,
       '    </item>'
@@ -252,7 +258,7 @@ function buildCalendarIcs(events, options = {}) {
     const endDate = endDateRaw && !Number.isNaN(endDateRaw.getTime())
       ? endDateRaw
       : new Date(startDate.getTime() + 60 * 60 * 1000);
-    const eventUrl = toAbsoluteUrl(`/e/${event.id}/${event.slug}`);
+    const eventUrl = toAbsoluteUrl(`/e/${event.id}/${event.slug}/`);
     const uid = `${event.id}@eventos.aldeapucela.org`;
     const description = String(event.summary || event.excerpt || '').trim();
     const attachment = event.image ? `ATTACH;FMTTYPE=image/jpeg:${escapeIcs(event.image)}` : null;
@@ -397,7 +403,7 @@ function buildSearchIndex({ events, spaces, renderedVenueSlugs, typesArchive }) 
       })
       .map((space) => ({
         title: space.name,
-        url: renderedVenueSlugs.has(space.slug) ? `/espacios/${space.slug}/` : `/espacios#${space.slug}`,
+        url: renderedVenueSlugs.has(space.slug) ? `/espacios/${space.slug}/` : `/espacios/#${space.slug}`,
         count: space.count || 0
       })),
     events: (events || []).map((event) => ({
@@ -742,6 +748,11 @@ async function buildSite(events) {
   // Archivo de tipos (/tipos/): un avance por categoría; el listado completo vive
   // en cada página /t/<slug>/. Se alimenta de lo que ya calcula este bucle.
   const typesArchive = [];
+  // Páginas de tipo con al menos un evento vigente: son las únicas que se
+  // anuncian en el sitemap (ver más abajo). Las vacías se siguen generando
+  // porque la ficha de evento enlaza a la página de su categoría vía
+  // categoryPagePaths, y borrarlas daría 404 desde eventos pasados.
+  const renderedCategoryPages = [];
   for (const page of categoryPages) {
     const categoryEvents = events.filter((event) => page.labels.includes(event.categoryLabel));
     const { ongoing: pageOngoing, listed } = selectTimePageEvents(categoryEvents, categoryWindow, buildNow);
@@ -749,6 +760,7 @@ async function buildSite(events) {
     const enrichedOngoing = sortEvents(pageOngoing).map(enrichEvent).map(withVenueKeys);
     const typeCount = enrichedOngoing.length + enrichedListed.length;
     if (typeCount > 0) {
+      renderedCategoryPages.push(page);
       typesArchive.push({
         label: page.labels[0],
         slug: page.slug,
@@ -766,6 +778,11 @@ async function buildSite(events) {
       title: page.title,
       meta: { description: page.description },
       canonicalUrl: pageUrl,
+      // Sin eventos vigentes la página solo tiene el intro y el mensaje de
+      // "todavía no hay eventos": nada que indexar. noindex,follow para no
+      // ofrecerle a Google una página vacía, y follow para que siga los enlaces
+      // del menú. Vuelve a ser indexable sola en cuanto entre un evento.
+      robotsMeta: typeCount > 0 ? null : 'noindex,follow',
       jsonLd: itemListItems.length
         ? serializeJsonLd(buildCollectionPageJsonLd({
             name: page.h1,
@@ -907,8 +924,8 @@ async function buildSite(events) {
     const moreInVenueTitle = canonicalizeVenue(event.venue || '') || event.venue || '';
     const venueSlug = eventVenueKey ? spaceSlugByVenueKey.get(eventVenueKey) : '';
     const moreInVenueHref = venueSlug
-      ? (venuePageSlugs.has(venueSlug) ? `/espacios/${venueSlug}/` : `/espacios#${venueSlug}`)
-      : '/espacios';
+      ? (venuePageSlugs.has(venueSlug) ? `/espacios/${venueSlug}/` : `/espacios/#${venueSlug}`)
+      : '/espacios/';
     const venueEntry = eventVenueKey ? spaceByVenueKey.get(eventVenueKey) || null : null;
 
     await writeFile(path.join('e', String(event.id), event.slug, 'index.html'), render('event-detail.njk', {
@@ -968,7 +985,7 @@ async function buildSite(events) {
       { path: '/espacios/', lastmod: toLocalDateKey(buildNow) },
       { path: '/tipos/', lastmod: toLocalDateKey(buildNow) },
       ...getTimePages(buildNow).map((page) => ({ path: page.path, lastmod: toLocalDateKey(buildNow) })),
-      ...categoryPages.map((page) => ({ path: page.path, lastmod: toLocalDateKey(buildNow) })),
+      ...renderedCategoryPages.map((page) => ({ path: page.path, lastmod: toLocalDateKey(buildNow) })),
       ...renderedVenuePages.map((page) => ({ path: page.path, lastmod: toLocalDateKey(buildNow) }))
     ],
     // Fichas de evento vigentes y próximas: son las únicas páginas del sitio con
