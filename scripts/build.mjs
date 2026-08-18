@@ -149,6 +149,12 @@ function buildRssXml(events) {
     : new Date().toUTCString();
   const items = sortedByPublishedDesc.map((event) => {
     const eventUrl = toAbsoluteUrl(`/e/${event.id}/${event.slug}/`);
+    // OJO: el guid es la identidad del item para los lectores de RSS, no un
+    // enlace. Se queda SIN barra final, que es como se publicó desde el
+    // principio: cambiarlo renombraría de golpe los ~1.100 items del feed y
+    // los suscriptores lo verían entero como no leído. La barra solo va en
+    // <link>, que es el que se sigue y se rastrea.
+    const eventGuid = toAbsoluteUrl(`/e/${event.id}/${event.slug}`);
     const title = escapeHtml(event.title || 'Evento');
     const description = buildRssItemDescription(event, eventUrl);
     const pubDate = toRfc2822(event.publishedAt || event.updatedAt || event.startsAt);
@@ -156,7 +162,7 @@ function buildRssXml(events) {
       '    <item>',
       `      <title>${title}</title>`,
       `      <link>${eventUrl}</link>`,
-      `      <guid isPermaLink="true">${eventUrl}</guid>`,
+      `      <guid isPermaLink="true">${eventGuid}</guid>`,
       `      <pubDate>${pubDate}</pubDate>`,
       `      <description><![CDATA[${description}]]></description>`,
       '    </item>'
