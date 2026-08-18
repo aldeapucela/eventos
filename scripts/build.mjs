@@ -742,6 +742,11 @@ async function buildSite(events) {
   // Archivo de tipos (/tipos/): un avance por categoría; el listado completo vive
   // en cada página /t/<slug>/. Se alimenta de lo que ya calcula este bucle.
   const typesArchive = [];
+  // Páginas de tipo con al menos un evento vigente: son las únicas que se
+  // anuncian en el sitemap (ver más abajo). Las vacías se siguen generando
+  // porque la ficha de evento enlaza a la página de su categoría vía
+  // categoryPagePaths, y borrarlas daría 404 desde eventos pasados.
+  const renderedCategoryPages = [];
   for (const page of categoryPages) {
     const categoryEvents = events.filter((event) => page.labels.includes(event.categoryLabel));
     const { ongoing: pageOngoing, listed } = selectTimePageEvents(categoryEvents, categoryWindow, buildNow);
@@ -749,6 +754,7 @@ async function buildSite(events) {
     const enrichedOngoing = sortEvents(pageOngoing).map(enrichEvent).map(withVenueKeys);
     const typeCount = enrichedOngoing.length + enrichedListed.length;
     if (typeCount > 0) {
+      renderedCategoryPages.push(page);
       typesArchive.push({
         label: page.labels[0],
         slug: page.slug,
@@ -766,6 +772,11 @@ async function buildSite(events) {
       title: page.title,
       meta: { description: page.description },
       canonicalUrl: pageUrl,
+      // Sin eventos vigentes la página solo tiene el intro y el mensaje de
+      // "todavía no hay eventos": nada que indexar. noindex,follow para no
+      // ofrecerle a Google una página vacía, y follow para que siga los enlaces
+      // del menú. Vuelve a ser indexable sola en cuanto entre un evento.
+      robotsMeta: typeCount > 0 ? null : 'noindex,follow',
       jsonLd: itemListItems.length
         ? serializeJsonLd(buildCollectionPageJsonLd({
             name: page.h1,
@@ -968,7 +979,7 @@ async function buildSite(events) {
       { path: '/espacios/', lastmod: toLocalDateKey(buildNow) },
       { path: '/tipos/', lastmod: toLocalDateKey(buildNow) },
       ...getTimePages(buildNow).map((page) => ({ path: page.path, lastmod: toLocalDateKey(buildNow) })),
-      ...categoryPages.map((page) => ({ path: page.path, lastmod: toLocalDateKey(buildNow) })),
+      ...renderedCategoryPages.map((page) => ({ path: page.path, lastmod: toLocalDateKey(buildNow) })),
       ...renderedVenuePages.map((page) => ({ path: page.path, lastmod: toLocalDateKey(buildNow) }))
     ],
     // Fichas de evento vigentes y próximas: son las únicas páginas del sitio con
