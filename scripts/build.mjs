@@ -26,6 +26,17 @@ const postersDir = path.join(dist, 'posters');
 const cssDir = path.join(assetsDir, 'css');
 const jsDir = path.join(assetsDir, 'js');
 const publicBaseUrl = 'https://eventos.aldeapucela.org';
+// Imagen de previsualización en redes (og:image). El nombre va versionado a
+// propósito: al sustituir los bytes manteniendo la misma URL, las redes
+// sociales siguen sirviendo la copia cacheada (así reaparecía el isotipo
+// antiguo del Conde Ansúrez). Si la imagen vuelve a cambiar, sube la versión
+// del nombre del archivo en vez de sobrescribirlo.
+const socialPreview = {
+  image: `${publicBaseUrl}/assets/social-preview-v2.jpg`,
+  imageWidth: 1731,
+  imageHeight: 909,
+  imageAlt: 'Qué hacer en Valladolid, agenda vecinal de eventos culturales de Aldea Pucela'
+};
 // Verificación de propiedad en Google Search Console (solo en la portada).
 const googleSiteVerification = 'WI4USc-QdbTLezu0qIZfb2J9Yvqkwg818tWzExtVREw';
 
@@ -607,7 +618,7 @@ async function buildSite(events) {
       type: 'website',
       title: 'Qué hacer en Valladolid | Aldea Pucela',
       description: 'Agenda cultural de Valladolid alimentada desde el foro de Aldea Pucela.',
-      image: `${publicBaseUrl}/assets/social-preview.jpg`,
+      ...socialPreview,
       url: `${publicBaseUrl}/`
     },
     pageCss: 'home.css',
@@ -631,7 +642,7 @@ async function buildSite(events) {
       type: 'website',
       title: 'Mis guardados | Eventos Valladolid | Aldea Pucela',
       description: 'Tus eventos guardados en Aldea Pucela Eventos.',
-      image: `${publicBaseUrl}/assets/social-preview.jpg`,
+      ...socialPreview,
       url: `${publicBaseUrl}/guardados/`
     },
     pageCss: 'home.css',
@@ -651,7 +662,7 @@ async function buildSite(events) {
       type: 'website',
       title: 'Archivo de eventos | Eventos Valladolid | Aldea Pucela',
       description: 'Histórico de eventos culturales pasados en Valladolid.',
-      image: `${publicBaseUrl}/assets/social-preview.jpg`,
+      ...socialPreview,
       url: `${publicBaseUrl}/archivo/`
     },
     pageCss: 'home.css',
@@ -669,7 +680,7 @@ async function buildSite(events) {
       type: 'website',
       title: 'Espacios | Eventos Valladolid | Aldea Pucela',
       description: 'Eventos en los próximos seis meses agrupados por espacio en Valladolid.',
-      image: `${publicBaseUrl}/assets/social-preview.jpg`,
+      ...socialPreview,
       url: `${publicBaseUrl}/espacios/`
     },
     pageCss: 'home.css',
@@ -724,7 +735,7 @@ async function buildSite(events) {
         type: 'website',
         title: page.title,
         description: page.description,
-        image: `${publicBaseUrl}/assets/social-preview.jpg`,
+        ...socialPreview,
         url: pageUrl
       },
       pageCss: 'home.css',
@@ -795,7 +806,7 @@ async function buildSite(events) {
         type: 'website',
         title: page.title,
         description: page.description,
-        image: `${publicBaseUrl}/assets/social-preview.jpg`,
+        ...socialPreview,
         url: pageUrl
       },
       pageCss: 'home.css',
@@ -825,7 +836,7 @@ async function buildSite(events) {
       type: 'website',
       title: 'Tipos de evento | Eventos Valladolid | Aldea Pucela',
       description: 'Explora la agenda cultural de Valladolid por tipo de evento: música, cine, teatro, exposiciones y más.',
-      image: `${publicBaseUrl}/assets/social-preview.jpg`,
+      ...socialPreview,
       url: `${publicBaseUrl}/tipos/`
     },
     pageCss: 'home.css',
@@ -884,7 +895,7 @@ async function buildSite(events) {
         type: 'website',
         title: page.title,
         description: page.description,
-        image: `${publicBaseUrl}/assets/social-preview.jpg`,
+        ...socialPreview,
         url: pageUrl
       },
       pageCss: 'home.css',
@@ -952,8 +963,11 @@ async function buildSite(events) {
         type: 'article',
         title: event.title,
         description: event.summary || event.excerpt,
-        image: event.image || `${publicBaseUrl}/img/logo-web.jpg`,
-        url: `${publicBaseUrl}/e/${event.id}/${event.slug}/`
+        url: `${publicBaseUrl}/e/${event.id}/${event.slug}/`,
+        // Sin imagen propia caemos en la portada social del sitio, no en el
+        // logo cuadrado del foro (mal encaje en tarjetas grandes y con copias
+        // antiguas cacheadas en las redes).
+        ...(event.image ? { image: event.image } : socialPreview)
       },
       includeSiteData: false,
       ...sharedContext
