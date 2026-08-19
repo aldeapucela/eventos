@@ -263,10 +263,6 @@
     @apply max-w-[32ch] text-base leading-[1.6] text-slate-500 sm:max-w-[46ch];
   }
 
-  .page-intro {
-    @apply mt-3 px-4 text-sm leading-6 text-slate-600 sm:px-0;
-  }
-
   /* La tarjeta ya no está envuelta en un <a>: el único enlace es el título, y su
      ::after se estira sobre toda la ficha para que siga siendo clicable entera.
      Así el anchor text que ve Google es el título del evento y no "12 ago ·
@@ -280,10 +276,6 @@
   .event-compact-title a::after {
     content: '';
     @apply absolute inset-0 z-10;
-  }
-
-  .page-intro a {
-    @apply underline decoration-slate-300 underline-offset-2 hover:text-brand-700;
   }
 
   .hero-mobile-title {
