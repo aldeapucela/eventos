@@ -789,7 +789,7 @@ async function buildSite(events) {
       title: page.title,
       meta: { description: page.description },
       canonicalUrl: pageUrl,
-      // Sin eventos vigentes la página solo tiene el intro y el mensaje de
+      // Sin eventos vigentes la página solo tiene el encabezado y el mensaje de
       // "todavía no hay eventos": nada que indexar. noindex,follow para no
       // ofrecerle a Google una página vacía, y follow para que siga los enlaces
       // del menú. Vuelve a ser indexable sola en cuanto entre un evento.
@@ -814,7 +814,6 @@ async function buildSite(events) {
       activeNav: 'types',
       pageH1: page.h1,
       pageH2: page.h2,
-      pageIntro: page.intro,
       ongoing: [],
       ongoingGrid: enrichedOngoing,
       flatEvents: enrichedListed,
