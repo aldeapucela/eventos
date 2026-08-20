@@ -89,6 +89,7 @@ async function copyJs() {
   await fs.copyFile(path.join(root, 'src', 'scripts', 'matomo.js'), path.join(jsDir, 'matomo.js'));
   await fs.copyFile(path.join(root, 'src', 'scripts', 'install-app.js'), path.join(jsDir, 'install-app.js'));
   await fs.copyFile(path.join(root, 'src', 'scripts', 'search.js'), path.join(jsDir, 'search.js'));
+  await fs.copyFile(path.join(root, 'src', 'scripts', 'fiestas-2026.js'), path.join(jsDir, 'fiestas-2026.js'));
 }
 
 function slugify(value = '') {
@@ -100,6 +101,28 @@ function slugify(value = '') {
     .replace(/[^a-z0-9]+/g, '-')
     .replace(/^-+|-+$/g, '')
     || 'categoria';
+}
+
+function fiestas2026Icon(type = '') {
+  const normalized = slugify(type);
+  const icons = {
+    danza: 'fa-person-dress',
+    deporte: 'fa-person-running',
+    exposicion: 'fa-image',
+    folklore: 'fa-guitar',
+    'fuegos-artificiales': 'fa-wand-sparkles',
+    gastronomia: 'fa-utensils',
+    'infantil-y-familiar': 'fa-children',
+    magia: 'fa-hat-wizard',
+    musica: 'fa-music',
+    otros: 'fa-star',
+    penas: 'fa-people-group',
+    religioso: 'fa-place-of-worship',
+    talleres: 'fa-screwdriver-wrench',
+    teatro: 'fa-masks-theater',
+    toros: 'fa-circle-dot'
+  };
+  return icons[normalized] || 'fa-calendar-day';
 }
 
 function render(template, context) {
@@ -116,6 +139,66 @@ function toAbsoluteUrl(value = '') {
   if (!value) return publicBaseUrl;
   if (/^https?:\/\//i.test(value)) return value;
   return `${publicBaseUrl}${value.startsWith('/') ? value : `/${value}`}`;
+}
+
+async function loadFiestas2026Events() {
+  const source = path.join(root, 'src', 'data', 'fiestas-2026', 'events.json');
+  const raw = await fs.readFile(source, 'utf8');
+  const events = JSON.parse(raw);
+  if (!Array.isArray(events)) return [];
+  return events
+    .map((event) => ({
+      id: String(event.id || ''),
+      date: String(event.date || ''),
+      dateLabel: String(event.dateLabel || event.date || ''),
+      startTime: String(event.startTime || ''),
+      endTime: String(event.endTime || ''),
+      title: String(event.title || 'Evento'),
+      location: String(event.location || ''),
+      zone: String(event.zone || ''),
+      type: String(event.type || 'Evento'),
+      description: String(event.description || ''),
+      summary: String(event.summary || ''),
+      performances: Array.isArray(event.performances) ? event.performances.map(String) : [],
+      organizers: Array.isArray(event.organizers) ? event.organizers.map(String) : [],
+      collaborators: Array.isArray(event.collaborators) ? event.collaborators.map(String) : [],
+      coordinates: event.coordinates && Number.isFinite(event.coordinates.lat) && Number.isFinite(event.coordinates.lng)
+        ? { lat: event.coordinates.lat, lng: event.coordinates.lng }
+        : null,
+      ticket: event.ticket && typeof event.ticket === 'object'
+        ? {
+            required: Boolean(event.ticket.required),
+            status: String(event.ticket.status || ''),
+            label: String(event.ticket.label || ''),
+            url: event.ticket.url ? String(event.ticket.url) : '',
+            note: String(event.ticket.note || '')
+          }
+        : null
+    }))
+    .filter((event) => event.id && event.date && event.startTime)
+    .sort((a, b) => a.date.localeCompare(b.date) || a.startTime.localeCompare(b.startTime) || a.title.localeCompare(b.title, 'es'))
+    .map((event) => ({
+      ...event,
+      icon: fiestas2026Icon(event.type),
+      urlPath: `/fiestas-2026/e/${event.id}/`,
+      mapUrl: event.coordinates
+        ? `https://www.openstreetmap.org/?mlat=${event.coordinates.lat}&mlon=${event.coordinates.lng}#map=17/${event.coordinates.lat}/${event.coordinates.lng}`
+        : '',
+      directionsUrl: event.coordinates
+        ? `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(`${event.coordinates.lat},${event.coordinates.lng}`)}`
+        : ''
+    }));
+}
+
+function buildFiestas2026Summary(events) {
+  const dates = [...new Map(events.map((event) => [event.date, {
+    date: event.date,
+    label: event.dateLabel,
+    shortLabel: event.dateLabel.split(' ').slice(0, 2).join(' ')
+  }])).values()];
+  const types = [...new Set(events.map((event) => event.type || 'Evento'))].sort((a, b) => a.localeCompare(b, 'es'));
+  const withMap = events.filter((event) => event.coordinates).length;
+  return { dates, types, withMap };
 }
 
 function toRfc2822(value) {
@@ -467,6 +550,7 @@ async function computeAssetVersion() {
     path.join(root, 'src', 'styles', 'base.css'),
     path.join(root, 'src', 'styles', 'home.css'),
     path.join(root, 'src', 'styles', 'event-detail.css'),
+    path.join(root, 'src', 'styles', 'fiestas-2026.css'),
     path.join(root, 'src', 'scripts', 'home.js'),
     path.join(root, 'src', 'scripts', 'location-link.js'),
     path.join(root, 'src', 'scripts', 'subscribe.js'),
@@ -479,6 +563,7 @@ async function computeAssetVersion() {
     path.join(root, 'src', 'scripts', 'matomo.js'),
     path.join(root, 'src', 'scripts', 'install-app.js'),
     path.join(root, 'src', 'scripts', 'search.js'),
+    path.join(root, 'src', 'scripts', 'fiestas-2026.js'),
     path.join(root, 'src', 'templates', 'partials', 'install-modal.njk'),
     path.join(root, 'src', 'templates', 'partials', 'search-modal.njk'),
     path.join(root, 'src', 'templates', 'layout.njk')
@@ -504,6 +589,7 @@ async function buildSite(events) {
   await copyFontAwesome();
   await compileCss(path.join(root, 'src', 'styles', 'home.css'), path.join(cssDir, 'home.css'));
   await compileCss(path.join(root, 'src', 'styles', 'event-detail.css'), path.join(cssDir, 'event-detail.css'));
+  await compileCss(path.join(root, 'src', 'styles', 'fiestas-2026.css'), path.join(cssDir, 'fiestas-2026.css'));
   await copyJs();
   console.log(`build: assets ${elapsedMs('assets').toFixed(1)}ms`);
 
@@ -571,6 +657,8 @@ async function buildSite(events) {
   // Páginas por ubicación (/espacios/<slug>/), una por venue con eventos suficientes.
   const venuePages = getVenuePages(spaces);
   const venuePageSlugs = new Set(venuePages.map((page) => page.slug));
+  const fiestas2026Events = await loadFiestas2026Events();
+  const fiestas2026Summary = buildFiestas2026Summary(fiestas2026Events);
 
   const sharedContext = {
     filtersJson: JSON.stringify(filters),
@@ -839,6 +927,50 @@ async function buildSite(events) {
     ...sharedContext
   }));
 
+  await writeFile('fiestas-2026/index.html', render('fiestas-2026.njk', {
+    title: 'Fiestas Valladolid 2026 | Aldea Pucela',
+    meta: { description: 'Agenda de las Fiestas de Valladolid 2026 por días, horarios, espacios, categorías y mapa.' },
+    canonicalUrl: `${publicBaseUrl}/fiestas-2026/`,
+    social: {
+      type: 'website',
+      title: 'Fiestas Valladolid 2026 | Aldea Pucela',
+      description: 'Agenda de las Fiestas de Valladolid 2026 por días, horarios, espacios, categorías y mapa.',
+      image: `${publicBaseUrl}/assets/social-preview.jpg`,
+      url: `${publicBaseUrl}/fiestas-2026/`
+    },
+    pageCss: 'fiestas-2026.css',
+    pageJs: 'fiestas-2026.js',
+    activeNav: 'fiestas-2026',
+    fiestasEventsJson: JSON.stringify(fiestas2026Events),
+    fiestasDates: fiestas2026Summary.dates,
+    fiestasTypes: fiestas2026Summary.types,
+    fiestasEventCount: fiestas2026Events.length,
+    fiestasMapCount: fiestas2026Summary.withMap,
+    includeSiteData: false,
+    ...sharedContext
+  }));
+
+  for (const event of fiestas2026Events) {
+    await writeFile(path.join('fiestas-2026', 'e', event.id, 'index.html'), render('fiestas-2026-detail.njk', {
+      title: `${event.title} | Fiestas Valladolid 2026 | Aldea Pucela`,
+      meta: { description: event.summary || event.description || 'Detalle de evento de las Fiestas de Valladolid 2026.' },
+      canonicalUrl: `${publicBaseUrl}${event.urlPath}`,
+      social: {
+        type: 'article',
+        title: `${event.title} | Fiestas Valladolid 2026`,
+        description: event.summary || event.description || 'Detalle de evento de las Fiestas de Valladolid 2026.',
+        image: `${publicBaseUrl}/assets/social-preview.jpg`,
+        url: `${publicBaseUrl}${event.urlPath}`
+      },
+      pageCss: 'fiestas-2026.css',
+      pageJs: 'fiestas-2026.js',
+      activeNav: 'fiestas-2026',
+      event,
+      includeSiteData: false,
+      ...sharedContext
+    }));
+  }
+
   // Páginas por ubicación (/espacios/<slug>/): mismo patrón que las de categoría,
   // pero filtrando por el venue canónico. Igual que la cualificación del venue
   // (groupFutureEventsByVenue solo mira event.venue), para que la lista de la
@@ -982,9 +1114,11 @@ async function buildSite(events) {
     staticPages: [
       { path: '/', lastmod: toLocalDateKey(buildNow) },
       { path: '/archivo/', lastmod: toLocalDateKey(buildNow) },
+      { path: '/fiestas-2026/', lastmod: toLocalDateKey(buildNow) },
       { path: '/espacios/', lastmod: toLocalDateKey(buildNow) },
       { path: '/tipos/', lastmod: toLocalDateKey(buildNow) },
       ...getTimePages(buildNow).map((page) => ({ path: page.path, lastmod: toLocalDateKey(buildNow) })),
+      ...fiestas2026Events.map((event) => ({ path: event.urlPath, lastmod: event.date })),
       ...renderedCategoryPages.map((page) => ({ path: page.path, lastmod: toLocalDateKey(buildNow) })),
       ...renderedVenuePages.map((page) => ({ path: page.path, lastmod: toLocalDateKey(buildNow) }))
     ],
