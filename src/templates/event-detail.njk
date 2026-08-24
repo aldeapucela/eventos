@@ -57,7 +57,11 @@
         {% if event.location %}<a class="detail-clean-meta-row detail-clean-meta-row-location detail-clean-meta-row-button" data-location-open data-location="{{ event.location }}" href="#"><i class="fa-solid fa-location-dot detail-clean-meta-row-icon"></i><span>{{ event.location }}</span></a>{% endif %}
         <a href="#comentarios" class="detail-clean-meta-row detail-clean-meta-row-button detail-clean-meta-row-button-muted detail-clean-meta-row-comments js-comment-count-full hidden" data-scroll-to-comments><i class="fa-regular fa-comment"></i><span></span></a>
       </div>
+      {% if event.descriptionHtml %}
+      <div class="detail-clean-summary detail-clean-description">{{ event.descriptionHtml | safe }}</div>
+      {% else %}
       <p class="detail-clean-summary">{{ event.summary or event.excerpt }}</p>
+      {% endif %}
 
       {% if event.organizer or event.notes %}
       <section class="detail-clean-extra">

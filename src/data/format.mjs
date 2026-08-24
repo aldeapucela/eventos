@@ -197,11 +197,11 @@ export function extractParagraphLines(html = '') {
 }
 
 export function cleanDescriptionHtml(html = '', title = '') {
-  let output = String(html)
-    .replace(/<div class="discourse-post-event"[\s\S]*?<\/div>/gi, '')
-    .replace(/<p>\s*<div class="lightbox-wrapper"[\s\S]*?<\/div>\s*<\/p>/gi, '')
+  let output = removeBalancedDivs(String(html), /<div[^>]*class="[^"]*\bdiscourse-post-event\b[^"]*"/i);
+  output = removeBalancedDivs(output, /<div[^>]*class="[^"]*\blightbox-wrapper\b[^"]*"/i);
+  output = output
     .replace(/<p>\s*<img[^>]*alt=":round_pushpin:"[^>]*>\s*([^<]+)\s*<\/p>/gi, '')
-    .replace(/<p>\s*(Categor[ií]a|Organizador|Notas|Lugar|Ubicaci[oó]n)\s*:[\s\S]*?<\/p>/gi, '')
+    .replace(/<p>\s*(Categor[ií]a|Organizador|Notas|Lugar|Ubicaci[oó]n|Precio)\s*:[\s\S]*?<\/p>/gi, '')
     .replace(/<p>\s*<em>\s*Evento importado desde[\s\S]*?<\/em>\s*<\/p>/gi, '')
     .trim();
 
@@ -209,7 +209,46 @@ export function cleanDescriptionHtml(html = '', title = '') {
   if (escapedTitle) {
     output = output.replace(new RegExp(`^<p>${escapedTitle}<\\/p>\\s*`, 'i'), '');
   }
-  return output.trim();
+  return dropEmptyBlocks(output);
+}
+
+// Discourse anida divs dentro de `lightbox-wrapper` (el `.meta` del pie), así
+// que un regex no balanceado corta en el primer `</div>` y deja el resto del
+// cartel suelto en mitad del texto. Recortamos contando aperturas y cierres.
+function removeBalancedDivs(html, openTagRe) {
+  let output = String(html);
+  for (let guard = 0; guard < 50; guard += 1) {
+    const start = output.search(openTagRe);
+    if (start === -1) break;
+    const end = findDivBlockEnd(output, start);
+    if (end === -1) break;
+    output = `${output.slice(0, start)}${output.slice(end)}`;
+  }
+  return output;
+}
+
+function findDivBlockEnd(html, start) {
+  const tagRe = /<(\/?)div\b[^>]*>/gi;
+  tagRe.lastIndex = start;
+  let depth = 0;
+  let match = tagRe.exec(html);
+  while (match) {
+    depth += match[1] ? -1 : 1;
+    if (depth === 0) return tagRe.lastIndex;
+    match = tagRe.exec(html);
+  }
+  return -1;
+}
+
+// Al quitar el cartel y las líneas de metadatos quedan `<p>` vacíos y huecos de
+// varias líneas en blanco. Daban igual mientras la ficha solo pintaba el
+// resumen; ahora que renderiza la descripción entera, se verían.
+function dropEmptyBlocks(html = '') {
+  return String(html)
+    .replace(/<p>(?:\s|&nbsp;|<br\s*\/?>)*<\/p>/gi, '')
+    .replace(/<p>(?:\s*<br\s*\/?>)+/gi, '<p>')
+    .replace(/\n{2,}/g, '\n')
+    .trim();
 }
 
 export function buildTextParagraphHtml(text = '') {

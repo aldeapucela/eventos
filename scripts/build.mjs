@@ -8,7 +8,7 @@ import autoprefixer from 'autoprefixer';
 import { fileURLToPath } from 'node:url';
 import { loadCachedEvents } from '../src/data/store.mjs';
 import { deriveFilters, sortEvents, splitFeatured, getPastEvents, groupEventsByMonth, groupFutureEventsByVenue } from '../src/data/site.mjs';
-import { DISPLAY_TIMEZONE, escapeHtml, formatDateRange, formatDateTime, isSameMadridDay, parseDateLike, toMadridDateKey } from '../src/data/format.mjs';
+import { DISPLAY_TIMEZONE, buildTextParagraphHtml, cleanDescriptionHtml, escapeHtml, formatDateRange, formatDateTime, isSameMadridDay, parseDateLike, toMadridDateKey } from '../src/data/format.mjs';
 import { enrichVenueCatalog, mergeSpacesWithVenueCatalog } from '../src/data/venues.mjs';
 import { canonicalizeVenue, normalizeVenueKey } from '../src/data/venue-aliases.mjs';
 import { buildCollectionPageJsonLd, buildEventJsonLd, buildVenuePageJsonLd, serializeJsonLd } from '../src/data/structured-data.mjs';
@@ -363,8 +363,20 @@ function enrichEvent(event) {
     // firma en el foro (sync-lib.mjs), lo que implicaría refetchearlos todos.
     // Normalizar aquí, que es por donde pasa todo evento antes de una plantilla,
     // los arregla sin re-sincronizar. Idempotente.
-    urlPath: `${String(event.urlPath || `/e/${event.id}/${event.slug}`).replace(/\/+$/, '')}/`
+    urlPath: `${String(event.urlPath || `/e/${event.id}/${event.slug}`).replace(/\/+$/, '')}/`,
+    descriptionHtml: resolveEventDescriptionHtml(event)
   };
+}
+
+// La descripción se vuelve a limpiar aquí, no solo al sincronizar, por el mismo
+// motivo que urlPath: los registros de cache/data/ se guardaron con los restos
+// del cartel y de las líneas de metadatos, y solo se re-normalizan si cambia su
+// firma en el foro. Es idempotente.
+function resolveEventDescriptionHtml(event) {
+  const cleaned = cleanDescriptionHtml(event.descriptionHtml || '', event.title || '');
+  if (cleaned) return cleaned;
+  const fallback = String(event.summary || event.excerpt || '').trim();
+  return fallback ? buildTextParagraphHtml(fallback) : '';
 }
 
 function formatInMadrid(_date, options) {
