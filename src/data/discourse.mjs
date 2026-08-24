@@ -141,6 +141,7 @@ export function normalizeDiscourseTopic(topic, detail) {
   const parsedLocation = parseLocationParts(location, title);
   const organizer = meta.organizer || '';
   const notes = meta.notes || '';
+  const price = meta.price || '';
   const importedFromChatUrl = meta.importedFromChatUrl || '';
 
   return {
@@ -165,6 +166,7 @@ export function normalizeDiscourseTopic(topic, detail) {
     categoryLabel,
     organizer,
     notes,
+    price,
     importedFromChatUrl,
     isSticky: Boolean(topic.pinned || topic.pinned_globally || topic.featured_link),
     isFree: detectIsFree(`${summary} ${notes} ${rawHtml}`),
