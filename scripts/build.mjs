@@ -8,7 +8,7 @@ import autoprefixer from 'autoprefixer';
 import { fileURLToPath } from 'node:url';
 import { loadCachedEvents } from '../src/data/store.mjs';
 import { deriveFilters, sortEvents, splitFeatured, getPastEvents, groupEventsByMonth, groupFutureEventsByVenue } from '../src/data/site.mjs';
-import { DISPLAY_TIMEZONE, buildTextParagraphHtml, cleanDescriptionHtml, escapeHtml, formatDateRange, formatDateTime, isSameMadridDay, parseDateLike, toMadridDateKey } from '../src/data/format.mjs';
+import { DISPLAY_TIMEZONE, buildTextParagraphHtml, cleanDescriptionHtml, escapeHtml, formatDateRange, formatDateTime, isSameMadridDay, normalizePriceLabel, parseDateLike, parseEventMetaFromHtml, toMadridDateKey } from '../src/data/format.mjs';
 import { enrichVenueCatalog, mergeSpacesWithVenueCatalog } from '../src/data/venues.mjs';
 import { canonicalizeVenue, normalizeVenueKey } from '../src/data/venue-aliases.mjs';
 import { buildCollectionPageJsonLd, buildEventJsonLd, buildVenuePageJsonLd, serializeJsonLd } from '../src/data/structured-data.mjs';
@@ -364,7 +364,8 @@ function enrichEvent(event) {
     // Normalizar aquí, que es por donde pasa todo evento antes de una plantilla,
     // los arregla sin re-sincronizar. Idempotente.
     urlPath: `${String(event.urlPath || `/e/${event.id}/${event.slug}`).replace(/\/+$/, '')}/`,
-    descriptionHtml: resolveEventDescriptionHtml(event)
+    descriptionHtml: resolveEventDescriptionHtml(event),
+    price: resolveEventPrice(event)
   };
 }
 
@@ -377,6 +378,15 @@ function resolveEventDescriptionHtml(event) {
   if (cleaned) return cleaned;
   const fallback = String(event.summary || event.excerpt || '').trim();
   return fallback ? buildTextParagraphHtml(fallback) : '';
+}
+
+// Los registros cacheados antes de que `price` existiera todavía llevan la
+// línea "Precio:" dentro de descriptionHtml: se rescata de ahí en vez de
+// refetchear el foro entero.
+function resolveEventPrice(event) {
+  const stored = normalizePriceLabel(event.price || '');
+  if (stored) return stored;
+  return parseEventMetaFromHtml(event.descriptionHtml || '').price;
 }
 
 function formatInMadrid(_date, options) {

@@ -168,8 +168,20 @@ export function parseEventMetaFromHtml(html = '') {
     categoryLabel: pick('Categoría'),
     organizer: pick('Organizador'),
     notes: pick('Notas'),
+    price: normalizePriceLabel(pick('Precio')),
     importedFromChatUrl
   };
+}
+
+// "de pago (precio no especificado)" es el valor que escribe el bot cuando no
+// encuentra el importe: no dice nada que la ficha no cuente ya con el botón de
+// entradas, así que se descarta y el evento se queda sin fila de precio.
+const PRICE_UNSPECIFIED_RE = /(?:precio\s+)?no\s+especificad[oa]|sin\s+especificar/i;
+
+export function normalizePriceLabel(value = '') {
+  const cleaned = String(value).replace(/\s+/g, ' ').trim().replace(/[.,;]+$/, '');
+  if (!cleaned || PRICE_UNSPECIFIED_RE.test(cleaned)) return '';
+  return cleaned.charAt(0).toUpperCase() + cleaned.slice(1);
 }
 
 export function buildExcerpt(html = '', maxLength = 180) {

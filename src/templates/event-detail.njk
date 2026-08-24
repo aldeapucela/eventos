@@ -63,8 +63,14 @@
       <p class="detail-clean-summary">{{ event.summary or event.excerpt }}</p>
       {% endif %}
 
-      {% if event.organizer or event.notes %}
+      {% if event.price or event.organizer or event.notes %}
       <section class="detail-clean-extra">
+        {% if event.price %}
+        <div class="detail-clean-extra-row">
+          <div class="detail-clean-extra-label">Precio</div>
+          <div class="detail-clean-extra-value">{{ event.price }}</div>
+        </div>
+        {% endif %}
         {% if event.organizer %}
         <div class="detail-clean-extra-row">
           <div class="detail-clean-extra-label">Organiza</div>
