@@ -1347,7 +1347,7 @@ function shouldHideFromUpcomingList(event, startsAt = null) {
   if (!isOngoingMultiDay(event)) return false;
   const eventStartsAt = startsAt instanceof Date ? startsAt : new Date(event.startsAtIso);
   if (Number.isNaN(eventStartsAt.getTime())) return false;
-  // Multi-day events already surface in "En curso", so we keep them out of day buckets.
+  // Multi-day events already surface in "Eventos en curso", so we keep them out of day buckets.
   return true;
 }
 

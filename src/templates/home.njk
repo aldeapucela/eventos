@@ -32,7 +32,7 @@
           <div class="hero-mobile-overlay">
             <div class="hero-mobile-text-panel">
               <h1 class="hero-mobile-title">Qué hacer en Valladolid</h1>
-              <p class="hero-mobile-subtitle">Agenda vecinal de eventos culturales</p>
+              <h2 class="hero-mobile-subtitle">Agenda vecinal de eventos culturales</h2>
               <span class="hero-mobile-accent" aria-hidden="true"></span>
             </div>
           </div>
@@ -50,13 +50,13 @@
       {% if featured %}
       <section class="space-y-4">
         <div class="section-mobile-head">
-          <h2 class="section-mobile-title">Destacado</h2>
+          <h3 class="section-mobile-title">Destacado</h3>
         </div>
         <article class="featured-mobile-card">
           <div class="featured-mobile-image" style="background-image:url('{{ featured.image }}')"></div>
           <div class="featured-mobile-copy">
             <p class="muted-label">{{ featured.categoryLabel or 'Destacado' }}</p>
-            <h3 class="featured-mobile-title">{{ featured.title }}</h3>
+            <h4 class="featured-mobile-title">{{ featured.title }}</h4>
             <p class="featured-mobile-summary">{{ featured.summary or featured.excerpt }}</p>
             <div class="featured-mobile-meta">
               <span>{% if featured.scheduleLabel %}{{ featured.scheduleLabel }}{% else %}{{ featured.dateRangeLabel }}{% endif %}</span>
@@ -74,7 +74,7 @@
       {% if ongoing.length %}
       <section class="space-y-3" data-ongoing-section>
         <div class="section-mobile-head">
-          <h2 class="section-mobile-title">En curso</h2>
+          <h3 class="section-mobile-title">Eventos en curso</h3>
           <div class="flex gap-2">
             <button class="carousel-nav-btn" data-carousel-prev="ongoing" aria-label="Anterior">
               <i class="fa-solid fa-chevron-left"></i>
@@ -123,7 +123,7 @@
 
       <section class="space-y-3" id="results">
         <div class="section-mobile-head">
-          <h2 class="section-mobile-title" data-results-title>Próximos eventos</h2>
+          <h3 class="section-mobile-title" data-results-title>Próximos eventos</h3>
           <a class="section-mobile-link hidden" href="/" data-clear-filters>Quitar filtros</a>
         </div>
         <div class="week-groups" id="week-groups" data-week-groups></div>
@@ -161,7 +161,7 @@
       <span class="add-event-modal-mark" aria-hidden="true">
         <i class="fa-solid fa-calendar-plus"></i>
       </span>
-      <h2 class="add-event-modal-title" id="add-event-title">Añade un evento</h2>
+      <p class="add-event-modal-title" id="add-event-title">Añade un evento</p>
     </div>
     <p class="add-event-modal-copy">Para publicarlo:</p>
     <ol class="add-event-steps">
