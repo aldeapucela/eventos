@@ -108,7 +108,7 @@ if (modal) {
       : '';
     return `
       <section class="search-modal-section">
-        <h3 class="search-modal-section-title"><i class="${icon}" aria-hidden="true"></i><span>${title}</span><span class="search-modal-count">${total}</span></h3>
+        <p class="search-modal-section-title"><i class="${icon}" aria-hidden="true"></i><span>${title}</span><span class="search-modal-count">${total}</span></p>
         <ul class="search-modal-list">${rows}</ul>
         ${more}
       </section>`;

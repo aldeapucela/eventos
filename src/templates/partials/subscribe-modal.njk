@@ -3,7 +3,7 @@
   <aside class="calendar-modal-panel subscribe-modal-panel" role="dialog" aria-modal="true" aria-labelledby="subscribe-modal-title">
     <div class="calendar-modal-header">
       <div>
-        <h2 class="calendar-modal-title" id="subscribe-modal-title">Suscribirse</h2>
+        <p class="calendar-modal-title" id="subscribe-modal-title">Suscribirse</p>
         <p class="calendar-modal-copy">Elige cómo seguir la agenda.</p>
       </div>
       <button class="calendar-modal-close" type="button" data-subscribe-close aria-label="Cerrar">
@@ -12,7 +12,7 @@
     </div>
 
     <section class="subscribe-section" data-subscribe-section="calendar">
-      <h3 class="subscribe-section-title"><i class="fa-regular fa-calendar"></i><span>Calendario completo</span></h3>
+      <p class="subscribe-section-title"><i class="fa-regular fa-calendar"></i><span>Calendario completo</span></p>
       <p class="subscribe-section-copy">Calendario con próximos eventos e histórico.</p>
       <div class="subscribe-url-row">
         <input class="subscribe-url-input" type="text" value="https://eventos.aldeapucela.org/calendar.ics" readonly data-copy-source="calendar" />
@@ -27,7 +27,7 @@
 
     <section class="subscribe-section subscribe-section-featured" data-subscribe-section="newsletter">
       <div class="subscribe-featured-copy">
-        <h3 class="subscribe-section-title"><i class="fa-regular fa-envelope"></i><span>Boletín semanal</span></h3>
+        <p class="subscribe-section-title"><i class="fa-regular fa-envelope"></i><span>Boletín semanal</span></p>
         <p class="subscribe-section-copy">Resumen semanal por email.</p>
       </div>
       <a class="calendar-modal-action subscribe-newsletter-action" href="https://aldeapucela.org/boletin/" target="_blank" rel="noopener noreferrer">
@@ -38,7 +38,7 @@
 
     {% if categoryFeeds and categoryFeeds.length %}
     <section class="subscribe-section" data-subscribe-section="rss">
-      <h3 class="subscribe-section-title"><i class="fa-solid fa-layer-group"></i><span>Por categoría</span></h3>
+      <p class="subscribe-section-title"><i class="fa-solid fa-layer-group"></i><span>Por categoría</span></p>
       <p class="subscribe-section-copy">Elige una categoría.</p>
       <div class="subscribe-category-picker" data-category-picker data-feeds='{{ categoryFeeds | dump | safe }}'>
         <label class="subscribe-category-field">
@@ -63,7 +63,7 @@
     {% endif %}
 
     <section class="subscribe-section">
-      <h3 class="subscribe-section-title"><i class="fa-solid fa-rss"></i><span>RSS</span></h3>
+      <p class="subscribe-section-title"><i class="fa-solid fa-rss"></i><span>RSS</span></p>
       <p class="subscribe-section-copy">Recibe nuevas publicaciones en tu lector favorito.</p>
       <div class="subscribe-url-row">
         <input class="subscribe-url-input" type="text" value="https://eventos.aldeapucela.org/rss.xml" readonly data-copy-source="rss" />
