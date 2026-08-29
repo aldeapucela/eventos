@@ -32,7 +32,7 @@ const publicBaseUrl = 'https://eventos.aldeapucela.org';
 // antiguo del Conde Ansúrez). Si la imagen vuelve a cambiar, sube la versión
 // del nombre del archivo en vez de sobrescribirlo.
 const socialPreview = {
-  image: `${publicBaseUrl}/assets/social-preview-v2.jpg`,
+  image: `${publicBaseUrl}/assets/social-preview-v3.jpg`,
   imageWidth: 1731,
   imageHeight: 909,
   imageAlt: 'Qué hacer en Valladolid, agenda vecinal de eventos culturales de Aldea Pucela'
