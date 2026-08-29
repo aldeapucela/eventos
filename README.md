@@ -51,8 +51,8 @@ Tiene dos modos de seleccion:
 
 Bases por defecto segun el modo:
 
-- `next-days`: `src/assets/social-base-story.png` y `src/assets/social-base-post.png`
-- `next-weekend`: `src/assets/social-base-finde-story.png` y `src/assets/social-base-finde-post.png`
+- `next-days`: `src/assets/social-base-story.jpg` y `src/assets/social-base-post.jpg`
+- `next-weekend`: `src/assets/social-base-finde-story.jpg` y `src/assets/social-base-finde-post.jpg`
 
 Salidas por defecto segun el modo:
 
