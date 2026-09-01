@@ -184,6 +184,38 @@ export function normalizePriceLabel(value = '') {
   return cleaned.charAt(0).toUpperCase() + cleaned.slice(1);
 }
 
+// Formas de entrar sin pagar: incluimos el donativo y la taquilla inversa
+// porque en ambas se accede sin comprar entrada.
+const FREE_ACCESS_RE = /\bgratis\b|\bgratuit[oa]s?\b|\bentrada libre\b|\blibre acceso\b|\bacceso libre\b|\bdonativo\b|\btaquilla inversa\b/i;
+// Un importe de verdad: "12€", "12,50 €", "€ 12", "12 euros".
+const PRICE_AMOUNT_RE = /\d+(?:[.,]\d{1,2})?\s*(?:€|euros?\b)|€\s*\d/i;
+// Venta de entradas por una plataforma: evidencia inequívoca aunque no se vea
+// el importe. Ojo con ampliar la lista a palabras del idioma.
+const TICKETING_RE = /\b(enterticket|wegow|ticketmaster|notikumi|elcorteingles)\b/i;
+
+// Tres estados, no dos: 'free', 'paid' y 'unknown'. Solo afirmamos algo con
+// evidencia concreta —un precio declarado, un importe en el texto o una
+// ticketera—; cuando no la hay, 'unknown' y la ficha no dice nada, ni etiqueta
+// "Gratis" ni botón de entradas.
+//
+// El binario anterior obligaba a mentir en un sentido o en otro. Las
+// descripciones las redacta un bot y casi siempre acaban con un "consulta la
+// taquilla" o un "adquisición de entradas" de relleno: darlo por evidencia
+// marcaba de pago cientos de eventos vecinales que no lo son, y darle la vuelta
+// habría puesto "Gratis" en musicales de sala que sí cobran. Lo mismo con la
+// línea "Precio: de pago (precio no especificado)", que el bot escribe cuando
+// el cartel no habla de dinero: dice que no lo sabe, no que se pague.
+export function detectPriceStatus({ price = '', text = '' } = {}) {
+  // Un precio declarado en el post manda sobre el resto del texto.
+  const priceLabel = String(price).trim();
+  if (priceLabel) return FREE_ACCESS_RE.test(priceLabel) ? 'free' : 'paid';
+
+  const content = String(text);
+  if (FREE_ACCESS_RE.test(content)) return 'free';
+  if (PRICE_AMOUNT_RE.test(content) || TICKETING_RE.test(content)) return 'paid';
+  return 'unknown';
+}
+
 export function buildExcerpt(html = '', maxLength = 180) {
   const text = stripTags(html);
   if (text.length <= maxLength) return text;
