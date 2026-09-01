@@ -986,6 +986,12 @@ async function buildSite(events) {
         sourceUrl: event.sourceUrl,
         startsAtIso: event.startsAt,
         endsAtIso: event.endsAt,
+        // Los tres siguientes los usa la búsqueda del botón de acceso para
+        // acotar el evento (ver event-detail.js): sin ellos preguntaba solo con
+        // título, fecha y lugar.
+        categoryLabel: event.categoryLabel,
+        organizer: event.organizer,
+        notes: event.notes,
         // El botón de acceso pregunta una cosa u otra según sepamos o no que se
         // cobra (ver event-detail.js).
         priceStatus: event.priceStatus
