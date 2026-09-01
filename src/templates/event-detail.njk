@@ -93,11 +93,15 @@
         {% endif %}
       </section>
       {% endif %}
+      {# Sin precio conocido el botón sigue estando, pero no promete entradas:
+         lleva a buscar cómo se accede al evento. #}
+      {% set accessLabel = 'Buscar entradas' if event.isPaid else 'Buscar más información sobre el acceso al evento' %}
+      {% set accessIcon = 'fa-solid fa-ticket' if event.isPaid else 'fa-solid fa-circle-info' %}
       {% if not event.isFree %}
       <div class="detail-ticket-search-mobile md:hidden">
-        <button class="detail-clean-action" type="button" data-ticket-search-open aria-label="Buscar entradas">
-          <i class="fa-solid fa-ticket"></i>
-          <span>Buscar entradas</span>
+        <button class="detail-clean-action" type="button" data-ticket-search-open aria-label="{{ accessLabel }}">
+          <i class="{{ accessIcon }}"></i>
+          <span>{{ accessLabel }}</span>
         </button>
       </div>
       {% endif %}
@@ -125,9 +129,9 @@
           <span class="js-comment-label">Comentar</span>
         </button>
         {% if not event.isFree %}
-        <button class="hidden md:flex detail-clean-action detail-clean-action-icon-only" type="button" data-ticket-search-open aria-label="Buscar entradas">
-          <i class="fa-solid fa-ticket"></i>
-          <span>Entradas</span>
+        <button class="hidden md:flex detail-clean-action detail-clean-action-icon-only" type="button" data-ticket-search-open aria-label="{{ accessLabel }}">
+          <i class="{{ accessIcon }}"></i>
+          <span>{{ 'Entradas' if event.isPaid else accessLabel }}</span>
         </button>
         {% endif %}
         <a
@@ -323,7 +327,7 @@
     </div>
     <p class="calendar-modal-copy">
       Se te va a redirigir a la búsqueda de Perplexity para
-      <strong>buscar el sitio oficial de entradas</strong>.
+      {% if event.isPaid %}<strong>buscar el sitio oficial de entradas</strong>{% else %}<strong>buscar información oficial sobre el acceso a este evento</strong>{% endif %}.
     </p>
     <ul class="calendar-modal-copy-list">
       <li>Verifica siempre el sitio antes de pagar.</li>

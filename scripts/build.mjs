@@ -8,7 +8,7 @@ import autoprefixer from 'autoprefixer';
 import { fileURLToPath } from 'node:url';
 import { loadCachedEvents } from '../src/data/store.mjs';
 import { deriveFilters, sortEvents, splitFeatured, getPastEvents, groupEventsByMonth, groupFutureEventsByVenue } from '../src/data/site.mjs';
-import { DISPLAY_TIMEZONE, buildTextParagraphHtml, cleanDescriptionHtml, escapeHtml, formatDateRange, formatDateTime, isSameMadridDay, normalizePriceLabel, parseDateLike, parseEventMetaFromHtml, toMadridDateKey } from '../src/data/format.mjs';
+import { DISPLAY_TIMEZONE, buildTextParagraphHtml, cleanDescriptionHtml, detectPriceStatus, escapeHtml, formatDateRange, formatDateTime, isSameMadridDay, normalizePriceLabel, parseDateLike, parseEventMetaFromHtml, stripTags, toMadridDateKey } from '../src/data/format.mjs';
 import { enrichVenueCatalog, mergeSpacesWithVenueCatalog } from '../src/data/venues.mjs';
 import { canonicalizeVenue, normalizeVenueKey } from '../src/data/venue-aliases.mjs';
 import { buildCollectionPageJsonLd, buildEventJsonLd, buildVenuePageJsonLd, serializeJsonLd } from '../src/data/structured-data.mjs';
@@ -293,6 +293,12 @@ function buildCalendarIcs(events, options = {}) {
 }
 
 function enrichEvent(event) {
+  const descriptionHtml = resolveEventDescriptionHtml(event);
+  const price = resolveEventPrice(event);
+  const priceStatus = detectPriceStatus({
+    price,
+    text: `${event.summary || ''} ${event.notes || ''} ${stripTags(descriptionHtml)}`
+  });
   const startsAtDate = event.startsAt ? parseDateLike(event.startsAt) : null;
   const endsAtDate = event.endsAt ? parseDateLike(event.endsAt) : null;
   const isMultiDay = Boolean(startsAtDate && endsAtDate && !sameDay(startsAtDate, endsAtDate));
@@ -364,8 +370,11 @@ function enrichEvent(event) {
     // Normalizar aquí, que es por donde pasa todo evento antes de una plantilla,
     // los arregla sin re-sincronizar. Idempotente.
     urlPath: `${String(event.urlPath || `/e/${event.id}/${event.slug}`).replace(/\/+$/, '')}/`,
-    descriptionHtml: resolveEventDescriptionHtml(event),
-    price: resolveEventPrice(event)
+    descriptionHtml,
+    price,
+    priceStatus,
+    isFree: priceStatus === 'free',
+    isPaid: priceStatus === 'paid'
   };
 }
 
@@ -380,6 +389,11 @@ function resolveEventDescriptionHtml(event) {
   return fallback ? buildTextParagraphHtml(fallback) : '';
 }
 
+// `priceStatus` también se recalcula aquí, con el precio y la descripción ya
+// resueltos: los registros de cache/data/ se guardaron con la detección binaria
+// antigua, que marcaba de pago cualquier texto con un "entradas" o un "taquilla"
+// suelto.
+//
 // Los registros cacheados antes de que `price` existiera todavía llevan la
 // línea "Precio:" dentro de descriptionHtml: se rescata de ahí en vez de
 // refetchear el foro entero.
@@ -971,7 +985,16 @@ async function buildSite(events) {
         location: event.location,
         sourceUrl: event.sourceUrl,
         startsAtIso: event.startsAt,
-        endsAtIso: event.endsAt
+        endsAtIso: event.endsAt,
+        // Los tres siguientes los usa la búsqueda del botón de acceso para
+        // acotar el evento (ver event-detail.js): sin ellos preguntaba solo con
+        // título, fecha y lugar.
+        categoryLabel: event.categoryLabel,
+        organizer: event.organizer,
+        notes: event.notes,
+        // El botón de acceso pregunta una cosa u otra según sepamos o no que se
+        // cobra (ver event-detail.js).
+        priceStatus: event.priceStatus
       }),
       social: {
         type: 'article',

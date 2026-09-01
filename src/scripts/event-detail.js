@@ -153,7 +153,36 @@ function goToPerplexityTicketSearch() {
   const notes = cleanField(eventData?.notes, '');
   const sourceUrl = cleanField(eventData?.sourceUrl, '');
 
-  const prompt = `Quiero comprar entradas para este evento de forma segura y oficial.
+  // Del evento solo sabemos que no ha declarado entrada libre. Cuando tampoco
+  // sabemos que se cobra, la pregunta no es dónde comprar sino cómo se accede:
+  // prometer entradas en un evento que a lo mejor es gratuito confunde.
+  const unknownPrice = eventData?.priceStatus === 'unknown';
+
+  const intro = unknownPrice
+    ? 'Quiero saber cómo se accede a este evento: si es de entrada libre o si hace falta entrada o invitación, y en ese caso dónde conseguirla de forma segura y oficial.'
+    : 'Quiero comprar entradas para este evento de forma segura y oficial.';
+
+  const objetivo = unknownPrice
+    ? `- Averigua si el acceso es libre o si requiere entrada o invitación.
+- Si requiere entrada o invitación, encuentra dónde conseguirla oficialmente para este evento concreto en esta ciudad y esta fecha.
+- Verifica que coincidan el artista o espectáculo, la sala o recinto, y la fecha.
+- Prioriza webs oficiales del venue, promotor, artista o ticketera autorizada.`
+    : `- Encuentra la venta oficial de este evento concreto en esta ciudad y esta fecha.
+- Verifica que coincidan el artista o espectáculo, la sala o recinto, y la fecha.
+- Prioriza webs oficiales del venue, promotor, artista o ticketera autorizada.
+- Si varias fuentes discrepan, elige la más oficial y específica para este evento concreto.`;
+
+  const respuesta = unknownPrice
+    ? `1. Si el acceso es libre o de pago, y en qué te basas.
+2. Si hace falta entrada o invitación, el enlace oficial más fiable para conseguirla (sala, promotor, artista o ticketera autorizada).
+3. Una frase muy breve indicando por qué es oficial.
+4. Si no puedes determinarlo con fuentes fiables, indícalo claramente.`
+    : `1. El enlace oficial más fiable para comprar entradas (sala, promotor, artista o ticketera autorizada).
+2. Una frase muy breve indicando por qué es oficial.
+3. Segunda opción oficial si existe, con el mismo formato.
+4. Si no hay venta oficial verificable, indícalo claramente.`;
+
+  const prompt = `${intro}
 
 Evento: "${title}"
 Fecha: ${dateLine}
@@ -164,16 +193,10 @@ ${notes ? `Contexto adicional: ${notes}` : ''}
 ${sourceUrl ? `Fuente original: ${sourceUrl}` : ''}
 
 Objetivo:
-- Encuentra la venta oficial de este evento concreto en esta ciudad y esta fecha.
-- Verifica que coincidan el artista o espectáculo, la sala o recinto, y la fecha.
-- Prioriza webs oficiales del venue, promotor, artista o ticketera autorizada.
-- Si varias fuentes discrepan, elige la más oficial y específica para este evento concreto.
+${objetivo}
 
 Responde SOLO con:
-1. El enlace oficial más fiable para comprar entradas (sala, promotor, artista o ticketera autorizada).
-2. Una frase muy breve indicando por qué es oficial.
-3. Segunda opción oficial si existe, con el mismo formato.
-4. Si no hay venta oficial verificable, indícalo claramente.
+${respuesta}
 
 Reglas:
 - Excluye reventa (Viagogo, StubHub, Ticketswap y similares).
@@ -183,7 +206,7 @@ Reglas:
 - Da prioridad a páginas que muestren coincidencia explícita con la fecha, la ciudad o el recinto.
 - Devuelve SIEMPRE los enlaces como links clicables en Markdown, con formato exacto: [dominio o nombre corto](https://url-completa).
 - No devuelvas URLs en texto plano ni bloques de código.
-- Si no puedes verificar ninguna opción oficial, responde exactamente: "Sin venta oficial verificable."`;
+- Si no puedes verificar ninguna opción oficial, responde exactamente: "${unknownPrice ? 'Sin información oficial verificable.' : 'Sin venta oficial verificable.'}"`;
 
   closeTicketSearchModal();
   window.open(`https://www.perplexity.ai/search?q=${encodeURIComponent(prompt)}`, '_blank', 'noopener,noreferrer');
