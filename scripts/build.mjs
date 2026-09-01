@@ -985,7 +985,10 @@ async function buildSite(events) {
         location: event.location,
         sourceUrl: event.sourceUrl,
         startsAtIso: event.startsAt,
-        endsAtIso: event.endsAt
+        endsAtIso: event.endsAt,
+        // El botón de acceso pregunta una cosa u otra según sepamos o no que se
+        // cobra (ver event-detail.js).
+        priceStatus: event.priceStatus
       }),
       social: {
         type: 'article',
