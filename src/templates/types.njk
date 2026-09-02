@@ -26,17 +26,6 @@
       <p class="spaces-hero-text">Eventos por categoría</p>
     </section>
 
-    <div class="spaces-hero-stats" aria-label="Resumen de tipos">
-      <article class="spaces-stat-card">
-        <span class="spaces-stat-value">{{ typesCount }}</span>
-        <span class="spaces-stat-label">tipos con actividad</span>
-      </article>
-      <article class="spaces-stat-card">
-        <span class="spaces-stat-value">{{ futureEventsCount }}</span>
-        <span class="spaces-stat-label">eventos vigentes</span>
-      </article>
-    </div>
-
     {% if types.length == 0 %}
     <div class="saved-empty">
       <div class="saved-empty-icon" aria-hidden="true">

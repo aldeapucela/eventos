@@ -16,7 +16,11 @@
     <link rel="alternate" type="application/rss+xml" title="Aldea Pucela Eventos RSS" href="https://eventos.aldeapucela.org/rss.xml" />
     <link rel="alternate" type="text/calendar" title="Aldea Pucela Eventos Calendario" href="https://eventos.aldeapucela.org/calendar.ics" />
     {% if canonicalUrl %}<link rel="canonical" href="{{ canonicalUrl }}" />{% endif %}
-    {% if robotsMeta %}<meta name="robots" content="{{ robotsMeta }}" />{% endif %}
+    {# Siempre explícito. "index,follow" es el comportamiento por defecto si no hay
+       etiqueta, pero desde que la indexabilidad se calcula en build (umbrales de
+       tipo/espacio, fichas pasadas) conviene poder leer en el HTML qué decidió el
+       build para esta URL, sin deducirlo de una ausencia. #}
+    <meta name="robots" content="{{ robotsMeta or 'index,follow' }}" />
     {% if social %}
     <meta property="og:type" content="{{ social.type or 'website' }}" />
     <meta property="og:title" content="{{ social.title or title or 'Aldea Pucela Eventos' }}" />

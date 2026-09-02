@@ -7,7 +7,7 @@ import tailwindcss from 'tailwindcss';
 import autoprefixer from 'autoprefixer';
 import { fileURLToPath } from 'node:url';
 import { loadCachedEvents } from '../src/data/store.mjs';
-import { deriveFilters, sortEvents, splitFeatured, getPastEvents, groupEventsByMonth, groupFutureEventsByVenue } from '../src/data/site.mjs';
+import { deriveFilters, sortEvents, splitFeatured, getPastEvents, groupEventsByMonth, groupFutureEventsByVenue, rotateBySeed } from '../src/data/site.mjs';
 import { DISPLAY_TIMEZONE, buildTextParagraphHtml, cleanDescriptionHtml, detectPriceStatus, escapeHtml, formatDateRange, formatDateTime, isSameMadridDay, normalizePriceLabel, parseDateLike, parseEventMetaFromHtml, stripTags, toMadridDateKey } from '../src/data/format.mjs';
 import { enrichVenueCatalog, mergeSpacesWithVenueCatalog } from '../src/data/venues.mjs';
 import { canonicalizeVenue, normalizeVenueKey } from '../src/data/venue-aliases.mjs';
@@ -39,6 +39,18 @@ const socialPreview = {
 };
 // Verificación de propiedad en Google Search Console (solo en la portada).
 const googleSiteVerification = 'WI4USc-QdbTLezu0qIZfb2J9Yvqkwg818tWzExtVREw';
+
+// Cuántos eventos vigentes necesita una página de tipo o de espacio para ser
+// indexable. Por debajo del umbral la página se sigue generando y enlazando desde
+// su hub (es útil para navegar), pero lleva noindex y sale del sitemap: una lista
+// de dos eventos no aporta nada que no esté ya en las fichas. Se recalcula en cada
+// build, así que una página cruza el umbral en los dos sentidos por sí sola.
+const MIN_INDEXABLE_CATEGORY_EVENTS = 10;
+const MIN_INDEXABLE_VENUE_EVENTS = 5;
+
+// Cuántos eventos enseña como avance cada tarjeta de los hubs /tipos/ y /espacios/.
+// El listado completo está a un clic, en /t/<slug>/ y /espacios/<slug>/.
+const HUB_CARD_EVENTS = 4;
 
 const args = new Set(process.argv.slice(2));
 
@@ -602,6 +614,18 @@ async function buildSite(events) {
     webcalUrl: `webcal://eventos.aldeapucela.org/calendar/${slugify(category)}.ics`
   }));
 
+  const buildNow = resolveBuildNow();
+  // Ventana abierta (de hoy en adelante) con límites de día de Madrid: el conjunto
+  // vigente/próximo. Es la fuente única de qué se considera "no pasado" y la usan
+  // las páginas de tipo/espacio, el índice de búsqueda, el sitemap y el meta robots
+  // de cada ficha, para que las cuatro cosas no puedan divergir.
+  const categoryWindow = getOpenEndedWindow(buildNow);
+  const { ongoing: searchOngoing, listed: searchListed } = selectTimePageEvents(events, categoryWindow, buildNow);
+  const searchableEvents = sortEvents([...searchOngoing, ...searchListed]).map(enrichEvent);
+  // Solo las fichas vigentes/próximas son indexables: las pasadas viven en /archivo/
+  // y llevan noindex (ver el bucle de fichas más abajo).
+  const indexableEventIds = new Set(searchableEvents.map((event) => event.id));
+
   const categoryPages = getCategoryPages(events);
   // Cada etiqueta (clave o alias) apunta a su página, para enrutar "Solo".
   const categoryPagePaths = Object.fromEntries(
@@ -694,6 +718,9 @@ async function buildSite(events) {
     title: 'Archivo de eventos | Eventos Valladolid | Aldea Pucela',
     meta: { description: 'Histórico de eventos culturales pasados en Valladolid.' },
     canonicalUrl: `${publicBaseUrl}/archivo/`,
+    // Hub de lo ya celebrado: se mantiene navegable, pero no queremos indexar
+    // pasado. Igual que las fichas que lista (ver el bucle de fichas).
+    robotsMeta: 'noindex,follow',
     social: {
       type: 'website',
       title: 'Archivo de eventos | Eventos Valladolid | Aldea Pucela',
@@ -708,6 +735,7 @@ async function buildSite(events) {
     ...sharedContext
   }));
 
+  const spacesByCount = [...spaces].sort((a, b) => b.count - a.count || a.name.localeCompare(b.name, 'es'));
   await writeFile('espacios/index.html', render('spaces.njk', {
     title: 'Espacios | Eventos Valladolid | Aldea Pucela',
     meta: { description: 'Eventos en los próximos seis meses agrupados por espacio en Valladolid.' },
@@ -722,14 +750,22 @@ async function buildSite(events) {
     pageCss: 'home.css',
     pageJs: 'home.js',
     activeNav: 'spaces',
-    spaces: spaces.map((space) => ({
+    // Los espacios con más programación primero. groupFutureEventsByVenue ordena
+    // por próximo evento, que es lo que quieren otros consumidores, así que el
+    // orden por volumen se aplica solo aquí, al pintar el hub.
+    spaces: spacesByCount.map((space) => ({
       ...space,
+      // Avance de 4 eventos por tarjeta, como /tipos/: el listado completo vive en
+      // /espacios/<slug>/. Antes la tarjeta pintaba TODOS los eventos del espacio,
+      // así que el hub repetía entero el contenido de cada página de espacio.
+      // `space.count` sigue mostrando el total real.
+      events: space.events.slice(0, HUB_CARD_EVENTS),
       pageHref: venuePageSlugs.has(space.slug) ? `/espacios/${space.slug}/` : null
     })),
     spacesCount: spaces.length,
     futureEventsCount: spaces.reduce((total, space) => total + space.count, 0),
     includeSiteData: true,
-    spacesDataJson: JSON.stringify(spaces.map((space) => ({
+    spacesDataJson: JSON.stringify(spacesByCount.map((space) => ({
       slug: space.slug,
       name: space.name,
       address: space.address,
@@ -741,7 +777,6 @@ async function buildSite(events) {
     ...sharedContext
   }));
 
-  const buildNow = resolveBuildNow();
   for (const page of getTimePages(buildNow)) {
     const { ongoing: pageOngoing, listed } = selectTimePageEvents(events, page.window, buildNow);
     const enrichedListed = sortEvents(listed).map(enrichEvent).map(withVenueKeys);
@@ -789,16 +824,16 @@ async function buildSite(events) {
   }
 
   // Páginas por tipo (/t/musica/, /t/cine/...): mismo patrón que las temporales
-  // pero con ventana abierta (de hoy en adelante) filtrada por categoría.
-  const categoryWindow = getOpenEndedWindow(buildNow);
+  // pero con ventana abierta (de hoy en adelante, `categoryWindow`) filtrada por categoría.
   // Archivo de tipos (/tipos/): un avance por categoría; el listado completo vive
   // en cada página /t/<slug>/. Se alimenta de lo que ya calcula este bucle.
   const typesArchive = [];
-  // Páginas de tipo con al menos un evento vigente: son las únicas que se
-  // anuncian en el sitemap (ver más abajo). Las vacías se siguen generando
-  // porque la ficha de evento enlaza a la página de su categoría vía
-  // categoryPagePaths, y borrarlas daría 404 desde eventos pasados.
-  const renderedCategoryPages = [];
+  // Páginas de tipo que llegan al umbral: las únicas que se anuncian en el
+  // sitemap (ver más abajo). Las que no llegan —incluidas las que se quedan a
+  // cero eventos vigentes— se siguen generando a propósito: la ficha de evento
+  // enlaza a la página de su categoría vía categoryPagePaths, así que borrarlas
+  // daría 404 desde los eventos pasados de esas categorías.
+  const indexableCategoryPages = [];
   for (const page of categoryPages) {
     const categoryEvents = events.filter((event) => page.labels.includes(event.categoryLabel));
     const { ongoing: pageOngoing, listed } = selectTimePageEvents(categoryEvents, categoryWindow, buildNow);
@@ -806,15 +841,16 @@ async function buildSite(events) {
     const enrichedOngoing = sortEvents(pageOngoing).map(enrichEvent).map(withVenueKeys);
     const typeCount = enrichedOngoing.length + enrichedListed.length;
     if (typeCount > 0) {
-      renderedCategoryPages.push(page);
       typesArchive.push({
         label: page.labels[0],
         slug: page.slug,
         path: page.path,
         count: typeCount,
-        events: [...enrichedOngoing, ...enrichedListed].slice(0, 6)
+        events: [...enrichedOngoing, ...enrichedListed].slice(0, HUB_CARD_EVENTS)
       });
     }
+    const isIndexable = typeCount >= MIN_INDEXABLE_CATEGORY_EVENTS;
+    if (isIndexable) indexableCategoryPages.push(page);
     const pageUrl = `${publicBaseUrl}${page.path}`;
     const itemListItems = [...enrichedOngoing, ...enrichedListed].map((event) => ({
       url: `${publicBaseUrl}/e/${event.id}/${event.slug}/`,
@@ -824,11 +860,11 @@ async function buildSite(events) {
       title: page.title,
       meta: { description: page.description },
       canonicalUrl: pageUrl,
-      // Sin eventos vigentes la página solo tiene el encabezado y el mensaje de
-      // "todavía no hay eventos": nada que indexar. noindex,follow para no
-      // ofrecerle a Google una página vacía, y follow para que siga los enlaces
-      // del menú. Vuelve a ser indexable sola en cuanto entre un evento.
-      robotsMeta: typeCount > 0 ? null : 'noindex,follow',
+      // follow para que siga los enlaces del menú aunque no indexe la página, y
+      // se auto-cura: en cuanto la categoría llega al umbral vuelve a ser
+      // indexable. Cubre también el caso extremo de cero eventos vigentes, donde
+      // la página es solo el encabezado y el mensaje de "todavía no hay eventos".
+      robotsMeta: isIndexable ? null : 'noindex,follow',
       jsonLd: itemListItems.length
         ? serializeJsonLd(buildCollectionPageJsonLd({
             name: page.h1,
@@ -878,8 +914,6 @@ async function buildSite(events) {
     activeNav: 'types',
     cardWithYear: true,
     types: typesArchiveSorted,
-    typesCount: typesArchiveSorted.length,
-    futureEventsCount: typesArchiveSorted.reduce((total, type) => total + type.count, 0),
     includeSiteData: true,
     ...sharedContext
   }));
@@ -889,6 +923,7 @@ async function buildSite(events) {
   // (groupFutureEventsByVenue solo mira event.venue), para que la lista de la
   // página coincida con lo que la hizo elegible (no colar eventos por location).
   const renderedVenuePages = [];
+  const indexableVenuePages = [];
   for (const page of venuePages) {
     const venueEvents = events.filter((event) =>
       normalizeVenueKey(canonicalizeVenue(event.venue || '')) === page.venueKey
@@ -903,6 +938,9 @@ async function buildSite(events) {
     // indexable ni la anunciamos en el sitemap.
     if (!ongoingGrid.length && !upcomingEvents.length) continue;
     renderedVenuePages.push(page);
+    const venueEventCount = ongoingGrid.length + upcomingEvents.length;
+    const isVenueIndexable = venueEventCount >= MIN_INDEXABLE_VENUE_EVENTS;
+    if (isVenueIndexable) indexableVenuePages.push(page);
     // "Tipo" en esta página solo ofrece las categorías presentes en el espacio,
     // manteniendo el orden del catálogo global.
     const venueCategoryLabels = new Set([...ongoingGrid, ...upcomingEvents].map((event) => event.categoryLabel).filter(Boolean));
@@ -916,6 +954,7 @@ async function buildSite(events) {
       title: page.title,
       meta: { description: page.description },
       canonicalUrl: pageUrl,
+      robotsMeta: isVenueIndexable ? null : 'noindex,follow',
       jsonLd: itemListItems.length
         ? serializeJsonLd(buildVenuePageJsonLd({
             name: page.h1,
@@ -950,15 +989,15 @@ async function buildSite(events) {
 
   for (const event of sorted) {
     const relatedEvents = event.categoryLabel
-      ? sorted.filter((e) => e.id !== event.id && e.categoryLabel === event.categoryLabel && !e.hasEnded).slice(0, 4)
+      ? rotateBySeed(sorted.filter((e) => e.id !== event.id && e.categoryLabel === event.categoryLabel && !e.hasEnded), event.id).slice(0, 4)
       : [];
     const eventVenueKey = normalizeVenueKey(canonicalizeVenue(event.venue || ''));
     const moreInVenueEvents = eventVenueKey
-      ? sorted.filter((e) => (
+      ? rotateBySeed(sorted.filter((e) => (
         e.id !== event.id &&
         !e.hasEnded &&
         normalizeVenueKey(canonicalizeVenue(e.venue || '')) === eventVenueKey
-      )).slice(0, 4)
+      )), event.id).slice(0, 4)
       : [];
     const moreInVenueTitle = canonicalizeVenue(event.venue || '') || event.venue || '';
     const venueSlug = eventVenueKey ? spaceSlugByVenueKey.get(eventVenueKey) : '';
@@ -971,6 +1010,9 @@ async function buildSite(events) {
       title: `${event.title} | Eventos Valladolid | Aldea Pucela`,
       meta: { description: event.excerpt },
       canonicalUrl: `${publicBaseUrl}/e/${event.id}/${event.slug}/`,
+      // Las fichas ya celebradas se quedan accesibles desde /archivo/, pero no se
+      // indexan: mismo conjunto vigente que anuncia el sitemap.
+      robotsMeta: indexableEventIds.has(event.id) ? null : 'noindex,follow',
       jsonLd: serializeJsonLd(buildEventJsonLd(event, { publicBaseUrl, venueEntry })),
       pageCss: 'event-detail.css',
       pageJs: 'event-detail.js',
@@ -1015,12 +1057,6 @@ async function buildSite(events) {
   mark('feeds');
   await writeFile('site-data.json', eventsPayload);
   const renderedVenueSlugs = new Set(renderedVenuePages.map((page) => page.slug));
-  // Mismo conjunto vigente/próximo que muestran las páginas de tipo/espacio
-  // (ventana abierta con límites de día de Madrid), en vez del corte de
-  // medianoche de hasEnded, para no dejar fuera eventos de día completo aún
-  // vigentes cuando el build corre pasada la medianoche.
-  const { ongoing: searchOngoing, listed: searchListed } = selectTimePageEvents(events, categoryWindow, buildNow);
-  const searchableEvents = sortEvents([...searchOngoing, ...searchListed]).map(enrichEvent);
   await writeFile('search-index.json', buildSearchIndex({
     events: searchableEvents,
     spaces,
@@ -1028,16 +1064,17 @@ async function buildSite(events) {
     typesArchive: typesArchiveSorted
   }));
   await writeFile('rss.xml', buildRssXml(events));
-  // /guardados/ queda fuera a propósito (página personal, noindex).
+  // /guardados/ y /archivo/ quedan fuera a propósito: personal la una, pasado la
+  // otra, y ambas llevan noindex. Las páginas de tipo y espacio que no llegan al
+  // umbral tampoco se anuncian, aunque sí se generan y se enlazan desde su hub.
   await writeFile('sitemap.xml', buildSitemapXml({
     staticPages: [
       { path: '/', lastmod: toLocalDateKey(buildNow) },
-      { path: '/archivo/', lastmod: toLocalDateKey(buildNow) },
       { path: '/espacios/', lastmod: toLocalDateKey(buildNow) },
       { path: '/tipos/', lastmod: toLocalDateKey(buildNow) },
       ...getTimePages(buildNow).map((page) => ({ path: page.path, lastmod: toLocalDateKey(buildNow) })),
-      ...renderedCategoryPages.map((page) => ({ path: page.path, lastmod: toLocalDateKey(buildNow) })),
-      ...renderedVenuePages.map((page) => ({ path: page.path, lastmod: toLocalDateKey(buildNow) }))
+      ...indexableCategoryPages.map((page) => ({ path: page.path, lastmod: toLocalDateKey(buildNow) })),
+      ...indexableVenuePages.map((page) => ({ path: page.path, lastmod: toLocalDateKey(buildNow) }))
     ],
     // Fichas de evento vigentes y próximas: son las únicas páginas del sitio con
     // contenido propio (descripción, cartel, JSON-LD de Event) y las que sostienen

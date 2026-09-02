@@ -257,3 +257,36 @@ function pickPrimaryAddress(addressHints) {
   return [...counts.entries()]
     .sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0], 'es'))[0][0];
 }
+
+// Rota una lista un número de posiciones derivado de `seed`. La usan los bloques
+// "Eventos relacionados" y "Más en <espacio>" de la ficha: sin esto, las 400+
+// fichas de Música enseñaban las mismas cuatro tarjetas (los cuatro primeros por
+// fecha), un bloque idéntico repetido en cientos de URLs. Determinista a
+// propósito: con el id del evento como semilla cada ficha ve un bloque distinto,
+// pero el mismo en cada build, en vez de barajarse a diario sin motivo.
+export function rotateBySeed(list, seed) {
+  if (list.length < 2) return list;
+  const offset = Math.abs(Number(seed) || 0) % list.length;
+  return [...list.slice(offset), ...list.slice(0, offset)];
+}
+
+// ponytail: self-check de la rotación (los bordes son el módulo y las listas cortas).
+if (process.argv[1] && (await import('node:url')).fileURLToPath(import.meta.url) === process.argv[1]) {
+  const base = ['a', 'b', 'c', 'd', 'e'];
+  console.assert(rotateBySeed(base, 0).join('') === 'abcde', 'seed 0 no debe rotar');
+  console.assert(rotateBySeed(base, 2).join('') === 'cdeab', 'rotación de 2 mal');
+  console.assert(rotateBySeed(base, 5).join('') === 'abcde', 'seed = longitud debe volver al principio');
+  console.assert(rotateBySeed(base, 7).join('') === 'cdeab', 'el módulo debe envolver');
+  // Sin mutar la lista original ni perder elementos.
+  console.assert(base.join('') === 'abcde', 'rotateBySeed no debe mutar la lista');
+  console.assert(rotateBySeed(base, 3).length === base.length, 'la rotación no debe perder elementos');
+  // Casos degenerados: nada que rotar, y semillas que no son números.
+  console.assert(rotateBySeed([], 3).length === 0, 'lista vacía');
+  console.assert(rotateBySeed(['solo'], 9).join('') === 'solo', 'lista de uno');
+  console.assert(rotateBySeed(base, undefined).join('') === 'abcde', 'semilla no numérica cae a 0');
+  console.assert(rotateBySeed(base, -2).join('') === 'cdeab', 'semilla negativa no debe romper el índice');
+  // Lo que de verdad importa: ids distintos -> primer elemento distinto.
+  const primeros = new Set([11, 12, 13, 14].map((id) => rotateBySeed(base, id)[0]));
+  console.assert(primeros.size === 4, `ids distintos deberían dar bloques distintos: ${[...primeros]}`);
+  console.log('ok: rotateBySeed');
+}
