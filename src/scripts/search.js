@@ -6,19 +6,48 @@
 // índice ligero (/search-index.json) generado en build. El índice se descarga de
 // forma perezosa la primera vez que se abre el buscador y se cachea en memoria.
 
+import { mountModal } from './modals.js';
+
 const INDEX_URL = '/search-index.json';
 const DEBOUNCE_MS = 120;
 const MAX_EVENTS = 10;
 const MAX_SPACES = 6;
 const MAX_TYPES = 6;
 
-const modal = document.querySelector('[data-search-modal]');
+// El modal se inyecta al primer clic (ver modals.js), así que aquí no se puede
+// resolver: solo los disparadores viven en el HTML servido. Este bloque se
+// ejecuta siempre, para que los botones de búsqueda se inyecten igual.
+{
+  let modal = null;
+  let input = null;
+  let results = null;
+  let panel = null;
+  let inputWired = false;
 
-// Sin modal (por si alguna página no hereda el layout) no hacemos nada.
-if (modal) {
-  const input = modal.querySelector('[data-search-input]');
-  const results = modal.querySelector('[data-search-results]');
-  const panel = modal.querySelector('.search-modal-panel') || modal;
+  // Monta el modal la primera vez y cablea lo que depende de sus nodos internos.
+  function ensureModal() {
+    if (modal) return modal;
+    modal = mountModal('search');
+    if (!modal) return null;
+    input = modal.querySelector('[data-search-input]');
+    results = modal.querySelector('[data-search-results]');
+    panel = modal.querySelector('.search-modal-panel') || modal;
+    if (!inputWired) {
+      inputWired = true;
+      input.addEventListener('input', onInput);
+      // Enter en el campo salta al primer resultado.
+      input.addEventListener('keydown', (event) => {
+        if (event.key === 'Enter') {
+          const first = results.querySelector('.search-modal-result');
+          if (first) {
+            event.preventDefault();
+            first.click();
+          }
+        }
+      });
+    }
+    return modal;
+  }
 
   let index = null;         // { events, spaces, types } una vez cargado
   let loadPromise = null;   // evita descargas duplicadas
@@ -180,7 +209,7 @@ if (modal) {
   }
 
   function open() {
-    if (!modal.hidden) return;
+    if (!ensureModal() || !modal.hidden) return;
     lastReturnFocus = document.activeElement;
     modal.hidden = false;
     document.body.style.overflow = 'hidden';
@@ -193,7 +222,7 @@ if (modal) {
   }
 
   function close() {
-    if (modal.hidden) return;
+    if (!modal || modal.hidden) return;
     modal.hidden = true;
     document.body.style.overflow = '';
     panel.scrollTop = 0;
@@ -221,26 +250,13 @@ if (modal) {
     }
   });
 
-  input.addEventListener('input', onInput);
-
-  // Enter en el campo salta al primer resultado.
-  input.addEventListener('keydown', (event) => {
-    if (event.key === 'Enter') {
-      const first = results.querySelector('.search-modal-result');
-      if (first) {
-        event.preventDefault();
-        first.click();
-      }
-    }
-  });
-
   window.addEventListener('keydown', (event) => {
-    if (event.key === 'Escape' && !modal.hidden) {
+    if (event.key === 'Escape' && modal && !modal.hidden) {
       close();
       return;
     }
     // Atajo "/" para abrir, salvo si se está escribiendo en otro campo.
-    if (event.key === '/' && modal.hidden && !event.metaKey && !event.ctrlKey && !event.altKey) {
+    if (event.key === '/' && (!modal || modal.hidden) && !event.metaKey && !event.ctrlKey && !event.altKey) {
       const tag = (event.target.tagName || '').toLowerCase();
       const typing = tag === 'input' || tag === 'textarea' || tag === 'select' || event.target.isContentEditable;
       if (!typing) {
@@ -299,4 +315,11 @@ if (modal) {
   }
 
   injectTriggers();
+
+  // El drawer se inyecta al abrirlo, así que sus disparadores hay que ponerlos
+  // cuando aparece: si no, en la ficha de evento (donde la lupa vive dentro del
+  // drawer) no habría forma de abrir el buscador.
+  document.addEventListener('modal:mounted', (event) => {
+    if (event.detail?.key === 'menuDrawer') injectTriggers();
+  });
 }

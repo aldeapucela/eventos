@@ -53,6 +53,10 @@ export function toggleTheme() {
 export function initTheme() {
   applyTheme(getPreferredTheme());
 
+  // El toggle vive dentro del drawer, que se inyecta al abrirlo: sin esto
+  // aparecería siempre con el estado por defecto (luna / "Modo oscuro").
+  document.addEventListener('modal:mounted', () => updateThemeToggles(getPreferredTheme()));
+
   document.addEventListener('click', (event) => {
     const toggle = event.target.closest('[data-theme-toggle]');
     if (!toggle) return;

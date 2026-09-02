@@ -76,8 +76,6 @@
         <a class="saved-toast-link" href="/guardados/"> lista de guardados</a>
       </p>
     </div>
-    {% include "partials/install-modal.njk" %}
-    {% include "partials/search-modal.njk" %}
     <script>
       {# El dataset completo NO va inline: son ~2,7 MB que multiplicaban por 35 el
          peso de cada página y dejaban las 50+ URLs indexables idénticas al 97% en
@@ -86,6 +84,10 @@
       {% if includeSiteData %}
       window.__FILTERS__ = {{ filtersJson | safe }};
       {% endif %}
+      {# Catálogo de feeds por categoría para el modal de suscripción, que ya no
+         viene en el HTML: lo pinta src/scripts/modals.js. Unos cientos de bytes
+         dentro de un <script>, así que no cuentan como texto de la página. #}
+      window.__CATEGORY_FEEDS__ = {{ categoryFeedsJson | safe }};
       (function () {
         const toast = document.querySelector('[data-saved-toast]');
         if (!toast) return;

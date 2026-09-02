@@ -111,7 +111,6 @@
   </section>
 </main>
 
-{% include "partials/menu-drawer.njk" %}
 
 <button class="scroll-top-btn is-hidden" type="button" data-scroll-top aria-label="Volver arriba">
   <i class="fa-solid fa-arrow-up"></i>
@@ -147,10 +146,8 @@
   </aside>
 </div>
 
-{% include "partials/subscribe-modal.njk" %}
 
 {% include "partials/filter-modals.njk" %}
 
 {# Solo en páginas de espacio: modal para elegir servicio de mapas en "Ver en el mapa". #}
-{% if venue %}{% include "partials/location-modal.njk" %}{% endif %}
 {% endblock %}

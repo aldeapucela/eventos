@@ -109,54 +109,5 @@
   <i class="fa-solid fa-arrow-up"></i>
 </button>
 
-<div class="menu-drawer" data-menu-drawer hidden>
-  <button class="menu-drawer-backdrop" type="button" data-menu-close aria-label="Cerrar menú"></button>
-  <aside class="menu-drawer-panel" role="dialog" aria-modal="true" aria-label="Secciones">
-    <div class="menu-drawer-head">
-      <div>
-        <p class="menu-drawer-kicker">ALDEA PUCELA</p>
-        <p class="menu-drawer-title">Eventos</p>
-      </div>
-      <button class="menu-drawer-close" type="button" data-menu-close aria-label="Cerrar menú">
-        <i class="fa-solid fa-xmark"></i>
-      </button>
-    </div>
-    <nav class="menu-drawer-nav" aria-label="Navegación">
-      <a class="menu-drawer-link" href="/">
-        <i class="menu-drawer-link-icon fa-solid fa-house" aria-hidden="true"></i>
-        <span>Inicio</span>
-      </a>
-      <a class="menu-drawer-link" href="/espacios/">
-        <i class="menu-drawer-link-icon fa-solid fa-location-dot" aria-hidden="true"></i>
-        <span>Espacios</span>
-      </a>
-      <a class="menu-drawer-link" href="/guardados/">
-        <i class="menu-drawer-link-icon fa-regular fa-bookmark" aria-hidden="true"></i>
-        <span>Mis guardados</span>
-      </a>
-      <a class="menu-drawer-link menu-drawer-link-active" href="/archivo/">
-        <i class="menu-drawer-link-icon fa-solid fa-box-archive" aria-hidden="true"></i>
-        <span>Archivo</span>
-      </a>
-      <button class="menu-drawer-link" type="button" data-subscribe-open>
-        <i class="menu-drawer-link-icon fa-solid fa-rss" aria-hidden="true"></i>
-        <span>Suscribirse</span>
-      </button>
-      <a class="menu-drawer-link" href="https://aldeapucela.org" target="_blank" rel="noopener noreferrer">
-        <i class="menu-drawer-link-icon fa-solid fa-people-group" aria-hidden="true"></i>
-        <span>Comunidad</span>
-      </a>
-      <a class="menu-drawer-link" href="https://t.me/aldeapucela/244" target="_blank" rel="noopener noreferrer">
-        <i class="menu-drawer-link-icon fa-brands fa-telegram" aria-hidden="true"></i>
-        <span>Chat sobre eventos</span>
-      </a>
-    </nav>
-    <button class="menu-drawer-link menu-drawer-theme-toggle" type="button" data-theme-toggle aria-label="Cambiar tema" aria-pressed="false">
-      <i class="menu-drawer-link-icon fa-regular fa-moon" aria-hidden="true"></i>
-      <span data-theme-toggle-label>Modo oscuro</span>
-    </button>
-  </aside>
-</div>
 
-{% include "partials/subscribe-modal.njk" %}
 {% endblock %}

@@ -1,27 +1,25 @@
 import { initTheme } from './theme.js';
+import { setupSubscribe } from './subscribe.js';
+import { setupMenuDrawer } from './menu-drawer.js';
 
 const storageKey = 'aldeapucela_saved_events';
-const menuDrawer = document.querySelector('[data-menu-drawer]');
 const groupsRoot = document.querySelector('[data-saved-groups]');
 const emptyState = document.querySelector('[data-saved-empty]');
 const scrollTopButton = document.querySelector('[data-scroll-top]');
-const subscribeModal = document.querySelector('[data-subscribe-modal]');
 let events = Array.isArray(window.__EVENTS__?.events) ? window.__EVENTS__.events : [];
 let siteDataPromise = null;
 initTheme();
 
 syncScrollTopButton();
 void initializeSavedEvents();
+// Drawer y suscripción: módulos compartidos, en vez de la copia que había aquí.
+setupMenuDrawer();
+setupSubscribe();
 
 window.addEventListener('scroll', syncScrollTopButton, { passive: true });
 
 document.addEventListener('click', (event) => {
   const saveButton = event.target.closest('[data-save-event]');
-  const menuOpen = event.target.closest('[data-menu-open]');
-  const menuClose = event.target.closest('[data-menu-close]');
-  const subscribeOpen = event.target.closest('[data-subscribe-open]');
-  const subscribeClose = event.target.closest('[data-subscribe-close]');
-  const copyButton = event.target.closest('[data-copy-url]');
 
   if (saveButton) {
     event.preventDefault();
@@ -31,32 +29,6 @@ document.addEventListener('click', (event) => {
       window.showSavedToast({ action });
     }
     void refreshSavedGroups();
-  }
-
-  if (menuOpen) {
-    event.preventDefault();
-    openMenu();
-  }
-
-  if (menuClose) {
-    event.preventDefault();
-    closeMenu();
-  }
-
-  if (subscribeOpen) {
-    event.preventDefault();
-    closeMenu();
-    openSubscribeModal();
-  }
-
-  if (subscribeClose) {
-    event.preventDefault();
-    closeSubscribeModal();
-  }
-
-  if (copyButton) {
-    event.preventDefault();
-    copySubscribeUrl(copyButton);
   }
 
   if (event.target.closest('[data-scroll-top]')) {
@@ -75,12 +47,6 @@ async function refreshSavedGroups() {
   renderSavedGroups();
   syncSavedStates();
 }
-
-document.addEventListener('keydown', (event) => {
-  if (event.key === 'Escape' && subscribeModal && !subscribeModal.hidden) {
-    closeSubscribeModal();
-  }
-});
 
 function syncScrollTopButton() {
   if (!scrollTopButton) return;
@@ -183,73 +149,6 @@ function renderCard(event) {
       </div>
     </article>
   `;
-}
-
-function openMenu() {
-  if (!menuDrawer) return;
-  menuDrawer.hidden = false;
-  document.body.style.overflow = 'hidden';
-}
-
-function closeMenu() {
-  if (!menuDrawer) return;
-  menuDrawer.hidden = true;
-  document.body.style.overflow = '';
-}
-
-function openSubscribeModal() {
-  if (!subscribeModal) return;
-  subscribeModal.hidden = false;
-  document.body.style.overflow = 'hidden';
-  const panel = subscribeModal.querySelector('.subscribe-modal-panel') || subscribeModal;
-  const syncScroll = () => {
-    const target = subscribeModal.querySelector('[data-subscribe-section="calendar"]');
-    const shouldPinCalendar = window.matchMedia('(max-width: 640px)').matches;
-    panel.scrollTop = 0;
-    if (!target || !shouldPinCalendar) {
-      return;
-    }
-    const panelTop = panel.getBoundingClientRect().top;
-    const targetTop = target.getBoundingClientRect().top;
-    panel.scrollTop = Math.max(0, panel.scrollTop + targetTop - panelTop - 16);
-  };
-  syncScroll();
-  window.requestAnimationFrame(() => window.requestAnimationFrame(syncScroll));
-  subscribeModal.querySelector('[data-subscribe-close]')?.focus({ preventScroll: true });
-}
-
-function closeSubscribeModal() {
-  if (!subscribeModal) return;
-  subscribeModal.hidden = true;
-  document.body.style.overflow = '';
-  const panel = subscribeModal.querySelector('.subscribe-modal-panel') || subscribeModal;
-  panel.scrollTop = 0;
-}
-
-async function copySubscribeUrl(button) {
-  const key = button.dataset.copyUrl;
-  const input = document.querySelector(`[data-copy-source="${key}"]`);
-  if (!input) return;
-  const value = input.value;
-  const originalLabel = button.textContent;
-  try {
-    if (navigator.clipboard?.writeText) {
-      await navigator.clipboard.writeText(value);
-    } else {
-      input.removeAttribute('readonly');
-      input.focus();
-      input.select();
-      document.execCommand('copy');
-      input.setAttribute('readonly', 'readonly');
-    }
-    button.textContent = 'Copiado';
-    window.setTimeout(() => {
-      button.textContent = originalLabel;
-    }, 1200);
-  } catch {
-    input.focus();
-    input.select();
-  }
 }
 
 function parseDateLike(value) {

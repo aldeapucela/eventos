@@ -649,6 +649,9 @@ async function buildSite(events) {
 
   const sharedContext = {
     filtersJson: JSON.stringify(filters),
+    // El modal de suscripción se inyecta por JS, así que el catálogo de feeds
+    // viaja como dato y no como markup (ver layout.njk y modals.js).
+    categoryFeedsJson: JSON.stringify(categoryFeeds),
     filters,
     categoryFeeds,
     categoryPagePaths,
