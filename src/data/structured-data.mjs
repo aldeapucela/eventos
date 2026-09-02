@@ -1,3 +1,5 @@
+import { decodeHtmlEntities, stripTags } from './format.mjs';
+
 // Claves alineadas con los categoryLabel YA canónicos (ver category-aliases.mjs,
 // que se aplica en build sobre event.categoryLabel).
 const SCHEMA_TYPE_BY_CATEGORY = {
@@ -19,6 +21,8 @@ const SCHEMA_TYPE_BY_CATEGORY = {
   'Infantil y familia': 'ChildrensEvent'
 };
 
+const JSON_LD_DESCRIPTION_MAX = 1200;
+
 export function schemaTypeForCategory(categoryLabel) {
   return SCHEMA_TYPE_BY_CATEGORY[String(categoryLabel || '').trim()] || 'Event';
 }
@@ -35,7 +39,7 @@ export function serializeJsonLd(value) {
 
 export function buildEventJsonLd(event, { publicBaseUrl, venueEntry = null } = {}) {
   const eventUrl = `${publicBaseUrl}/e/${event.id}/${event.slug}/`;
-  const description = String(event.summary || event.excerpt || '').trim();
+  const description = eventDescriptionText(event);
   const venueName = String(venueEntry?.name || event.venue || event.location || '').trim();
   const streetAddress = String(venueEntry?.address || event.address || '').trim();
 
@@ -88,6 +92,19 @@ export function buildEventJsonLd(event, { publicBaseUrl, venueEntry = null } = {
     };
   }
   return jsonLd;
+}
+
+// La descripción completa del evento en texto plano: es la que describe la
+// ficha, no solo su primer párrafo. Se recorta porque los buscadores ignoran
+// descripciones desmedidas y el JSON-LD va inline en cada página.
+function eventDescriptionText(event) {
+  const full = decodeHtmlEntities(stripTags(event.descriptionHtml || '')).replace(/\s+/g, ' ').trim();
+  const fallback = String(event.summary || event.excerpt || '').trim();
+  const text = full || fallback;
+  if (text.length <= JSON_LD_DESCRIPTION_MAX) return text;
+  const cut = text.slice(0, JSON_LD_DESCRIPTION_MAX);
+  const lastSpace = cut.lastIndexOf(' ');
+  return `${(lastSpace > 0 ? cut.slice(0, lastSpace) : cut).trim()}…`;
 }
 
 export function buildCollectionPageJsonLd({ name, description, url, items = [] }) {

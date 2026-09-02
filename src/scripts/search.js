@@ -108,7 +108,7 @@ if (modal) {
       : '';
     return `
       <section class="search-modal-section">
-        <h3 class="search-modal-section-title"><i class="${icon}" aria-hidden="true"></i><span>${title}</span><span class="search-modal-count">${total}</span></h3>
+        <p class="search-modal-section-title"><i class="${icon}" aria-hidden="true"></i><span>${title}</span><span class="search-modal-count">${total}</span></p>
         <ul class="search-modal-list">${rows}</ul>
         ${more}
       </section>`;
@@ -205,8 +205,13 @@ if (modal) {
 
   // Delegación de clicks para abrir/cerrar (los disparadores se inyectan abajo).
   document.addEventListener('click', (event) => {
-    if (event.target.closest('[data-search-open]')) {
+    const opener = event.target.closest('[data-search-open]');
+    if (opener) {
       event.preventDefault();
+      // Si el disparador vive dentro del drawer móvil (ficha de evento), lo
+      // cerramos antes de abrir el buscador para no apilar dos capas.
+      const drawer = opener.closest('[data-menu-drawer]');
+      if (drawer) drawer.hidden = true;
       open();
       return;
     }
@@ -250,6 +255,12 @@ if (modal) {
   // inyectamos los botones sobre selectores presentes en todas las páginas en
   // lugar de editar cada cabecera. Al ser una función 100% cliente, no dejamos
   // botones muertos si el JS falla.
+  // En la ficha de evento la cabecera móvil ya lleva volver + guardar +
+  // compartir + menú, así que ahí la lupa no se inyecta en la cabecera: pasa a
+  // ser una entrada más del drawer. En el resto de páginas (portada, secciones…)
+  // se mantiene el icono en la cabecera.
+  const searchGoesInDrawer = document.body.classList.contains('page-event-detail');
+
   function injectTriggers() {
     document.querySelectorAll('.header-main-nav').forEach((nav) => {
       if (nav.querySelector('[data-search-open]')) return;
@@ -261,6 +272,19 @@ if (modal) {
       button.innerHTML = '<i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i><span>Buscar</span>';
       nav.insertBefore(button, nav.firstChild);
     });
+
+    if (searchGoesInDrawer) {
+      document.querySelectorAll('[data-menu-drawer] .menu-drawer-nav').forEach((nav) => {
+        if (nav.querySelector('[data-search-open]')) return;
+        const button = document.createElement('button');
+        button.type = 'button';
+        button.className = 'menu-drawer-link';
+        button.setAttribute('data-search-open', '');
+        button.innerHTML = '<i class="menu-drawer-link-icon fa-solid fa-magnifying-glass" aria-hidden="true"></i><span>Buscar</span>';
+        nav.insertBefore(button, nav.firstChild);
+      });
+      return;
+    }
 
     document.querySelectorAll('[data-menu-open]').forEach((menuButton) => {
       if (menuButton.previousElementSibling && menuButton.previousElementSibling.hasAttribute('data-search-open')) return;

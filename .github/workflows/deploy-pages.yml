@@ -15,7 +15,8 @@ permissions:
 
 concurrency:
   group: github-pages
-  cancel-in-progress: true
+  # El cron corre cada 15 minutos y no debe cancelar un deploy manual o por push.
+  cancel-in-progress: false
 
 jobs:
   detect-changes:

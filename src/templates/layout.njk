@@ -26,11 +26,15 @@
     <meta property="og:title" content="{{ social.title or title or 'Aldea Pucela Eventos' }}" />
     <meta property="og:description" content="{{ social.description or meta.description or 'Agenda cultural de Aldea Pucela' }}" />
     {% if social.image %}<meta property="og:image" content="{{ social.image }}" />{% endif %}
+    {% if social.imageWidth %}<meta property="og:image:width" content="{{ social.imageWidth }}" />{% endif %}
+    {% if social.imageHeight %}<meta property="og:image:height" content="{{ social.imageHeight }}" />{% endif %}
+    {% if social.imageAlt %}<meta property="og:image:alt" content="{{ social.imageAlt }}" />{% endif %}
     {% if social.url %}<meta property="og:url" content="{{ social.url }}" />{% endif %}
     <meta name="twitter:card" content="{{ social.card or 'summary_large_image' }}" />
     <meta name="twitter:title" content="{{ social.title or title or 'Aldea Pucela Eventos' }}" />
     <meta name="twitter:description" content="{{ social.description or meta.description or 'Agenda cultural de Aldea Pucela' }}" />
     {% if social.image %}<meta name="twitter:image" content="{{ social.image }}" />{% endif %}
+    {% if social.imageAlt %}<meta name="twitter:image:alt" content="{{ social.imageAlt }}" />{% endif %}
     {% endif %}
     {% if jsonLd %}<script type="application/ld+json">{{ jsonLd | safe }}</script>{% endif %}
     {% block extraHead %}{% endblock %}
@@ -69,7 +73,7 @@
     <div class="saved-toast" data-saved-toast aria-live="polite" aria-atomic="true" hidden>
       <p class="saved-toast-copy">
         <span data-saved-toast-prefix></span>&nbsp;
-        <a class="saved-toast-link" href="/guardados"> lista de guardados</a>
+        <a class="saved-toast-link" href="/guardados/"> lista de guardados</a>
       </p>
     </div>
     {% include "partials/install-modal.njk" %}

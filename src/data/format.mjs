@@ -168,8 +168,52 @@ export function parseEventMetaFromHtml(html = '') {
     categoryLabel: pick('Categoría'),
     organizer: pick('Organizador'),
     notes: pick('Notas'),
+    price: normalizePriceLabel(pick('Precio')),
     importedFromChatUrl
   };
+}
+
+// "de pago (precio no especificado)" es el valor que escribe el bot cuando no
+// encuentra el importe: no dice nada que la ficha no cuente ya con el botón de
+// entradas, así que se descarta y el evento se queda sin fila de precio.
+const PRICE_UNSPECIFIED_RE = /(?:precio\s+)?no\s+especificad[oa]|sin\s+especificar/i;
+
+export function normalizePriceLabel(value = '') {
+  const cleaned = String(value).replace(/\s+/g, ' ').trim().replace(/[.,;]+$/, '');
+  if (!cleaned || PRICE_UNSPECIFIED_RE.test(cleaned)) return '';
+  return cleaned.charAt(0).toUpperCase() + cleaned.slice(1);
+}
+
+// Formas de entrar sin pagar: incluimos el donativo y la taquilla inversa
+// porque en ambas se accede sin comprar entrada.
+const FREE_ACCESS_RE = /\bgratis\b|\bgratuit[oa]s?\b|\bentrada libre\b|\blibre acceso\b|\bacceso libre\b|\bdonativo\b|\btaquilla inversa\b/i;
+// Un importe de verdad: "12€", "12,50 €", "€ 12", "12 euros".
+const PRICE_AMOUNT_RE = /\d+(?:[.,]\d{1,2})?\s*(?:€|euros?\b)|€\s*\d/i;
+// Venta de entradas por una plataforma: evidencia inequívoca aunque no se vea
+// el importe. Ojo con ampliar la lista a palabras del idioma.
+const TICKETING_RE = /\b(enterticket|wegow|ticketmaster|notikumi|elcorteingles)\b/i;
+
+// Tres estados, no dos: 'free', 'paid' y 'unknown'. Solo afirmamos algo con
+// evidencia concreta —un precio declarado, un importe en el texto o una
+// ticketera—; cuando no la hay, 'unknown' y la ficha no dice nada, ni etiqueta
+// "Gratis" ni botón de entradas.
+//
+// El binario anterior obligaba a mentir en un sentido o en otro. Las
+// descripciones las redacta un bot y casi siempre acaban con un "consulta la
+// taquilla" o un "adquisición de entradas" de relleno: darlo por evidencia
+// marcaba de pago cientos de eventos vecinales que no lo son, y darle la vuelta
+// habría puesto "Gratis" en musicales de sala que sí cobran. Lo mismo con la
+// línea "Precio: de pago (precio no especificado)", que el bot escribe cuando
+// el cartel no habla de dinero: dice que no lo sabe, no que se pague.
+export function detectPriceStatus({ price = '', text = '' } = {}) {
+  // Un precio declarado en el post manda sobre el resto del texto.
+  const priceLabel = String(price).trim();
+  if (priceLabel) return FREE_ACCESS_RE.test(priceLabel) ? 'free' : 'paid';
+
+  const content = String(text);
+  if (FREE_ACCESS_RE.test(content)) return 'free';
+  if (PRICE_AMOUNT_RE.test(content) || TICKETING_RE.test(content)) return 'paid';
+  return 'unknown';
 }
 
 export function buildExcerpt(html = '', maxLength = 180) {
@@ -197,11 +241,11 @@ export function extractParagraphLines(html = '') {
 }
 
 export function cleanDescriptionHtml(html = '', title = '') {
-  let output = String(html)
-    .replace(/<div class="discourse-post-event"[\s\S]*?<\/div>/gi, '')
-    .replace(/<p>\s*<div class="lightbox-wrapper"[\s\S]*?<\/div>\s*<\/p>/gi, '')
+  let output = removeBalancedDivs(String(html), /<div[^>]*class="[^"]*\bdiscourse-post-event\b[^"]*"/i);
+  output = removeBalancedDivs(output, /<div[^>]*class="[^"]*\blightbox-wrapper\b[^"]*"/i);
+  output = output
     .replace(/<p>\s*<img[^>]*alt=":round_pushpin:"[^>]*>\s*([^<]+)\s*<\/p>/gi, '')
-    .replace(/<p>\s*(Categor[ií]a|Organizador|Notas|Lugar|Ubicaci[oó]n)\s*:[\s\S]*?<\/p>/gi, '')
+    .replace(/<p>\s*(Categor[ií]a|Organizador|Notas|Lugar|Ubicaci[oó]n|Precio)\s*:[\s\S]*?<\/p>/gi, '')
     .replace(/<p>\s*<em>\s*Evento importado desde[\s\S]*?<\/em>\s*<\/p>/gi, '')
     .trim();
 
@@ -209,7 +253,46 @@ export function cleanDescriptionHtml(html = '', title = '') {
   if (escapedTitle) {
     output = output.replace(new RegExp(`^<p>${escapedTitle}<\\/p>\\s*`, 'i'), '');
   }
-  return output.trim();
+  return dropEmptyBlocks(output);
+}
+
+// Discourse anida divs dentro de `lightbox-wrapper` (el `.meta` del pie), así
+// que un regex no balanceado corta en el primer `</div>` y deja el resto del
+// cartel suelto en mitad del texto. Recortamos contando aperturas y cierres.
+function removeBalancedDivs(html, openTagRe) {
+  let output = String(html);
+  for (let guard = 0; guard < 50; guard += 1) {
+    const start = output.search(openTagRe);
+    if (start === -1) break;
+    const end = findDivBlockEnd(output, start);
+    if (end === -1) break;
+    output = `${output.slice(0, start)}${output.slice(end)}`;
+  }
+  return output;
+}
+
+function findDivBlockEnd(html, start) {
+  const tagRe = /<(\/?)div\b[^>]*>/gi;
+  tagRe.lastIndex = start;
+  let depth = 0;
+  let match = tagRe.exec(html);
+  while (match) {
+    depth += match[1] ? -1 : 1;
+    if (depth === 0) return tagRe.lastIndex;
+    match = tagRe.exec(html);
+  }
+  return -1;
+}
+
+// Al quitar el cartel y las líneas de metadatos quedan `<p>` vacíos y huecos de
+// varias líneas en blanco. Daban igual mientras la ficha solo pintaba el
+// resumen; ahora que renderiza la descripción entera, se verían.
+function dropEmptyBlocks(html = '') {
+  return String(html)
+    .replace(/<p>(?:\s|&nbsp;|<br\s*\/?>)*<\/p>/gi, '')
+    .replace(/<p>(?:\s*<br\s*\/?>)+/gi, '<p>')
+    .replace(/\n{2,}/g, '\n')
+    .trim();
 }
 
 export function buildTextParagraphHtml(text = '') {

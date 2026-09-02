@@ -8,13 +8,13 @@ import autoprefixer from 'autoprefixer';
 import { fileURLToPath } from 'node:url';
 import { loadCachedEvents } from '../src/data/store.mjs';
 import { deriveFilters, sortEvents, splitFeatured, getPastEvents, groupEventsByMonth, groupFutureEventsByVenue, rotateBySeed } from '../src/data/site.mjs';
-import { DISPLAY_TIMEZONE, escapeHtml, formatDateRange, formatDateTime, isSameMadridDay, parseDateLike, toMadridDateKey } from '../src/data/format.mjs';
+import { DISPLAY_TIMEZONE, buildTextParagraphHtml, cleanDescriptionHtml, detectPriceStatus, escapeHtml, formatDateRange, formatDateTime, isSameMadridDay, normalizePriceLabel, parseDateLike, parseEventMetaFromHtml, stripTags, toMadridDateKey } from '../src/data/format.mjs';
 import { enrichVenueCatalog, mergeSpacesWithVenueCatalog } from '../src/data/venues.mjs';
 import { canonicalizeVenue, normalizeVenueKey } from '../src/data/venue-aliases.mjs';
 import { buildCollectionPageJsonLd, buildEventJsonLd, buildVenuePageJsonLd, serializeJsonLd } from '../src/data/structured-data.mjs';
 import { getOpenEndedWindow, getTimePages, isWeekendDayKey, resolveBuildNow, selectTimePageEvents } from '../src/data/time-windows.mjs';
 import { getCategoryPages, mappedCategoryLabels } from '../src/data/category-pages.mjs';
-import { getVenuePages, buildVenueIntro } from '../src/data/venue-pages.mjs';
+import { getVenuePages } from '../src/data/venue-pages.mjs';
 import { canonicalizeCategory } from '../src/data/category-aliases.mjs';
 import { syncEvents } from './sync-lib.mjs';
 
@@ -26,6 +26,17 @@ const postersDir = path.join(dist, 'posters');
 const cssDir = path.join(assetsDir, 'css');
 const jsDir = path.join(assetsDir, 'js');
 const publicBaseUrl = 'https://eventos.aldeapucela.org';
+// Imagen de previsualización en redes (og:image). El nombre va versionado a
+// propósito: al sustituir los bytes manteniendo la misma URL, las redes
+// sociales siguen sirviendo la copia cacheada (así reaparecía el isotipo
+// antiguo del Conde Ansúrez). Si la imagen vuelve a cambiar, sube la versión
+// del nombre del archivo en vez de sobrescribirlo.
+const socialPreview = {
+  image: `${publicBaseUrl}/assets/social-preview-v3.jpg`,
+  imageWidth: 1731,
+  imageHeight: 909,
+  imageAlt: 'Qué hacer en Valladolid, agenda vecinal de eventos culturales de Aldea Pucela'
+};
 // Verificación de propiedad en Google Search Console (solo en la portada).
 const googleSiteVerification = 'WI4USc-QdbTLezu0qIZfb2J9Yvqkwg818tWzExtVREw';
 
@@ -160,7 +171,13 @@ function buildRssXml(events) {
     ? toRfc2822(sortedByPublishedDesc[0].publishedAt || sortedByPublishedDesc[0].updatedAt || sortedByPublishedDesc[0].startsAt)
     : new Date().toUTCString();
   const items = sortedByPublishedDesc.map((event) => {
-    const eventUrl = toAbsoluteUrl(`/e/${event.id}/${event.slug}`);
+    const eventUrl = toAbsoluteUrl(`/e/${event.id}/${event.slug}/`);
+    // OJO: el guid es la identidad del item para los lectores de RSS, no un
+    // enlace. Se queda SIN barra final, que es como se publicó desde el
+    // principio: cambiarlo renombraría de golpe los ~1.100 items del feed y
+    // los suscriptores lo verían entero como no leído. La barra solo va en
+    // <link>, que es el que se sigue y se rastrea.
+    const eventGuid = toAbsoluteUrl(`/e/${event.id}/${event.slug}`);
     const title = escapeHtml(event.title || 'Evento');
     const description = buildRssItemDescription(event, eventUrl);
     const pubDate = toRfc2822(event.publishedAt || event.updatedAt || event.startsAt);
@@ -168,7 +185,7 @@ function buildRssXml(events) {
       '    <item>',
       `      <title>${title}</title>`,
       `      <link>${eventUrl}</link>`,
-      `      <guid isPermaLink="true">${eventUrl}</guid>`,
+      `      <guid isPermaLink="true">${eventGuid}</guid>`,
       `      <pubDate>${pubDate}</pubDate>`,
       `      <description><![CDATA[${description}]]></description>`,
       '    </item>'
@@ -264,7 +281,7 @@ function buildCalendarIcs(events, options = {}) {
     const endDate = endDateRaw && !Number.isNaN(endDateRaw.getTime())
       ? endDateRaw
       : new Date(startDate.getTime() + 60 * 60 * 1000);
-    const eventUrl = toAbsoluteUrl(`/e/${event.id}/${event.slug}`);
+    const eventUrl = toAbsoluteUrl(`/e/${event.id}/${event.slug}/`);
     const uid = `${event.id}@eventos.aldeapucela.org`;
     const description = String(event.summary || event.excerpt || '').trim();
     const attachment = event.image ? `ATTACH;FMTTYPE=image/jpeg:${escapeIcs(event.image)}` : null;
@@ -288,6 +305,12 @@ function buildCalendarIcs(events, options = {}) {
 }
 
 function enrichEvent(event) {
+  const descriptionHtml = resolveEventDescriptionHtml(event);
+  const price = resolveEventPrice(event);
+  const priceStatus = detectPriceStatus({
+    price,
+    text: `${event.summary || ''} ${event.notes || ''} ${stripTags(descriptionHtml)}`
+  });
   const startsAtDate = event.startsAt ? parseDateLike(event.startsAt) : null;
   const endsAtDate = event.endsAt ? parseDateLike(event.endsAt) : null;
   const isMultiDay = Boolean(startsAtDate && endsAtDate && !sameDay(startsAtDate, endsAtDate));
@@ -358,8 +381,38 @@ function enrichEvent(event) {
     // firma en el foro (sync-lib.mjs), lo que implicaría refetchearlos todos.
     // Normalizar aquí, que es por donde pasa todo evento antes de una plantilla,
     // los arregla sin re-sincronizar. Idempotente.
-    urlPath: `${String(event.urlPath || `/e/${event.id}/${event.slug}`).replace(/\/+$/, '')}/`
+    urlPath: `${String(event.urlPath || `/e/${event.id}/${event.slug}`).replace(/\/+$/, '')}/`,
+    descriptionHtml,
+    price,
+    priceStatus,
+    isFree: priceStatus === 'free',
+    isPaid: priceStatus === 'paid'
   };
+}
+
+// La descripción se vuelve a limpiar aquí, no solo al sincronizar, por el mismo
+// motivo que urlPath: los registros de cache/data/ se guardaron con los restos
+// del cartel y de las líneas de metadatos, y solo se re-normalizan si cambia su
+// firma en el foro. Es idempotente.
+function resolveEventDescriptionHtml(event) {
+  const cleaned = cleanDescriptionHtml(event.descriptionHtml || '', event.title || '');
+  if (cleaned) return cleaned;
+  const fallback = String(event.summary || event.excerpt || '').trim();
+  return fallback ? buildTextParagraphHtml(fallback) : '';
+}
+
+// `priceStatus` también se recalcula aquí, con el precio y la descripción ya
+// resueltos: los registros de cache/data/ se guardaron con la detección binaria
+// antigua, que marcaba de pago cualquier texto con un "entradas" o un "taquilla"
+// suelto.
+//
+// Los registros cacheados antes de que `price` existiera todavía llevan la
+// línea "Precio:" dentro de descriptionHtml: se rescata de ahí en vez de
+// refetchear el foro entero.
+function resolveEventPrice(event) {
+  const stored = normalizePriceLabel(event.price || '');
+  if (stored) return stored;
+  return parseEventMetaFromHtml(event.descriptionHtml || '').price;
 }
 
 function formatInMadrid(_date, options) {
@@ -409,7 +462,7 @@ function buildSearchIndex({ events, spaces, renderedVenueSlugs, typesArchive }) 
       })
       .map((space) => ({
         title: space.name,
-        url: renderedVenueSlugs.has(space.slug) ? `/espacios/${space.slug}/` : `/espacios#${space.slug}`,
+        url: renderedVenueSlugs.has(space.slug) ? `/espacios/${space.slug}/` : `/espacios/#${space.slug}`,
         count: space.count || 0
       })),
     events: (events || []).map((event) => ({
@@ -573,10 +626,7 @@ async function buildSite(events) {
   // y llevan noindex (ver el bucle de fichas más abajo).
   const indexableEventIds = new Set(searchableEvents.map((event) => event.id));
 
-  // Se alimenta del conjunto vigente, no de todos los eventos: una categoría cuyas
-  // etiquetas solo aparecen en eventos pasados generaba una página vacía e indexable
-  // (era el caso de /t/espectaculos/ y /t/visitas-guiadas/).
-  const categoryPages = getCategoryPages(searchableEvents);
+  const categoryPages = getCategoryPages(events);
   // Cada etiqueta (clave o alias) apunta a su página, para enrutar "Solo".
   const categoryPagePaths = Object.fromEntries(
     categoryPages.flatMap((page) => page.labels.map((label) => [label, page.path]))
@@ -628,7 +678,7 @@ async function buildSite(events) {
       type: 'website',
       title: 'Qué hacer en Valladolid | Aldea Pucela',
       description: 'Agenda cultural de Valladolid alimentada desde el foro de Aldea Pucela.',
-      image: `${publicBaseUrl}/assets/social-preview.jpg`,
+      ...socialPreview,
       url: `${publicBaseUrl}/`
     },
     pageCss: 'home.css',
@@ -652,7 +702,7 @@ async function buildSite(events) {
       type: 'website',
       title: 'Mis guardados | Eventos Valladolid | Aldea Pucela',
       description: 'Tus eventos guardados en Aldea Pucela Eventos.',
-      image: `${publicBaseUrl}/assets/social-preview.jpg`,
+      ...socialPreview,
       url: `${publicBaseUrl}/guardados/`
     },
     pageCss: 'home.css',
@@ -675,7 +725,7 @@ async function buildSite(events) {
       type: 'website',
       title: 'Archivo de eventos | Eventos Valladolid | Aldea Pucela',
       description: 'Histórico de eventos culturales pasados en Valladolid.',
-      image: `${publicBaseUrl}/assets/social-preview.jpg`,
+      ...socialPreview,
       url: `${publicBaseUrl}/archivo/`
     },
     pageCss: 'home.css',
@@ -694,7 +744,7 @@ async function buildSite(events) {
       type: 'website',
       title: 'Espacios | Eventos Valladolid | Aldea Pucela',
       description: 'Eventos en los próximos seis meses agrupados por espacio en Valladolid.',
-      image: `${publicBaseUrl}/assets/social-preview.jpg`,
+      ...socialPreview,
       url: `${publicBaseUrl}/espacios/`
     },
     pageCss: 'home.css',
@@ -756,7 +806,7 @@ async function buildSite(events) {
         type: 'website',
         title: page.title,
         description: page.description,
-        image: `${publicBaseUrl}/assets/social-preview.jpg`,
+        ...socialPreview,
         url: pageUrl
       },
       pageCss: 'home.css',
@@ -764,7 +814,6 @@ async function buildSite(events) {
       activeNav: 'home',
       pageH1: page.h1,
       pageH2: page.h2,
-      pageIntro: page.intro,
       timeFilterKey: page.filterKey,
       ongoing: enrichedOngoing,
       dayGroups,
@@ -779,6 +828,11 @@ async function buildSite(events) {
   // Archivo de tipos (/tipos/): un avance por categoría; el listado completo vive
   // en cada página /t/<slug>/. Se alimenta de lo que ya calcula este bucle.
   const typesArchive = [];
+  // Páginas de tipo que llegan al umbral: las únicas que se anuncian en el
+  // sitemap (ver más abajo). Las que no llegan —incluidas las que se quedan a
+  // cero eventos vigentes— se siguen generando a propósito: la ficha de evento
+  // enlaza a la página de su categoría vía categoryPagePaths, así que borrarlas
+  // daría 404 desde los eventos pasados de esas categorías.
   const indexableCategoryPages = [];
   for (const page of categoryPages) {
     const categoryEvents = events.filter((event) => page.labels.includes(event.categoryLabel));
@@ -806,6 +860,10 @@ async function buildSite(events) {
       title: page.title,
       meta: { description: page.description },
       canonicalUrl: pageUrl,
+      // follow para que siga los enlaces del menú aunque no indexe la página, y
+      // se auto-cura: en cuanto la categoría llega al umbral vuelve a ser
+      // indexable. Cubre también el caso extremo de cero eventos vigentes, donde
+      // la página es solo el encabezado y el mensaje de "todavía no hay eventos".
       robotsMeta: isIndexable ? null : 'noindex,follow',
       jsonLd: itemListItems.length
         ? serializeJsonLd(buildCollectionPageJsonLd({
@@ -819,7 +877,7 @@ async function buildSite(events) {
         type: 'website',
         title: page.title,
         description: page.description,
-        image: `${publicBaseUrl}/assets/social-preview.jpg`,
+        ...socialPreview,
         url: pageUrl
       },
       pageCss: 'home.css',
@@ -827,7 +885,6 @@ async function buildSite(events) {
       activeNav: 'types',
       pageH1: page.h1,
       pageH2: page.h2,
-      pageIntro: page.intro,
       ongoing: [],
       ongoingGrid: enrichedOngoing,
       flatEvents: enrichedListed,
@@ -849,7 +906,7 @@ async function buildSite(events) {
       type: 'website',
       title: 'Tipos de evento | Eventos Valladolid | Aldea Pucela',
       description: 'Explora la agenda cultural de Valladolid por tipo de evento: música, cine, teatro, exposiciones y más.',
-      image: `${publicBaseUrl}/assets/social-preview.jpg`,
+      ...socialPreview,
       url: `${publicBaseUrl}/tipos/`
     },
     pageCss: 'home.css',
@@ -911,7 +968,7 @@ async function buildSite(events) {
         type: 'website',
         title: page.title,
         description: page.description,
-        image: `${publicBaseUrl}/assets/social-preview.jpg`,
+        ...socialPreview,
         url: pageUrl
       },
       pageCss: 'home.css',
@@ -919,12 +976,6 @@ async function buildSite(events) {
       activeNav: 'spaces',
       pageH1: page.h1,
       pageH2: page.h2,
-      pageIntro: buildVenueIntro({
-        name: page.canonicalVenue,
-        address: page.address,
-        categories: venueCategories,
-        count: ongoingGrid.length + upcomingEvents.length
-      }),
       venue: { name: page.canonicalVenue, address: page.address },
       ongoing: [],
       ongoingGrid,
@@ -951,8 +1002,8 @@ async function buildSite(events) {
     const moreInVenueTitle = canonicalizeVenue(event.venue || '') || event.venue || '';
     const venueSlug = eventVenueKey ? spaceSlugByVenueKey.get(eventVenueKey) : '';
     const moreInVenueHref = venueSlug
-      ? (venuePageSlugs.has(venueSlug) ? `/espacios/${venueSlug}/` : `/espacios#${venueSlug}`)
-      : '/espacios';
+      ? (venuePageSlugs.has(venueSlug) ? `/espacios/${venueSlug}/` : `/espacios/#${venueSlug}`)
+      : '/espacios/';
     const venueEntry = eventVenueKey ? spaceByVenueKey.get(eventVenueKey) || null : null;
 
     await writeFile(path.join('e', String(event.id), event.slug, 'index.html'), render('event-detail.njk', {
@@ -976,14 +1027,26 @@ async function buildSite(events) {
         location: event.location,
         sourceUrl: event.sourceUrl,
         startsAtIso: event.startsAt,
-        endsAtIso: event.endsAt
+        endsAtIso: event.endsAt,
+        // Los tres siguientes los usa la búsqueda del botón de acceso para
+        // acotar el evento (ver event-detail.js): sin ellos preguntaba solo con
+        // título, fecha y lugar.
+        categoryLabel: event.categoryLabel,
+        organizer: event.organizer,
+        notes: event.notes,
+        // El botón de acceso pregunta una cosa u otra según sepamos o no que se
+        // cobra (ver event-detail.js).
+        priceStatus: event.priceStatus
       }),
       social: {
         type: 'article',
         title: event.title,
         description: event.summary || event.excerpt,
-        image: event.image || `${publicBaseUrl}/img/logo-web.jpg`,
-        url: `${publicBaseUrl}/e/${event.id}/${event.slug}/`
+        url: `${publicBaseUrl}/e/${event.id}/${event.slug}/`,
+        // Sin imagen propia caemos en la portada social del sitio, no en el
+        // logo cuadrado del foro (mal encaje en tarjetas grandes y con copias
+        // antiguas cacheadas en las redes).
+        ...(event.image ? { image: event.image } : socialPreview)
       },
       includeSiteData: false,
       ...sharedContext

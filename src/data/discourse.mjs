@@ -2,6 +2,7 @@ import {
   buildTextParagraphHtml,
   buildExcerpt,
   cleanDescriptionHtml,
+  detectPriceStatus,
   extractParagraphLines,
   normalizeImage,
   parseEventMetaFromHtml,
@@ -141,6 +142,8 @@ export function normalizeDiscourseTopic(topic, detail) {
   const parsedLocation = parseLocationParts(location, title);
   const organizer = meta.organizer || '';
   const notes = meta.notes || '';
+  const price = meta.price || '';
+  const priceStatus = detectPriceStatus({ price, text: `${summary} ${notes} ${rawHtml}` });
   const importedFromChatUrl = meta.importedFromChatUrl || '';
 
   return {
@@ -165,9 +168,14 @@ export function normalizeDiscourseTopic(topic, detail) {
     categoryLabel,
     organizer,
     notes,
+    price,
     importedFromChatUrl,
     isSticky: Boolean(topic.pinned || topic.pinned_globally || topic.featured_link),
-    isFree: detectIsFree(`${summary} ${notes} ${rawHtml}`),
+    priceStatus,
+    // Derivados de priceStatus para que las plantillas no tengan que compararlo:
+    // 'unknown' no es ninguno de los dos y no pinta ni etiqueta ni entradas.
+    isFree: priceStatus === 'free',
+    isPaid: priceStatus === 'paid',
     publishedAt: topic.created_at || detailPost?.created_at || detail?.created_at || '',
     updatedAt: topic.last_posted_at || detailPost?.updated_at || topic.created_at || ''
   };
@@ -189,21 +197,6 @@ function resolveDescriptionHtml(rawHtml, title, eventDescriptionHtml = '', event
   }
 
   return cleanDescriptionHtml(rawHtml, title);
-}
-
-function detectIsFree(text = '') {
-  const content = String(text);
-  const explicitFree = /\bgratis\b|\bgratuit[oa]s?\b|\bentrada libre\b|\blibre acceso\b/i.test(content);
-  if (explicitFree) return true;
-
-  const explicitPaid = /\b(precio|coste|costo|taquilla|ticket|abono|pago|venta de entradas?|entradas?)\b/i.test(content) ||
-    /\b(enterticket|wegow|dice|ticketmaster|elcorteingles|notikumi)\b/i.test(content) ||
-    /(\d+[\.,]?\d*)\s?(€|euros?)\b/i.test(content) ||
-    /(€)\s?(\d+[\.,]?\d*)\b/i.test(content);
-  if (explicitPaid) return false;
-
-  // En contexto local la mayoría son gratuitos: asumimos gratis si no hay evidencia de pago.
-  return true;
 }
 
 export function normalizeDetailToRecord(topic, detail) {

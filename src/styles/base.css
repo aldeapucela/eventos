@@ -263,10 +263,6 @@
     @apply max-w-[32ch] text-base leading-[1.6] text-slate-500 sm:max-w-[46ch];
   }
 
-  .page-intro {
-    @apply mt-3 px-4 text-sm leading-6 text-slate-600 sm:px-0;
-  }
-
   /* La tarjeta ya no está envuelta en un <a>: el único enlace es el título, y su
      ::after se estira sobre toda la ficha para que siga siendo clicable entera.
      Así el anchor text que ve Google es el título del evento y no "12 ago ·
@@ -280,10 +276,6 @@
   .event-compact-title a::after {
     content: '';
     @apply absolute inset-0 z-10;
-  }
-
-  .page-intro a {
-    @apply underline decoration-slate-300 underline-offset-2 hover:text-brand-700;
   }
 
   .hero-mobile-title {
@@ -914,6 +906,56 @@
 
   .detail-clean-summary {
     @apply mt-6 text-base leading-7 text-slate-600;
+  }
+
+  /* Descripción completa del evento tal y como viene del foro: hereda el
+     tamaño y el color de .detail-clean-summary y solo aporta el ritmo entre
+     bloques y el estilo del HTML enriquecido (listas, enlaces, imágenes). */
+  .detail-clean-description > * + * {
+    @apply mt-4;
+  }
+
+  .detail-clean-description > :first-child {
+    @apply mt-0;
+  }
+
+  .detail-clean-description a {
+    @apply font-medium text-brand-700 underline decoration-brand-300 underline-offset-2;
+    overflow-wrap: anywhere;
+  }
+
+  .detail-clean-description ul {
+    @apply list-disc space-y-1 pl-5;
+  }
+
+  .detail-clean-description ol {
+    @apply list-decimal space-y-1 pl-5;
+  }
+
+  .detail-clean-description h2,
+  .detail-clean-description h3 {
+    @apply mt-6 text-lg font-semibold text-ink;
+  }
+
+  .detail-clean-description blockquote {
+    @apply border-l-2 border-line pl-4 italic;
+  }
+
+  .detail-clean-description img {
+    @apply max-w-full rounded-xl;
+    height: auto;
+  }
+
+  /* Los emoji del foro vienen como <img> de 20px: que escalen con el texto. */
+  .detail-clean-description img.emoji {
+    @apply inline-block rounded-none;
+    width: 1.15em;
+    height: 1.15em;
+    vertical-align: -0.15em;
+  }
+
+  .detail-clean-description audio {
+    @apply w-full;
   }
 
   .detail-clean-extra {
@@ -2262,6 +2304,16 @@ html.dark .site-footer-copy a {
     color: var(--text-secondary);
   }
 
+  html.dark .detail-clean-description a {
+    @apply text-brand-200 decoration-brand-400 hover:text-brand-100;
+  }
+
+  html.dark .detail-clean-description blockquote {
+    border-color: var(--border-light);
+  }
+
+  html.dark .detail-clean-description h2,
+  html.dark .detail-clean-description h3,
   html.dark .detail-clean-meta-row,
   html.dark .detail-clean-extra-value,
   html.dark .detail-clean-meta-row-button,
