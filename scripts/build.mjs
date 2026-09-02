@@ -112,6 +112,7 @@ async function copyJs() {
   await fs.copyFile(path.join(root, 'src', 'scripts', 'matomo.js'), path.join(jsDir, 'matomo.js'));
   await fs.copyFile(path.join(root, 'src', 'scripts', 'install-app.js'), path.join(jsDir, 'install-app.js'));
   await fs.copyFile(path.join(root, 'src', 'scripts', 'search.js'), path.join(jsDir, 'search.js'));
+  await fs.copyFile(path.join(root, 'src', 'scripts', 'modals.js'), path.join(jsDir, 'modals.js'));
 }
 
 function slugify(value = '') {
@@ -538,8 +539,11 @@ async function computeAssetVersion() {
     path.join(root, 'src', 'scripts', 'matomo.js'),
     path.join(root, 'src', 'scripts', 'install-app.js'),
     path.join(root, 'src', 'scripts', 'search.js'),
-    path.join(root, 'src', 'templates', 'partials', 'install-modal.njk'),
-    path.join(root, 'src', 'templates', 'partials', 'search-modal.njk'),
+    // Los modales viven aquí, no en partials, desde que salieron del HTML servido.
+    path.join(root, 'src', 'scripts', 'modals.js'),
+    path.join(root, 'src', 'scripts', 'subscribe.js'),
+    path.join(root, 'src', 'scripts', 'menu-drawer.js'),
+    path.join(root, 'src', 'scripts', 'location-link.js'),
     path.join(root, 'src', 'templates', 'layout.njk')
   ];
   const hash = createHash('sha1');

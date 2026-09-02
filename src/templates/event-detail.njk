@@ -275,83 +275,10 @@
   </article>
 </main>
 
-<div class="calendar-modal" data-calendar-modal hidden>
-  <button class="calendar-modal-backdrop" type="button" data-calendar-close aria-label="Cerrar"></button>
-  <div class="calendar-modal-panel" role="dialog" aria-modal="true" aria-labelledby="calendar-modal-title">
-    <div class="calendar-modal-header">
-      <p class="calendar-modal-title" id="calendar-modal-title">Añadir al calendario</p>
-      <button class="calendar-modal-close" type="button" data-calendar-close aria-label="Cerrar">
-        <i class="fa-solid fa-xmark"></i>
-      </button>
-    </div>
-    <p class="calendar-modal-copy">Elige dónde guardarlo.</p>
-    <div class="calendar-modal-actions">
-      <a class="calendar-modal-action calendar-modal-action-primary" data-calendar-ics href="#" download>
-        <i class="fa-solid fa-download"></i>
-        <span>Descargar ICS</span>
-      </a>
-      <a class="calendar-modal-action" data-calendar-google href="#" target="_blank" rel="noreferrer">
-        <i class="fa-brands fa-google"></i>
-        <span>Google Calendar</span>
-      </a>
-      <a class="calendar-modal-action" data-calendar-apple href="#" target="_blank" rel="noreferrer">
-        <i class="fa-brands fa-apple"></i>
-        <span>Apple Calendar</span>
-      </a>
-      <a class="calendar-modal-action" data-calendar-outlook href="#" target="_blank" rel="noreferrer">
-        <i class="fa-brands fa-microsoft"></i>
-        <span>Outlook</span>
-      </a>
-    </div>
-  </div>
-</div>
-
-<div class="detail-lightbox" data-lightbox hidden>
-  <button class="detail-lightbox-backdrop" type="button" data-lightbox-close aria-label="Cerrar imagen"></button>
-  <div class="detail-lightbox-panel" role="dialog" aria-modal="true" aria-label="Imagen del evento">
-    <img class="detail-lightbox-image" data-lightbox-image alt="" />
-    <button class="detail-lightbox-close" type="button" data-lightbox-close aria-label="Cerrar">
-      <i class="fa-solid fa-xmark"></i>
-    </button>
-  </div>
-</div>
-
-<div class="calendar-modal" data-ticket-search-modal hidden>
-  <button class="calendar-modal-backdrop" type="button" data-ticket-search-close aria-label="Cerrar"></button>
-  <div class="calendar-modal-panel" role="dialog" aria-modal="true" aria-labelledby="ticket-search-modal-title">
-    <div class="calendar-modal-header">
-      <p class="calendar-modal-title" id="ticket-search-modal-title">Antes de continuar</p>
-      <button class="calendar-modal-close" type="button" data-ticket-search-close aria-label="Cerrar">
-        <i class="fa-solid fa-xmark"></i>
-      </button>
-    </div>
-    <p class="calendar-modal-copy">
-      Se te va a redirigir a la búsqueda de Perplexity para
-      {% if event.isPaid %}<strong>buscar el sitio oficial de entradas</strong>{% else %}<strong>buscar información oficial sobre el acceso a este evento</strong>{% endif %}.
-    </p>
-    <ul class="calendar-modal-copy-list">
-      <li>Verifica siempre el sitio antes de pagar.</li>
-      <li>Comprueba que la web es oficial o parte del promotor o artista.</li>
-      <li>Desconfía de precios inusualmente bajos o webs sin datos del organizador.</li>
-      <li>Esta web no se hace responsable de compras realizadas en sitios no oficiales ni de posibles fraudes derivados.</li>
-    </ul>
-    <div class="calendar-modal-actions">
-      <button class="calendar-modal-action calendar-modal-action-primary" type="button" data-ticket-search-confirm>
-        <i class="fa-solid fa-arrow-up-right-from-square"></i>
-        <span>Entendido, continuar</span>
-      </button>
-    </div>
-  </div>
-</div>
-
-{% include "partials/location-modal.njk" %}
-
-{% include "partials/subscribe-modal.njk" %}
-
-{# Menú de navegación móvil (hamburguesa): mismo drawer que el resto, sin la
-   sección de filtros (no aplica a la ficha). #}
-{% set hideDrawerFilters = true %}
-{% include "partials/menu-drawer.njk" %}
+{# Los modales (calendario, entradas, lightbox, ubicación, suscripción y el
+   drawer) NO van en el HTML: se inyectan al primer clic desde
+   src/scripts/modals.js. Eran el 46% de las palabras visibles de esta página,
+   idénticas en las ~1.400 fichas. Aquí solo quedan los botones que los abren. #}
 
 <script>
   window.__EVENT_DETAIL__ = {{ eventDetailJson | safe }};

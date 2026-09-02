@@ -3,26 +3,15 @@ import { setupCommentsSection } from './comments.js';
 import { setupLocationLinks } from './location-link.js';
 import { setupSubscribe } from './subscribe.js';
 import { setupMenuDrawer } from './menu-drawer.js';
+import { getMountedModal, mountModal } from './modals.js';
 
 const storageKey = 'aldeapucela_saved_events';
 
-const calendarOpenButton = document.querySelector('[data-calendar-open]');
+// Los modales ya no vienen en el HTML: se inyectan al abrirlos (ver modals.js),
+// así que sus nodos se resuelven en el handler y no al cargar el módulo. Los
+// botones que los abren SÍ están en el HTML servido.
 const commentsOpenButton = document.querySelector('[data-comments-open]');
 const commentsSection = document.querySelector('[data-comments]');
-const calendarModal = document.querySelector('[data-calendar-modal]');
-const calendarCloseButtons = document.querySelectorAll('[data-calendar-close]');
-const ticketSearchModal = document.querySelector('[data-ticket-search-modal]');
-const ticketSearchOpenButtons = document.querySelectorAll('[data-ticket-search-open]');
-const ticketSearchCloseButtons = document.querySelectorAll('[data-ticket-search-close]');
-const ticketSearchConfirmButton = document.querySelector('[data-ticket-search-confirm]');
-const calendarIcsLink = document.querySelector('[data-calendar-ics]');
-const calendarGoogleLink = document.querySelector('[data-calendar-google]');
-const calendarAppleLink = document.querySelector('[data-calendar-apple]');
-const calendarOutlookLink = document.querySelector('[data-calendar-outlook]');
-const lightbox = document.querySelector('[data-lightbox]');
-const lightboxImage = document.querySelector('[data-lightbox-image]');
-const lightboxOpen = document.querySelector('[data-lightbox-open]');
-const closeButtons = document.querySelectorAll('[data-lightbox-close]');
 const hero = document.querySelector('.detail-clean-hero');
 const eventData = window.__EVENT_DETAIL__ || {};
 initTheme();
@@ -65,32 +54,41 @@ document.addEventListener('click', async (event) => {
 });
 
 function openLightbox() {
-  if (!lightbox || !lightboxImage || !hero) return;
+  if (!hero) return;
   const backgroundImage = hero.style.backgroundImage;
   const match = backgroundImage.match(/url\(["']?(.*?)["']?\)$/);
   const src = match?.[1];
   if (!src) return;
 
+  const lightbox = mountModal('lightbox');
+  const lightboxImage = lightbox?.querySelector('[data-lightbox-image]');
+  if (!lightbox || !lightboxImage) return;
   lightboxImage.src = src;
   lightbox.hidden = false;
   document.body.style.overflow = 'hidden';
+  lightbox.querySelector('.detail-lightbox-close')?.focus({ preventScroll: true });
 }
 
 function closeLightbox() {
-  if (!lightbox || !lightboxImage) return;
+  const lightbox = getMountedModal('lightbox');
+  if (!lightbox) return;
   lightbox.hidden = true;
-  lightboxImage.src = '';
+  const lightboxImage = lightbox.querySelector('[data-lightbox-image]');
+  if (lightboxImage) lightboxImage.src = '';
   document.body.style.overflow = '';
 }
 
 function openCalendarModal() {
+  const calendarModal = mountModal('calendar');
   if (!calendarModal) return;
-  populateCalendarLinks();
+  populateCalendarLinks(calendarModal);
   calendarModal.hidden = false;
   document.body.style.overflow = 'hidden';
+  calendarModal.querySelector('.calendar-modal-close')?.focus({ preventScroll: true });
 }
 
 function closeCalendarModal() {
+  const calendarModal = getMountedModal('calendar');
   if (!calendarModal) return;
   calendarModal.hidden = true;
   document.body.style.overflow = '';
@@ -102,12 +100,46 @@ function openComments() {
   commentsSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
 
-if (calendarOpenButton) calendarOpenButton.addEventListener('click', openCalendarModal);
-calendarCloseButtons.forEach((button) => button.addEventListener('click', closeCalendarModal));
 if (commentsOpenButton) commentsOpenButton.addEventListener('click', openComments);
-ticketSearchOpenButtons.forEach((button) => button.addEventListener('click', openTicketSearchModal));
-ticketSearchCloseButtons.forEach((button) => button.addEventListener('click', closeTicketSearchModal));
-if (ticketSearchConfirmButton) ticketSearchConfirmButton.addEventListener('click', goToPerplexityTicketSearch);
+
+// Delegación en document: los botones de cerrar y de confirmar viven dentro del
+// markup inyectado, así que no existen cuando carga el módulo.
+document.addEventListener('click', (event) => {
+  if (event.target.closest('[data-calendar-open]')) {
+    event.preventDefault();
+    openCalendarModal();
+    return;
+  }
+  if (event.target.closest('[data-calendar-close]')) {
+    event.preventDefault();
+    closeCalendarModal();
+    return;
+  }
+  if (event.target.closest('[data-ticket-search-open]')) {
+    event.preventDefault();
+    openTicketSearchModal();
+    return;
+  }
+  if (event.target.closest('[data-ticket-search-close]')) {
+    event.preventDefault();
+    closeTicketSearchModal();
+    return;
+  }
+  if (event.target.closest('[data-ticket-search-confirm]')) {
+    event.preventDefault();
+    goToPerplexityTicketSearch();
+    return;
+  }
+  if (event.target.closest('[data-lightbox-open]')) {
+    event.preventDefault();
+    openLightbox();
+    return;
+  }
+  if (event.target.closest('[data-lightbox-close]')) {
+    event.preventDefault();
+    closeLightbox();
+  }
+});
 
 document.querySelectorAll('[data-scroll-to-comments]').forEach((link) => {
   link.addEventListener('click', (event) => {
@@ -116,24 +148,26 @@ document.querySelectorAll('[data-scroll-to-comments]').forEach((link) => {
   });
 });
 
-if (lightboxOpen) lightboxOpen.addEventListener('click', openLightbox);
-closeButtons.forEach((button) => button.addEventListener('click', closeLightbox));
-
 window.addEventListener('keydown', (event) => {
-  if (event.key === 'Escape') {
-    if (lightbox && !lightbox.hidden) closeLightbox();
-    if (calendarModal && !calendarModal.hidden) closeCalendarModal();
-    if (ticketSearchModal && !ticketSearchModal.hidden) closeTicketSearchModal();
-  }
+  if (event.key !== 'Escape') return;
+  const lightbox = getMountedModal('lightbox');
+  const calendarModal = getMountedModal('calendar');
+  const ticketSearchModal = getMountedModal('ticket');
+  if (lightbox && !lightbox.hidden) closeLightbox();
+  if (calendarModal && !calendarModal.hidden) closeCalendarModal();
+  if (ticketSearchModal && !ticketSearchModal.hidden) closeTicketSearchModal();
 });
 
 function openTicketSearchModal() {
+  const ticketSearchModal = mountModal('ticket');
   if (!ticketSearchModal) return;
   ticketSearchModal.hidden = false;
   document.body.style.overflow = 'hidden';
+  ticketSearchModal.querySelector('.calendar-modal-close')?.focus({ preventScroll: true });
 }
 
 function closeTicketSearchModal() {
+  const ticketSearchModal = getMountedModal('ticket');
   if (!ticketSearchModal) return;
   ticketSearchModal.hidden = true;
   document.body.style.overflow = '';
@@ -275,7 +309,11 @@ function cleanField(value = '', fallback = '') {
   return cleanValue || fallback;
 }
 
-function populateCalendarLinks() {
+function populateCalendarLinks(calendarModal) {
+  const calendarIcsLink = calendarModal.querySelector('[data-calendar-ics]');
+  const calendarGoogleLink = calendarModal.querySelector('[data-calendar-google]');
+  const calendarAppleLink = calendarModal.querySelector('[data-calendar-apple]');
+  const calendarOutlookLink = calendarModal.querySelector('[data-calendar-outlook]');
   const title = eventData.title || document.title;
   const description = eventData.summary || '';
   const location = eventData.location || '';
