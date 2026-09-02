@@ -52,7 +52,8 @@ let availableFilters = Array.isArray(window.__FILTERS__) ? window.__FILTERS__.ma
 let availableSpaces = Array.isArray(window.__EVENTS__?.spaces) ? window.__EVENTS__.spaces : [];
 let availableVenues = [];
 const storageKey = 'aldeapucela_saved_events';
-const DEFAULT_HORIZON_DAYS = 30;
+// La portada declara el horizonte que ya trae renderizado (build.mjs, HOME_HORIZON_DAYS).
+const DEFAULT_HORIZON_DAYS = Number(weekGroups?.dataset.horizonDays) || 30;
 const LOAD_MORE_DAYS = 7;
 let visibleHorizonDays = DEFAULT_HORIZON_DAYS;
 const DATE_MODAL_FILTERS = new Set(['Este mes', 'Próximos 3 meses', 'Este año']);

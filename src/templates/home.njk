@@ -126,7 +126,23 @@
           <h3 class="section-mobile-title" data-results-title>Próximos eventos</h3>
           <a class="section-mobile-link hidden" href="/" data-clear-filters>Quitar filtros</a>
         </div>
-        <div class="week-groups" id="week-groups" data-week-groups></div>
+        {# Renderizado en el build (ver build.mjs, HOME_HORIZON_DAYS). Sin
+           data-server-rendered a propósito: home.js lo repinta con el mismo
+           markup y sigue gestionando "Ver más" y los filtros. #}
+        <div class="week-groups" id="week-groups" data-week-groups data-horizon-days="{{ horizonDays }}">
+          {% for group in dayGroups %}
+          <section class="week-day-group" data-week-day-group data-day-key="{{ group.key }}">
+            <div class="week-day-header">
+              <div class="week-day-label">{{ group.label }}</div>
+            </div>
+            <div class="event-row-list">
+              {%- for event in group.events %}
+              {% include "partials/event-compact.njk" %}
+              {%- endfor %}
+            </div>
+          </section>
+          {% endfor %}
+        </div>
         <p class="hidden text-sm leading-6 text-slate-500" data-week-empty>No hay eventos para este filtro.</p>
         <div class="load-more-events" data-load-more-wrap hidden>
           <button class="btn-ghost load-more-events-btn" type="button" data-load-more-events>
