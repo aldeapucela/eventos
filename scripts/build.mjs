@@ -37,6 +37,10 @@ const googleSiteVerification = 'WI4USc-QdbTLezu0qIZfb2J9Yvqkwg818tWzExtVREw';
 const MIN_INDEXABLE_CATEGORY_EVENTS = 10;
 const MIN_INDEXABLE_VENUE_EVENTS = 5;
 
+// Cuántos eventos enseña como avance cada tarjeta de los hubs /tipos/ y /espacios/.
+// El listado completo está a un clic, en /t/<slug>/ y /espacios/<slug>/.
+const HUB_CARD_EVENTS = 4;
+
 const args = new Set(process.argv.slice(2));
 
 const env = nunjucks.configure(path.join(root, 'src', 'templates'), {
@@ -701,6 +705,11 @@ async function buildSite(events) {
     // orden por volumen se aplica solo aquí, al pintar el hub.
     spaces: spacesByCount.map((space) => ({
       ...space,
+      // Avance de 4 eventos por tarjeta, como /tipos/: el listado completo vive en
+      // /espacios/<slug>/. Antes la tarjeta pintaba TODOS los eventos del espacio,
+      // así que el hub repetía entero el contenido de cada página de espacio.
+      // `space.count` sigue mostrando el total real.
+      events: space.events.slice(0, HUB_CARD_EVENTS),
       pageHref: venuePageSlugs.has(space.slug) ? `/espacios/${space.slug}/` : null
     })),
     spacesCount: spaces.length,
@@ -783,7 +792,7 @@ async function buildSite(events) {
         slug: page.slug,
         path: page.path,
         count: typeCount,
-        events: [...enrichedOngoing, ...enrichedListed].slice(0, 6)
+        events: [...enrichedOngoing, ...enrichedListed].slice(0, HUB_CARD_EVENTS)
       });
     }
     const isIndexable = typeCount >= MIN_INDEXABLE_CATEGORY_EVENTS;
