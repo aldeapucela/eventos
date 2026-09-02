@@ -1,11 +1,12 @@
+import { getMountedModal, mountModal } from './modals.js';
+
 const DISMISS_UNTIL_KEY = 'aldeapucela_install_app_dismissed_until';
 const DISMISS_DURATION_MS = 30 * 24 * 60 * 60 * 1000;
 const PROMOTION_SCROLL_THRESHOLD = 240;
 
-const modal = document.querySelector('[data-install-modal]');
-const modalCopy = document.querySelector('[data-install-app-copy]');
-const modalSteps = document.querySelector('[data-install-app-steps]');
-const modalConfirmButton = document.querySelector('[data-install-app-confirm]');
+// El modal se inyecta al abrirlo (ver modals.js), así que sus nodos se resuelven
+// cuando existen. Los <li> de pasos los pinta updateModalCopy() como antes.
+const getModal = () => getMountedModal('install');
 const previewMode = (() => {
   const isLocalPreview = /^(?:localhost|127\.0\.0\.1)$/.test(window.location.hostname);
   const mode = new URLSearchParams(window.location.search).get('pwa-preview');
@@ -58,6 +59,11 @@ function hasScrolledEnough() {
 }
 
 function updateModalCopy() {
+  const modal = getModal();
+  if (!modal) return;
+  const modalCopy = modal.querySelector('[data-install-app-copy]');
+  const modalSteps = modal.querySelector('[data-install-app-steps]');
+  const modalConfirmButton = modal.querySelector('[data-install-app-confirm]');
   if (!modalCopy || !modalSteps || !modalConfirmButton) return;
   modalCopy.hidden = true;
   modalCopy.textContent = '';
@@ -100,13 +106,16 @@ function syncInstallUi() {
 }
 
 function openInstallModal() {
+  const modal = mountModal('install');
   if (!modal) return;
+  updateModalCopy();
   modal.hidden = false;
   document.body.style.overflow = 'hidden';
   modal.querySelector('[data-install-app-close]')?.focus({ preventScroll: true });
 }
 
 function closeInstallModal({ snooze = false } = {}) {
+  const modal = getModal();
   if (!modal) return;
   modal.hidden = true;
   document.body.style.overflow = '';
@@ -176,7 +185,14 @@ document.addEventListener('click', async (event) => {
 });
 
 window.addEventListener('keydown', (event) => {
+  const modal = getModal();
   if (event.key === 'Escape' && modal && !modal.hidden) closeInstallModal({ snooze: true });
+});
+
+// El botón [data-install-app-open] vive dentro del drawer, que se inyecta al
+// abrirlo: hay que volver a decidir si mostrarlo cuando aparece.
+document.addEventListener('modal:mounted', (event) => {
+  if (event.detail?.key === 'menuDrawer') syncInstallUi();
 });
 
 syncInstallUi();

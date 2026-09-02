@@ -1,12 +1,17 @@
-// Modal de suscripción (calendario / RSS). Autocontenido para poder usarse en
-// páginas que no cargan home.js, como la ficha de evento.
-// ponytail: home.js todavía tiene su propia copia inline de esta lógica dentro
-// de su gran delegación de clicks; migrarla a este módulo cuando se toque.
+// Modal de suscripción (calendario / RSS). Autocontenido y usado por todas las
+// páginas: el markup se inyecta al primer clic desde modals.js.
+import { getMountedModal, mountModal } from './modals.js';
+
 export function setupSubscribe() {
-  const modal = document.querySelector('[data-subscribe-modal]');
-  if (!modal) return;
+  let pickerReady = false;
 
   const open = (section = 'calendar') => {
+    const modal = mountModal('subscribe');
+    if (!modal) return;
+    if (!pickerReady) {
+      setupCategoryPicker(modal);
+      pickerReady = true;
+    }
     modal.hidden = false;
     document.body.style.overflow = 'hidden';
     scrollSubscribePanel(modal, section);
@@ -14,6 +19,8 @@ export function setupSubscribe() {
   };
 
   const close = () => {
+    const modal = getMountedModal('subscribe');
+    if (!modal) return;
     modal.hidden = true;
     document.body.style.overflow = '';
     const panel = modal.querySelector('.subscribe-modal-panel') || modal;
@@ -24,6 +31,13 @@ export function setupSubscribe() {
     const openBtn = event.target.closest('[data-subscribe-open]');
     if (openBtn) {
       event.preventDefault();
+      // Los disparadores viven dentro del drawer móvil: ciérralo antes de abrir
+      // para no apilar dos capas (lo hacía home.js antes de compartir módulo).
+      const drawer = openBtn.closest('[data-menu-drawer]');
+      if (drawer) {
+        drawer.hidden = true;
+        document.body.style.overflow = '';
+      }
       open(openBtn.dataset.subscribeOpen || 'calendar');
       return;
     }
@@ -40,10 +54,9 @@ export function setupSubscribe() {
   });
 
   window.addEventListener('keydown', (event) => {
-    if (event.key === 'Escape' && !modal.hidden) close();
+    const modal = getMountedModal('subscribe');
+    if (event.key === 'Escape' && modal && !modal.hidden) close();
   });
-
-  setupCategoryPicker(modal);
 }
 
 function scrollSubscribePanel(modal, section = 'calendar') {
@@ -96,12 +109,7 @@ function setupCategoryPicker(modal) {
   if (!picker || !select || !urlInput) return;
   const googleLink = modal.querySelector('[data-category-google]');
   const appleLink = modal.querySelector('[data-category-apple]');
-  let feeds = [];
-  try {
-    feeds = JSON.parse(picker.dataset.feeds || '[]');
-  } catch {
-    feeds = [];
-  }
+  const feeds = Array.isArray(window.__CATEGORY_FEEDS__) ? window.__CATEGORY_FEEDS__ : [];
   const syncFeed = () => {
     const selected = feeds.find((feed) => feed.slug === select.value) || feeds[0];
     if (!selected) return;

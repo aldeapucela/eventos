@@ -1,34 +1,38 @@
+import { getMountedModal, mountModal } from './modals.js';
+
 export function setupLocationLinks({
   openButtonsSelector = '[data-location-open]',
-  modalSelector = '[data-location-modal]',
-  closeButtonsSelector = '[data-location-close]',
   mapLinksSelector = '[data-location-map]',
   defaultQuery = 'Valladolid'
 } = {}) {
-  const locationModal = document.querySelector(modalSelector);
-  const locationCloseButtons = document.querySelectorAll(closeButtonsSelector);
-  const locationMapLinks = Array.from(document.querySelectorAll(mapLinksSelector));
   const openButtons = Array.from(document.querySelectorAll(openButtonsSelector));
 
   if (!openButtons.length) return;
 
+  // El modal se inyecta al primer clic (ver modals.js), así que no se puede
+  // resolver aquí: el markup no está en el HTML servido.
   const openLocationModal = () => {
+    const locationModal = mountModal('location');
     if (!locationModal) return;
     locationModal.hidden = false;
     document.body.style.overflow = 'hidden';
+    locationModal.querySelector('.location-modal-close')?.focus({ preventScroll: true });
   };
 
   const closeLocationModal = () => {
+    const locationModal = getMountedModal('location');
     if (!locationModal) return;
     locationModal.hidden = true;
     document.body.style.overflow = '';
   };
 
   const updateModalLinks = (query) => {
+    const locationModal = mountModal('location');
+    if (!locationModal) return;
     const encoded = encodeURIComponent(query);
     const isIos = isAppleMobileDevice();
 
-    locationMapLinks.forEach((link) => {
+    locationModal.querySelectorAll(mapLinksSelector).forEach((link) => {
       const provider = link.dataset.locationMap;
       let href = '#';
       if (provider === 'openstreetmap') {
@@ -72,9 +76,15 @@ export function setupLocationLinks({
     });
   });
 
-  locationCloseButtons.forEach((button) => button.addEventListener('click', closeLocationModal));
+  // Delegación: los botones de cerrar viven en el markup inyectado.
+  document.addEventListener('click', (event) => {
+    if (!event.target.closest('[data-location-close]')) return;
+    event.preventDefault();
+    closeLocationModal();
+  });
 
   window.addEventListener('keydown', (event) => {
+    const locationModal = getMountedModal('location');
     if (event.key === 'Escape' && locationModal && !locationModal.hidden) {
       closeLocationModal();
     }

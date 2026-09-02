@@ -1,5 +1,8 @@
 import { initTheme } from './theme.js';
 import { setupLocationLinks } from './location-link.js';
+import { setupSubscribe } from './subscribe.js';
+import { setupMenuDrawer } from './menu-drawer.js';
+import { getMountedModal } from './modals.js';
 
 const filters = Array.from(document.querySelectorAll('[data-filter]'));
 let cards = [];
@@ -33,7 +36,6 @@ const filterSheetDateLabel = document.querySelector('[data-filter-sheet-date-lab
 const filterSheetTypeLabel = document.querySelector('[data-filter-sheet-type-label]');
 const filterSheetVenueLabel = document.querySelector('[data-filter-sheet-venue-label]');
 const filterSheetFreeButton = document.querySelector('[data-filter-sheet-free]');
-const drawerDateLabel = document.querySelector('[data-drawer-date-label]');
 const dateMonthSelect = document.querySelector('[data-date-month-select]');
 const typeSelectWrap = document.querySelector('.mobile-chip-type-trigger');
 const typeSelectLabel = document.querySelector('[data-filter-type-label]');
@@ -43,15 +45,8 @@ const venueSelectLabel = document.querySelector('[data-filter-venue-label]');
 const venueOptions = document.querySelector('[data-venue-options]');
 const scrollTopButton = document.querySelector('[data-scroll-top]');
 const shareSiteButton = document.querySelector('[data-share-site]');
-const menuDrawer = document.querySelector('[data-menu-drawer]');
 const addEventOpenButton = document.querySelector('[data-add-event-open]');
 const addEventModal = document.querySelector('[data-add-event-modal]');
-const subscribeModal = document.querySelector('[data-subscribe-modal]');
-const categoryPicker = document.querySelector('[data-category-picker]');
-const categorySelect = document.querySelector('[data-category-select]');
-const categoryUrlInput = document.querySelector('[data-category-url]');
-const categoryGoogleLink = document.querySelector('[data-category-google]');
-const categoryAppleLink = document.querySelector('[data-category-apple]');
 let events = Array.isArray(window.__EVENTS__?.events) ? window.__EVENTS__.events : [];
 let availableFilters = Array.isArray(window.__FILTERS__) ? window.__FILTERS__.map(String) : [];
 let availableSpaces = Array.isArray(window.__EVENTS__?.spaces) ? window.__EVENTS__.spaces : [];
@@ -102,23 +97,22 @@ let activeTypeFilters = initialState.type;
 let activeVenueFilter = initialState.venue;
 
 setupScrollTopButton();
-setupCategoryPicker();
 setupTypeCheckboxes();
 setupLocationLinks();
+// Drawer y modal de suscripción: módulos compartidos con la ficha de evento.
+// home.js tenía su propia copia de las dos cosas (era lo que pedían los
+// comentarios ponytail de menu-drawer.js y subscribe.js).
+setupMenuDrawer();
+setupSubscribe();
 void initializeSiteData();
 
 document.addEventListener('click', async (event) => {
   const saveButton = event.target.closest('[data-save-event]');
   const shareButton = event.target.closest('[data-share-event]');
-  const menuOpen = event.target.closest('[data-menu-open]');
-  const menuClose = event.target.closest('[data-menu-close]');
   const menuPick = event.target.closest('[data-menu-drawer] [data-filter]');
   const shareSiteTrigger = event.target.closest('[data-share-site]');
   const addEventOpen = event.target.closest('[data-add-event-open]');
   const addEventClose = event.target.closest('[data-add-event-close]');
-  const subscribeOpen = event.target.closest('[data-subscribe-open]');
-  const subscribeClose = event.target.closest('[data-subscribe-close]');
-  const copyButton = event.target.closest('[data-copy-url]');
   const typeModalOpen = event.target.closest('[data-type-modal-open]');
   const typeModalClose = event.target.closest('[data-type-modal-close]');
   const dateModalOpen = event.target.closest('[data-date-modal-open]');
@@ -226,15 +220,7 @@ document.addEventListener('click', async (event) => {
     await shareSite(shareSiteTrigger);
   }
 
-  if (menuOpen) {
-    event.preventDefault();
-    openMenu();
-  }
-
-  if (menuClose) {
-    event.preventDefault();
-    closeMenu();
-  }
+  // Abrir y cerrar el drawer lo atiende menu-drawer.js.
 
   if (menuPick) {
     event.preventDefault();
@@ -257,22 +243,6 @@ document.addEventListener('click', async (event) => {
   if (addEventClose) {
     event.preventDefault();
     closeAddEventModal();
-  }
-
-  if (subscribeOpen) {
-    event.preventDefault();
-    closeMenu();
-    openSubscribeModal(subscribeOpen.dataset.subscribeOpen || 'calendar');
-  }
-
-  if (subscribeClose) {
-    event.preventDefault();
-    closeSubscribeModal();
-  }
-
-  if (copyButton) {
-    event.preventDefault();
-    copySubscribeUrl(copyButton);
   }
 
   if (dateModalOpen) {
@@ -379,9 +349,6 @@ document.addEventListener('keydown', (event) => {
   }
   if (event.key === 'Escape' && addEventModal && !addEventModal.hidden) {
     closeAddEventModal();
-  }
-  if (event.key === 'Escape' && subscribeModal && !subscribeModal.hidden) {
-    closeSubscribeModal();
   }
   if (event.key === 'Escape' && typeModal && !typeModal.hidden) {
     closeTypeModal();
@@ -800,6 +767,8 @@ function updateDateFilterUi() {
   if (filterSheetDateLabel) {
     filterSheetDateLabel.textContent = active ? `Fecha · ${getLabel(activeTimeFilter)}` : 'Más fechas';
   }
+  // Está dentro del drawer, que se inyecta al abrirlo: se resuelve al vuelo.
+  const drawerDateLabel = document.querySelector('[data-drawer-date-label]');
   if (drawerDateLabel) {
     drawerDateLabel.textContent = active ? `Fecha · ${getLabel(activeTimeFilter)}` : 'Fecha';
   }
@@ -1087,12 +1056,6 @@ function hasMoreEventsForCurrentFilters() {
   });
 }
 
-function openMenu() {
-  if (!menuDrawer) return;
-  menuDrawer.hidden = false;
-  document.body.style.overflow = 'hidden';
-}
-
 function setupScrollTopButton() {
   if (!scrollTopButton) return;
   const onScroll = () => {
@@ -1106,9 +1069,12 @@ function setupScrollTopButton() {
   });
 }
 
+// Cierre programático del drawer desde otros handlers (elegir un filtro, abrir
+// otro overlay). Abrirlo es cosa de menu-drawer.js.
 function closeMenu() {
-  if (!menuDrawer) return;
-  menuDrawer.hidden = true;
+  const drawer = getMountedModal('menuDrawer');
+  if (!drawer || drawer.hidden) return;
+  drawer.hidden = true;
   document.body.style.overflow = '';
 }
 
@@ -1116,39 +1082,6 @@ function openAddEventModal() {
   if (!addEventModal) return;
   addEventModal.hidden = false;
   document.body.style.overflow = 'hidden';
-}
-
-function openSubscribeModal(section = 'calendar') {
-  if (!subscribeModal) return;
-  subscribeModal.hidden = false;
-  document.body.style.overflow = 'hidden';
-  scrollSubscribePanel(section);
-  subscribeModal.querySelector('[data-subscribe-close]')?.focus({ preventScroll: true });
-}
-
-function scrollSubscribePanel(section = 'calendar') {
-  const panel = subscribeModal.querySelector('.subscribe-modal-panel') || subscribeModal;
-  const syncScroll = () => {
-    const targetSection = subscribeModal.querySelector(`[data-subscribe-section="${section}"]`);
-    const shouldPinCalendar = section === 'calendar' && window.matchMedia('(max-width: 640px)').matches;
-    panel.scrollTop = 0;
-    if (!targetSection || (section === 'calendar' && !shouldPinCalendar)) {
-      return;
-    }
-    const panelTop = panel.getBoundingClientRect().top;
-    const targetTop = targetSection.getBoundingClientRect().top;
-    panel.scrollTop = Math.max(0, panel.scrollTop + targetTop - panelTop - 16);
-  };
-  syncScroll();
-  window.requestAnimationFrame(() => window.requestAnimationFrame(syncScroll));
-}
-
-function closeSubscribeModal() {
-  if (!subscribeModal) return;
-  subscribeModal.hidden = true;
-  document.body.style.overflow = '';
-  const panel = subscribeModal.querySelector('.subscribe-modal-panel') || subscribeModal;
-  panel.scrollTop = 0;
 }
 
 function openFilterModal() {
@@ -1199,56 +1132,6 @@ function closeDateModal() {
   if (!dateModal) return;
   dateModal.hidden = true;
   document.body.style.overflow = '';
-}
-
-async function copySubscribeUrl(button) {
-  const key = button.dataset.copyUrl;
-  const input = document.querySelector(`[data-copy-source="${key}"]`);
-  if (!input) return;
-  const value = input.value;
-  const originalLabel = button.textContent;
-  try {
-    if (navigator.clipboard?.writeText) {
-      await navigator.clipboard.writeText(value);
-    } else {
-      input.removeAttribute('readonly');
-      input.focus();
-      input.select();
-      document.execCommand('copy');
-      input.setAttribute('readonly', 'readonly');
-    }
-    button.textContent = 'Copiado';
-    window.setTimeout(() => {
-      button.textContent = originalLabel;
-    }, 1200);
-  } catch {
-    input.focus();
-    input.select();
-  }
-}
-
-function setupCategoryPicker() {
-  if (!categoryPicker || !categorySelect || !categoryUrlInput) return;
-  let feeds = [];
-  try {
-    feeds = JSON.parse(categoryPicker.dataset.feeds || '[]');
-  } catch {
-    feeds = [];
-  }
-  const syncFeed = () => {
-    const selected = feeds.find((feed) => feed.slug === categorySelect.value) || feeds[0];
-    if (!selected) return;
-    categoryUrlInput.value = selected.url;
-    categoryUrlInput.setAttribute('value', selected.url);
-    if (categoryGoogleLink) {
-      categoryGoogleLink.href = `https://calendar.google.com/calendar/r?cid=${encodeURIComponent(selected.webcalUrl)}`;
-    }
-    if (categoryAppleLink) {
-      categoryAppleLink.href = selected.webcalUrl;
-    }
-  };
-  categorySelect.addEventListener('change', syncFeed);
-  syncFeed();
 }
 
 function closeAddEventModal() {

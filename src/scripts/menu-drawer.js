@@ -1,16 +1,23 @@
-// Abrir/cerrar el drawer de navegación móvil (hamburguesa). Autocontenido para
-// poder usarse en páginas que no cargan home.js, como la ficha de evento.
-// ponytail: home.js todavía tiene su propia copia inline de esta lógica;
-// migrarla a este módulo cuando se toque.
+// Abrir/cerrar el drawer de navegación móvil (hamburguesa). Único para todo el
+// sitio: antes había el partial más cuatro copias inline en archivo/tipos/
+// guardados/espacios. El markup se inyecta al primer clic desde modals.js.
+import { activeNavFromPath, getMountedModal, mountModal } from './modals.js';
+
 export function setupMenuDrawer() {
-  const drawer = document.querySelector('[data-menu-drawer]');
-  if (!drawer) return;
+  // Los filtros del drawer solo tienen sentido donde hay listado filtrable
+  // (portada y páginas temporales, que son las que traen los chips de filtro).
+  // Antes lo decidía la plantilla con hideDrawerFilters.
+  const showFilters = Boolean(document.querySelector('[data-filter-modal-open], .mobile-chip-row'));
 
   const open = () => {
+    const drawer = mountModal('menuDrawer', { activeNav: activeNavFromPath(), showFilters });
+    if (!drawer) return;
     drawer.hidden = false;
     document.body.style.overflow = 'hidden';
   };
   const close = () => {
+    const drawer = getMountedModal('menuDrawer');
+    if (!drawer) return;
     drawer.hidden = true;
     document.body.style.overflow = '';
   };
@@ -31,6 +38,7 @@ export function setupMenuDrawer() {
   });
 
   window.addEventListener('keydown', (event) => {
-    if (event.key === 'Escape' && !drawer.hidden) close();
+    const drawer = getMountedModal('menuDrawer');
+    if (event.key === 'Escape' && drawer && !drawer.hidden) close();
   });
 }
