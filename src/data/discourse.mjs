@@ -51,7 +51,7 @@ const ADDRESS_ONLY_RE = /^(?:calle\s+|c\/\s*|c\.\s+|av(?:da|enida)?\.?\s+|paseo\
 const TRAILING_NUMBER_RE = /(?:^|[\s,])(\d{1,4}[A-Z]?)(?:[\s,].*)?$/;
 
 export async function fetchJson(url) {
-  const maxAttempts = 4;
+  const maxAttempts = 6;
   for (let attempt = 1; attempt <= maxAttempts; attempt += 1) {
     const response = await fetch(url, {
       headers: {
@@ -64,8 +64,10 @@ export async function fetchJson(url) {
     }
 
     if (response.status === 429 && attempt < maxAttempts) {
+      // nginx no manda retry-after, así que subimos la espera exponencialmente:
+      // un build en frío pide el detalle de todos los eventos y toca el límite.
       const retryAfter = Number(response.headers.get('retry-after') || '0');
-      const waitMs = retryAfter > 0 ? retryAfter * 1000 : attempt * 1500;
+      const waitMs = retryAfter > 0 ? retryAfter * 1000 : Math.min(30000, 2000 * 2 ** (attempt - 1));
       await sleep(waitMs);
       continue;
     }
@@ -498,6 +500,6 @@ function normalizeWord(word) {
   return word.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/^[^a-z0-9]+|[^a-z0-9]+$/g, '');
 }
 
-function sleep(ms) {
+export function sleep(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
