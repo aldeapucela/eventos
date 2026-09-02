@@ -144,6 +144,14 @@ export function eventMatchesWindow(event, window) {
   return startsAt <= window.end && endsAt >= window.start;
 }
 
+// Ventana "hoy → hoy+N días" con límites de día de Madrid. Réplica de
+// endOfHorizon(today, DEFAULT_HORIZON_DAYS) en src/scripts/home.js: es la
+// lista "Próximos eventos" que la portada sirve ya renderizada.
+export function getHorizonWindow(now, days) {
+  const today = getMadridDateParts(now);
+  return { start: startOfMadridDay(today), end: endOfMadridDay(addDaysToParts(today, days)) };
+}
+
 // Ventana abierta (de hoy en adelante, sin fin): para listados sin tope
 // temporal como las páginas por categoría.
 export function getOpenEndedWindow(now) {

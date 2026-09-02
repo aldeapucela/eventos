@@ -12,11 +12,15 @@ import { DISPLAY_TIMEZONE, buildTextParagraphHtml, cleanDescriptionHtml, detectP
 import { enrichVenueCatalog, mergeSpacesWithVenueCatalog } from '../src/data/venues.mjs';
 import { canonicalizeVenue, normalizeVenueKey } from '../src/data/venue-aliases.mjs';
 import { buildCollectionPageJsonLd, buildEventJsonLd, buildVenuePageJsonLd, serializeJsonLd } from '../src/data/structured-data.mjs';
-import { getOpenEndedWindow, getTimePages, isWeekendDayKey, resolveBuildNow, selectTimePageEvents } from '../src/data/time-windows.mjs';
+import { getHorizonWindow, getOpenEndedWindow, getTimePages, isWeekendDayKey, resolveBuildNow, selectTimePageEvents } from '../src/data/time-windows.mjs';
 import { getCategoryPages, mappedCategoryLabels } from '../src/data/category-pages.mjs';
 import { getVenuePages } from '../src/data/venue-pages.mjs';
 import { canonicalizeCategory } from '../src/data/category-aliases.mjs';
 import { syncEvents } from './sync-lib.mjs';
+
+// Días que lista "Próximos eventos" en la portada. home.js lo lee de
+// data-horizon-days para no duplicar el número.
+const HOME_HORIZON_DAYS = 30;
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const root = path.resolve(__dirname, '..');
@@ -661,11 +665,17 @@ async function buildSite(events) {
   mark('pages');
   const homeFeatured = featured ? enrichEvent(featured) : null;
   const homeOngoing = ongoing.map(enrichEvent).map(withVenueKeys);
-  // ItemList de la portada: solo lo que está de verdad en el HTML servido (el
-  // destacado y el carrusel "En curso"). El listado de #week-groups lo rellena
-  // home.js, así que no se anuncia aquí. Dedupe por id: el destacado puede estar
-  // también en "En curso".
-  const homeItems = [...(homeFeatured ? [homeFeatured] : []), ...homeOngoing]
+  // "Próximos eventos" de la portada, renderizado en el build con la misma
+  // ventana que pinta home.js por defecto (HOME_HORIZON_DAYS). El JS, al
+  // arrancar, repinta #week-groups con markup idéntico, así que sin JS (y para
+  // el buscador) la portada trae el listado completo y con JS no hay salto.
+  const homeWindow = getHorizonWindow(buildNow, HOME_HORIZON_DAYS);
+  const { listed: homeListed } = selectTimePageEvents(events, homeWindow, buildNow);
+  const homeDayGroups = buildTimePageDayGroups(sortEvents(homeListed).map(enrichEvent).map(withVenueKeys), buildNow);
+  // ItemList de la portada: lo que va de verdad en el HTML servido (destacado,
+  // carrusel "En curso" y el listado por días). Dedupe por id: el destacado
+  // puede estar también en "En curso".
+  const homeItems = [...(homeFeatured ? [homeFeatured] : []), ...homeOngoing, ...homeDayGroups.flatMap((group) => group.events)]
     .filter((event, index, list) => list.findIndex((other) => other.id === event.id) === index)
     .map((event) => ({ url: `${publicBaseUrl}/e/${event.id}/${event.slug}/`, name: event.title }));
   await writeFile('index.html', render('home.njk', {
@@ -694,6 +704,8 @@ async function buildSite(events) {
     featured: homeFeatured,
     week: week.map(enrichEvent),
     ongoing: homeOngoing,
+    dayGroups: homeDayGroups,
+    horizonDays: HOME_HORIZON_DAYS,
     today: today.map(enrichEvent),
     todayCount: today.length,
     categories: filters,
