@@ -132,6 +132,18 @@ export const VENUE_CANONICAL_MAP = {
   'museo palacio de santa cruz': 'Palacio de Santa Cruz',
   'jardines del palacio de santa cruz universidad de valladolid': 'Palacio de Santa Cruz',
   'santa cruz universidad de valladolid': 'Palacio de Santa Cruz',
+  // La galería de San Ambrosio es una sala DENTRO del Palacio, así que va al Palacio.
+  // Distinto de las tres entradas de "Museo de Arte Africano ... (Palacio de Santa Cruz)"
+  // de arriba, que siguen apuntando al museo (el Palacio es su sede, no el museo).
+  'galeria superior de la de san ambrosio palacio de santa cruz': 'Palacio de Santa Cruz',
+
+  // Sala de Exposiciones de la Pasión: cuatro grafías en los datos, incluida la
+  // abreviatura "SME Pasión" (Sala Municipal de Exposiciones).
+  'de exposiciones de la pasion': 'Sala de Exposiciones de la Pasión',
+  'de la pasion': 'Sala de Exposiciones de la Pasión',
+  'municipal de exposiciones la pasion': 'Sala de Exposiciones de la Pasión',
+  'sme pasion': 'Sala de Exposiciones de la Pasión',
+
   'carcamal': 'Carcamal',
   'carcamal tapas': 'Carcamal',
   'carcamal tapas groove': 'Carcamal',
@@ -196,4 +208,30 @@ export function canonicalizeVenue(value) {
   if (!raw) return '';
   const normalizedKey = normalizeVenueKey(raw);
   return VENUE_CANONICAL_MAP[raw.toLowerCase()] || VENUE_CANONICAL_MAP[normalizedKey] || raw;
+}
+
+// ponytail: self-check de las fusiones que no son obvias por el nombre crudo.
+if (process.argv[1] && (await import('node:url')).fileURLToPath(import.meta.url) === process.argv[1]) {
+  const pasion = [
+    'Sala de La Pasión',
+    'Sala de Exposiciones de la Pasión',
+    'Sala Municipal de Exposiciones La Pasión',
+    'SME Pasión'
+  ].map(canonicalizeVenue);
+  console.assert(
+    pasion.every((name) => name === 'Sala de Exposiciones de la Pasión'),
+    `variantes de La Pasión sin fusionar: ${pasion.join(' | ')}`
+  );
+  console.assert(
+    canonicalizeVenue('Galería superior de la Sala de San Ambrosio, Palacio de Santa Cruz') === 'Palacio de Santa Cruz',
+    'la galería de San Ambrosio debe fusionarse en Palacio de Santa Cruz'
+  );
+  // El museo NO se absorbe en el Palacio, aunque el nombre lleve "Palacio de Santa Cruz".
+  console.assert(
+    canonicalizeVenue('Museo de Arte Africano de la UVa, Galería superior de la Sala de San Ambrosio (Palacio de Santa Cruz)') === 'Museo de Arte Africano Arellano Alonso',
+    'el Museo de Arte Africano no debe caer en Palacio de Santa Cruz'
+  );
+  // Un venue sin entrada en el mapa se devuelve tal cual.
+  console.assert(canonicalizeVenue('Sala Inventada 42') === 'Sala Inventada 42', 'venue desconocido no debe transformarse');
+  console.log(`ok: ${Object.keys(VENUE_CANONICAL_MAP).length} alias de venue, fusiones verificadas`);
 }
