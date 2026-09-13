@@ -411,7 +411,8 @@ function enrichEvent(event) {
 // del cartel y de las líneas de metadatos, y solo se re-normalizan si cambia su
 // firma en el foro. Es idempotente.
 function resolveEventDescriptionHtml(event) {
-  const cleaned = cleanDescriptionHtml(event.descriptionHtml || '', event.title || '');
+  const eventUrl = new URL(event.urlPath || ('/e/' + event.id + '/' + event.slug + '/'), publicBaseUrl).href;
+  const cleaned = cleanDescriptionHtml(event.descriptionHtml || '', event.title || '', eventUrl);
   if (cleaned) return cleaned;
   const fallback = String(event.summary || event.excerpt || '').trim();
   return fallback ? buildTextParagraphHtml(fallback) : '';
