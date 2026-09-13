@@ -6,6 +6,7 @@ import {
   detectPriceStatus,
   extractParagraphLines,
   normalizeImage,
+  normalizeComparableText,
   parseEventMetaFromHtml,
   normalizePriceLabel,
   titleCase,
@@ -140,8 +141,10 @@ export function normalizeDiscourseTopic(topic, detail) {
   const startsAt = event.starts_at || topic.event_starts_at || null;
   const endsAt = event.ends_at || topic.event_ends_at || null;
   const lines = extractParagraphLines(rawHtml);
-  const summary = normalizeEventSummary(event.description || extractSummary(lines, title));
-  const descriptionHtml = resolveDescriptionHtml(rawHtml, title, event.description_html, event.description);
+  const ownEventUrl = 'https://eventos.aldeapucela.org/e/' + topic.id + '/' + slug + '/';
+  const eventDescriptionText = normalizeEventDescriptionText(event.description, title, ownEventUrl);
+  const summary = normalizeEventSummary(eventDescriptionText || extractSummary(lines, title));
+  const descriptionHtml = resolveDescriptionHtml(rawHtml, title, event.description_html, event.description, ownEventUrl);
   const categoryLabel = normalizeCategory(readEventCustomField(customFields, 'event_category') || meta.categoryLabel);
   const location = normalizeLocation(event.location || meta.location || meta.inferredLocation || '', title);
   const parsedLocation = parseLocationParts(location, title);
@@ -229,19 +232,37 @@ function normalizeEventSummary(value = '') {
   return String(value || '').replace(/\s+/g, ' ').trim();
 }
 
-function resolveDescriptionHtml(rawHtml, title, eventDescriptionHtml = '', eventDescription = '') {
+function resolveDescriptionHtml(rawHtml, title, eventDescriptionHtml = '', eventDescription = '', eventUrl = '') {
   const cleanedEventHtml = String(eventDescriptionHtml || '').trim();
   if (cleanedEventHtml) {
-    return /<[^>]+>/.test(cleanedEventHtml) ? cleanedEventHtml : buildTextParagraphHtml(cleanedEventHtml);
+    const html = /<[^>]+>/.test(cleanedEventHtml) ? cleanedEventHtml : buildTextParagraphHtml(cleanedEventHtml);
+    return cleanDescriptionHtml(html, title, eventUrl);
   }
 
   const cleanedEventText = normalizeEventSummary(eventDescription);
   if (cleanedEventText) {
-    return buildTextParagraphHtml(cleanedEventText);
+    return cleanDescriptionHtml(buildTextParagraphHtml(cleanedEventText), title, eventUrl);
   }
 
-  return cleanDescriptionHtml(rawHtml, title);
+  return cleanDescriptionHtml(rawHtml, title, eventUrl);
 }
+
+function normalizeEventDescriptionText(value = '', title = '', eventUrl = '') {
+  const candidate = String(value || '').trim();
+  if (!candidate) return '';
+  const html = /<[^>]+>/.test(candidate) ? candidate : buildTextParagraphHtml(candidate);
+  const text = extractParagraphLines(cleanDescriptionHtml(html, title, eventUrl)).join(' ').trim();
+  const normalized = normalizeComparableText(text);
+  const normalizedTitle = normalizeComparableText(title);
+  if (
+    !normalized ||
+    normalized === normalizedTitle ||
+    normalized === normalizedTitle + ' en eventos.aldeapucela.org' ||
+    normalized === 'ver el evento en la web'
+  ) return '';
+  return text;
+}
+
 
 export function normalizeDetailToRecord(topic, detail) {
   const normalized = normalizeDiscourseTopic(topic, detail);
@@ -252,13 +273,17 @@ export function normalizeDetailToRecord(topic, detail) {
 }
 
 function extractSummary(lines, title) {
-  const normalizedTitle = title.trim().toLowerCase();
-  const candidates = lines.filter((line) => {
-    const lower = line.toLowerCase();
-    if (lower === normalizedTitle) return false;
-    if (lower.startsWith('categoría:') || lower.startsWith('organizador:') || lower.startsWith('notas:')) return false;
-    if (line.length < 24) return false;
-    return true;
+  const normalizedTitle = normalizeComparableText(title);
+  const candidates = lines.flatMap((originalLine) => {
+    const line = originalLine.replace(/^(?:descripción|descripcion) completa\s*/i, '').trim();
+    if (!line) return [];
+    const lower = normalizeComparableText(line);
+    if (lower === normalizedTitle) return [];
+    if (lower === 'ver el evento en la web') return [];
+    if (lower === normalizedTitle + ' en eventos.aldeapucela.org') return [];
+    if (lower.startsWith('categoría:') || lower.startsWith('organizador:') || lower.startsWith('notas:')) return [];
+    if (line.length < 24) return [];
+    return [line];
   });
 
   return candidates[0] || '';
