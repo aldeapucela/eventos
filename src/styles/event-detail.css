@@ -13,7 +13,7 @@
 
   .page-event-detail .detail-clean-title {
     margin: 0.25rem 0 0;
-    font-size: clamp(2rem, 6vw, 3rem);
+    font-size: clamp(1.5rem, 6vw, 3rem);
     line-height: 1.04;
     text-wrap: balance;
   }
@@ -39,6 +39,11 @@
   .detail-category-badge:focus-visible {
     outline: 2px solid currentColor;
     outline-offset: 3px;
+  }
+
+  .page-event-detail .detail-topbar-mobile-action.is-active {
+    background: #73579f;
+    color: #fff;
   }
 
   .detail-clean-facts,

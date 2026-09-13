@@ -1476,7 +1476,7 @@
   }
 
   .detail-topbar-mobile-back {
-    @apply -ml-1 h-10 w-10 shrink-0 rounded-full text-slate-500 hover:bg-slate-100 hover:text-brand-700;
+    @apply -ml-1 h-10 w-10 shrink-0 rounded-full text-slate-500;
   }
 
   .detail-topbar-mobile-brand {
@@ -1484,7 +1484,14 @@
   }
 
   .detail-topbar-mobile-action {
-    @apply h-10 w-10 shrink-0 rounded-full text-slate-500 hover:bg-slate-100 hover:text-brand-700;
+    @apply h-10 w-10 shrink-0 rounded-full text-slate-500;
+  }
+
+  @media (hover: hover) and (pointer: fine) {
+    .detail-topbar-mobile-back:hover,
+    .detail-topbar-mobile-action:not(.is-active):hover {
+      @apply bg-slate-100 text-brand-700;
+    }
   }
 
   @media (min-width: 1024px) {
@@ -2129,7 +2136,14 @@ html.dark .site-footer-copy a {
 
     .detail-topbar-actions button,
     .detail-topbar-actions a {
-      @apply h-10 w-10 rounded-full text-slate-500 hover:bg-slate-100 hover:text-brand-700;
+      @apply h-10 w-10 rounded-full text-slate-500;
+    }
+
+    @media (hover: hover) and (pointer: fine) {
+      .detail-topbar-actions button:hover,
+      .detail-topbar-actions a:hover {
+        @apply bg-slate-100 text-brand-700;
+      }
     }
 
     .detail-topbar-actions i,
