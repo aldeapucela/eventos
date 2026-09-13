@@ -1148,7 +1148,7 @@ function renderWeekItem(event) {
     return `
       <article class="event-compact" data-category="${event.categoryLabel || ''}" data-free="${event.isFree ? 'true' : 'false'}" data-venue="${event.venueLabel || event.location || ''}" data-venue-key="${event.venueKey || ''}" data-starts-at="${event.startsAtIso || ''}" data-ends-at="${event.endsAtIso || ''}">
         <div class="event-compact-link">
-          <div class="event-compact-image" style="background-image:url('${event.image || '/assets/placeholder-event.svg'}')"></div>
+          <img class="event-compact-image" src="${event.image || '/assets/placeholder-event.svg'}" alt="" width="400" height="500" loading="lazy" decoding="async" />
           <div class="event-compact-copy">
           <div class="event-compact-topline">
             <span>${event.scheduleLabel || `${event.compactDateLabel || ''}${event.timeLabel ? ` · ${event.timeLabel}` : ''}`}</span>

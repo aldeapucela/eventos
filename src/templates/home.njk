@@ -77,7 +77,7 @@
           {% for event in ongoing %}
           <article class="event-compact event-compact-featured event-compact-ongoing flex-none w-[43%] md:w-[23%] snap-start" data-category="{{ event.categoryLabel }}" data-free="{{ 'true' if event.isFree else 'false' }}" data-venue="{{ event.venueLabel or event.location or '' }}" data-venue-key="{{ event.venueKey or '' }}" data-starts-at="{{ event.startsAt }}" data-ends-at="{{ event.endsAt }}">
             <div class="event-compact-link">
-              <div class="event-compact-image" style="background-image:url('{{ event.image or '/assets/placeholder-event.svg' }}')"></div>
+              <img class="event-compact-image" src="{{ event.image or '/assets/placeholder-event.svg' }}" alt="" width="400" height="500" loading="lazy" decoding="async" />
               <div class="event-compact-copy">
                 <p class="event-compact-topline"><span>{% if event.endsAtDayLabel %}Hasta {{ event.endsAtDayLabel }}{% else %}{% if event.scheduleLabel %}{{ event.scheduleLabel }}{% else %}{{ event.compactDateLabel }}{% if event.timeLabel %} · {{ event.timeLabel }}{% endif %}{% endif %}{% endif %}</span></p>
                 <h4 class="event-compact-title"><a href="{{ event.urlPath }}">{{ event.title }}</a></h4>

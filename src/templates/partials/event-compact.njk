@@ -2,7 +2,7 @@
    este partial, cambia también esa función (y viceversa). #}
 <article class="event-compact" data-category="{{ event.categoryLabel or '' }}" data-free="{{ 'true' if event.isFree else 'false' }}" data-venue="{{ event.venueLabel or event.location or '' }}" data-venue-key="{{ event.venueKey or '' }}" data-starts-at="{{ event.startsAt or '' }}" data-ends-at="{{ event.endsAt or '' }}">
   <div class="event-compact-link">
-    <div class="event-compact-image" style="background-image:url('{{ event.image or '/assets/placeholder-event.svg' }}')"></div>
+    <img class="event-compact-image" src="{{ event.image or '/assets/placeholder-event.svg' }}" alt="" width="400" height="500" loading="lazy" decoding="async" />
     <div class="event-compact-copy">
     <div class="event-compact-topline">
       <span>{% if cardWithYear and event.detailScheduleLabel %}{{ event.detailScheduleLabel }}{% elif event.scheduleLabel %}{{ event.scheduleLabel }}{% else %}{{ event.compactDateLabel or '' }}{% if event.timeLabel %} · {{ event.timeLabel }}{% endif %}{% endif %}</span>

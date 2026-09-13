@@ -386,7 +386,7 @@
   }
 
   .event-compact-image {
-    @apply aspect-[4/5] rounded-none bg-cover bg-center;
+    @apply aspect-[4/5] rounded-none bg-cover bg-center block w-full object-cover;
   }
 
   .event-compact-copy {
@@ -650,7 +650,7 @@
   }
 
   .event-compact-image {
-    @apply aspect-[4/5] rounded-none bg-cover bg-center;
+    @apply aspect-[4/5] rounded-none bg-cover bg-center block w-full object-cover;
   }
 
   .event-compact-copy {
