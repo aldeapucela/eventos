@@ -4,6 +4,9 @@ import { setupLocationLinks } from './location-link.js';
 import { setupSubscribe } from './subscribe.js';
 import { setupMenuDrawer } from './menu-drawer.js';
 import { getMountedModal, mountModal } from './modals.js';
+import { loadEventMetrics, recordEventSave, renderEventSaveCounts } from './event-metrics.js';
+import { getWeatherAtTime, getWeatherCondition, loadWeatherForecast } from './weather.js';
+import { setupEventDirections } from './directions.js';
 
 const storageKey = 'aldeapucela_saved_events';
 
@@ -17,7 +20,11 @@ const eventData = window.__EVENT_DETAIL__ || {};
 initTheme();
 
 syncSavedStates();
+window.trackMatomoActivityOnce?.({ action: 'view_detail', eventId: String(eventData?.id || '') });
 setupLocationLinks();
+setupEventDirections();
+void loadEventMetrics().then(() => renderEventSaveCounts());
+void renderDetailWeather();
 setupCommentsSection();
 setupSubscribe();
 setupMenuDrawer();
@@ -31,6 +38,8 @@ document.addEventListener('click', async (event) => {
     event.stopPropagation();
     const action = toggleSaved(saveButton.dataset.eventId);
     if (action === 'added') {
+      void recordEventSave(saveButton.dataset.eventId);
+      window.trackMatomoActivityOnce?.({ action: 'save', eventId: String(saveButton.dataset.eventId || eventData?.id || '') });
       window.trackMatomoInteractionOnce?.({
         origin: 'detail',
         action: 'save',
@@ -52,6 +61,28 @@ document.addEventListener('click', async (event) => {
     );
   }
 });
+
+async function renderDetailWeather() {
+  const weather = document.querySelector('[data-detail-weather]');
+  if (!weather) return;
+  const date = weather.dataset.weatherDate;
+  const timeMatch = String(weather.dataset.weatherTime || '').match(/(?:^|[^\d])(\d{1,2}):(\d{2})(?:$|[^\d])/);
+  if (!date || !timeMatch) return;
+
+  const time = `${timeMatch[1].padStart(2, '0')}:${timeMatch[2]}`;
+  try {
+    const forecast = await loadWeatherForecast();
+    const hourly = getWeatherAtTime(forecast[date], time);
+    const condition = getWeatherCondition(hourly?.weatherCode);
+    if (!hourly || !condition || !Number.isFinite(hourly.temperature)) return;
+    const icon = weather.querySelector('[data-detail-weather-icon]');
+    const copy = weather.querySelector('[data-detail-weather-copy]');
+    if (!icon || !copy) return;
+    icon.className = `fa-solid ${condition.icon}`;
+    copy.textContent = `${Math.round(hourly.temperature)} °C · ${condition.label}`;
+    weather.hidden = false;
+  } catch {}
+}
 
 function openLightbox() {
   if (!hero) return;
@@ -127,7 +158,7 @@ document.addEventListener('click', (event) => {
   }
   if (event.target.closest('[data-ticket-search-confirm]')) {
     event.preventDefault();
-    goToPerplexityTicketSearch();
+    goToChatGPTTicketSearch();
     return;
   }
   if (event.target.closest('[data-lightbox-open]')) {
@@ -173,7 +204,7 @@ function closeTicketSearchModal() {
   document.body.style.overflow = '';
 }
 
-function goToPerplexityTicketSearch() {
+function goToChatGPTTicketSearch() {
   const title = cleanField(eventData?.title || document.title, 'Evento sin título');
   const dateLabel = cleanField(extractDateLabel(), 'Fecha no disponible');
   const timeLabel = cleanField(extractBestTimeLabel(), '');
@@ -193,8 +224,8 @@ function goToPerplexityTicketSearch() {
   const unknownPrice = eventData?.priceStatus === 'unknown';
 
   const intro = unknownPrice
-    ? 'Quiero saber cómo se accede a este evento: si es de entrada libre o si hace falta entrada o invitación, y en ese caso dónde conseguirla de forma segura y oficial.'
-    : 'Quiero comprar entradas para este evento de forma segura y oficial.';
+    ? 'Busca en la web cómo se accede a este evento: si es de entrada libre o si hace falta entrada o invitación, y en ese caso dónde conseguirla de forma segura y oficial.'
+    : 'Busca en la web dónde comprar entradas para este evento de forma segura y oficial.';
 
   const objetivo = unknownPrice
     ? `- Averigua si el acceso es libre o si requiere entrada o invitación.
@@ -233,6 +264,7 @@ Responde SOLO con:
 ${respuesta}
 
 Reglas:
+- Usa la búsqueda web de ChatGPT para contrastar información vigente.
 - Excluye reventa (Viagogo, StubHub, Ticketswap y similares).
 - Excluye agregadores sin relación directa con el organizador.
 - No incluyas fuentes que no puedas verificar como oficiales.
@@ -243,7 +275,7 @@ Reglas:
 - Si no puedes verificar ninguna opción oficial, responde exactamente: "${unknownPrice ? 'Sin información oficial verificable.' : 'Sin venta oficial verificable.'}"`;
 
   closeTicketSearchModal();
-  window.open(`https://www.perplexity.ai/search?q=${encodeURIComponent(prompt)}`, '_blank', 'noopener,noreferrer');
+  window.open(`https://chatgpt.com/?q=${encodeURIComponent(prompt)}`, '_blank', 'noopener,noreferrer');
 }
 
 function extractTimeLabel(value = '') {
@@ -484,8 +516,12 @@ function syncSavedStates() {
   document.querySelectorAll('[data-save-event]').forEach((button) => {
     const id = String(button.dataset.eventId || '');
     const active = saved.has(id);
-    button.classList.toggle('event-compact-action-active', active);
-    button.innerHTML = active ? '<i class="fa-solid fa-bookmark"></i>' : '<i class="fa-regular fa-bookmark"></i>';
+    button.classList.toggle('event-compact-action-active', active && !button.matches('.detail-action-button'));
+    button.classList.toggle('is-active', active);
+    button.setAttribute('aria-pressed', String(active));
+    button.setAttribute('aria-label', active ? 'Quitar de guardados' : 'Guardar evento');
+    const icon = button.querySelector('i');
+    if (icon) icon.className = active ? 'fa-solid fa-bookmark' : 'fa-regular fa-bookmark';
   });
 }
 

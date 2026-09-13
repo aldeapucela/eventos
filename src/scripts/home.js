@@ -3,6 +3,8 @@ import { setupLocationLinks } from './location-link.js';
 import { setupSubscribe } from './subscribe.js';
 import { setupMenuDrawer } from './menu-drawer.js';
 import { getMountedModal } from './modals.js';
+import { recordEventSave } from './event-metrics.js';
+import { getWeatherCondition, getWeatherLabel, loadWeatherForecast } from './weather.js';
 
 const filters = Array.from(document.querySelectorAll('[data-filter]'));
 let cards = [];
@@ -200,6 +202,8 @@ document.addEventListener('click', async (event) => {
     event.stopPropagation();
     const action = toggleSaved(saveButton.dataset.eventId);
     if (action === 'added') {
+      void recordEventSave(saveButton.dataset.eventId);
+      window.trackMatomoActivityOnce?.({ action: 'save', eventId: String(saveButton.dataset.eventId || '') });
       window.trackMatomoInteractionOnce?.({
         origin: 'home',
         action: 'save',
@@ -365,6 +369,7 @@ function applyFilters(options = {}) {
   if (weekGroups && !isServerRenderedList) {
     renderWeekGroups();
   }
+  void renderDayWeather();
   filters.forEach((button) => {
     const value = button.dataset.filter;
     const isActive = (value === 'free' && activeFreeFilter) || (value !== 'free' && value === activeTimeFilter);
@@ -1019,17 +1024,52 @@ function renderWeekGroups() {
         <section class="week-day-group" data-week-day-group data-day-key="${key}">
           <div class="week-day-header">
             <div class="week-day-label">${label}</div>
+            <div class="day-weather" data-day-weather data-weather-date="${key}" hidden aria-label="Previsión del día">
+              <i class="fa-solid" data-weather-icon aria-hidden="true"></i>
+              <span data-weather-temperature></span>
+            </div>
           </div>
           <div class="event-row-list">${items}</div>
         </section>
       `;
     })
     .join('');
+
   setupLazyEventImages();
   
   updateCards();
   syncSavedStates();
   updateLoadMoreButton();
+  void renderDayWeather();
+}
+
+async function renderDayWeather() {
+  const controls = Array.from(document.querySelectorAll('[data-day-weather]'));
+  if (!controls.length) return;
+  try {
+    const forecast = await loadWeatherForecast();
+    controls.forEach((control) => {
+      const day = forecast[control.dataset.weatherDate];
+      const condition = day ? getWeatherCondition(day.weatherCode) : null;
+      const icon = control.querySelector('[data-weather-icon]');
+      const temperature = control.querySelector('[data-weather-temperature]');
+      if (!condition || !icon || !temperature) {
+        control.hidden = true;
+        return;
+      }
+      icon.className = `fa-solid ${condition.icon}`;
+      const dailySummary = [
+        condition.label,
+        Number.isFinite(day.max) ? `${Math.round(day.max)}°` : ''
+      ].filter(Boolean);
+      temperature.textContent = dailySummary.join(' · ');
+      control.title = getWeatherLabel(day);
+      control.setAttribute('aria-label', control.title);
+      control.hidden = false;
+    });
+  } catch {
+    controls.forEach((control) => { control.hidden = true; });
+  }
 }
 
 function updateLoadMoreButton() {
@@ -1166,8 +1206,8 @@ function renderWeekItem(event) {
           </div>
         </div>
         <div class="event-compact-actions">
-          <button class="event-compact-action" type="button" data-save-event data-event-id="${event.id}" aria-label="Guardar evento">
-            <i class="fa-regular fa-bookmark"></i>
+          <button class="event-compact-action" type="button" data-save-event data-event-id="${event.id}" aria-label="Guardar evento" aria-pressed="false">
+            <i class="fa-regular fa-bookmark" aria-hidden="true"></i>
           </button>
         </div>
       </article>
@@ -1469,6 +1509,8 @@ function syncSavedStates() {
     const id = String(button.dataset.eventId || '');
     const active = saved.has(id);
     button.classList.toggle('event-compact-action-active', active);
+    button.setAttribute('aria-pressed', String(active));
+    button.setAttribute('aria-label', active ? 'Quitar de guardados' : 'Guardar evento');
     const icon = button.querySelector('i');
     if (icon) {
       icon.className = active ? 'fa-solid fa-bookmark' : 'fa-regular fa-bookmark';

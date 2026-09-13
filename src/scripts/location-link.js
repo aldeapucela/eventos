@@ -26,25 +26,14 @@ export function setupLocationLinks({
     document.body.style.overflow = '';
   };
 
-  const updateModalLinks = (query) => {
+  const updateModalLinks = (query, coordinates) => {
     const locationModal = mountModal('location');
     if (!locationModal) return;
-    const encoded = encodeURIComponent(query);
     const isIos = isAppleMobileDevice();
 
     locationModal.querySelectorAll(mapLinksSelector).forEach((link) => {
       const provider = link.dataset.locationMap;
-      let href = '#';
-      if (provider === 'openstreetmap') {
-        href = `https://www.openstreetmap.org/search?query=${encoded}`;
-      } else if (provider === 'google') {
-        href = isIos ? `comgooglemaps://?q=${encoded}` : `https://maps.google.com/?q=${encoded}`;
-      } else if (provider === 'apple') {
-        href = `https://maps.apple.com/?q=${encoded}`;
-      } else if (provider === 'bing') {
-        href = `https://www.bing.com/maps?q=${encoded}`;
-      }
-      link.href = href;
+      link.href = buildMapProviderHref(provider, query, coordinates, isIos);
 
       if (provider === 'bing') {
         link.hidden = isIos;
@@ -57,21 +46,24 @@ export function setupLocationLinks({
 
   openButtons.forEach((button) => {
     const query = normalizeLocationQuery(button.dataset.location || '', defaultQuery);
+    const coordinates = getLocationCoordinates(button);
     if (!query) {
       button.href = '#';
       return;
     }
 
     if (isAndroidDevice()) {
-      button.href = `geo:0,0?q=${encodeURIComponent(query)}`;
+      button.href = buildAndroidMapUrl(query, coordinates);
+      button.removeAttribute('target');
+      button.removeAttribute('rel');
     } else {
-      button.href = `https://maps.google.com/?q=${encodeURIComponent(query)}`;
+      button.href = buildMapProviderHref('google', query, coordinates, isAppleMobileDevice());
     }
 
     button.addEventListener('click', (event) => {
       if (isAndroidDevice()) return;
       event.preventDefault();
-      updateModalLinks(query);
+      updateModalLinks(query, coordinates);
       openLocationModal();
     });
   });
@@ -95,6 +87,47 @@ export function normalizeLocationQuery(location = '', defaultQuery = 'Valladolid
   const normalized = String(location).replace(/\s+/g, ' ').trim();
   if (!normalized) return defaultQuery;
   return /valladolid/i.test(normalized) ? normalized : `${normalized}, Valladolid`;
+}
+
+export function getLocationCoordinates(element) {
+  const rawLat = element?.dataset?.locationLat;
+  const rawLon = element?.dataset?.locationLon;
+  if (rawLat == null || String(rawLat).trim() === '' || rawLon == null || String(rawLon).trim() === '') return null;
+
+  const lat = Number(rawLat);
+  const lon = Number(rawLon);
+  if (!Number.isFinite(lat) || !Number.isFinite(lon) || Math.abs(lat) > 90 || Math.abs(lon) > 180) return null;
+  return { lat, lon };
+}
+
+export function buildAndroidMapUrl(query, coordinates = null) {
+  if (!coordinates) return `geo:0,0?q=${encodeURIComponent(query)}`;
+  const point = `${coordinates.lat},${coordinates.lon}`;
+  return `geo:${point}?q=${point}(${encodeURIComponent(query)})`;
+}
+
+export function buildMapProviderHref(provider, query, coordinates = null, isIos = false) {
+  const encodedQuery = encodeURIComponent(query);
+  const point = coordinates ? `${coordinates.lat},${coordinates.lon}` : null;
+
+  if (provider === 'openstreetmap') {
+    return coordinates
+      ? `https://www.openstreetmap.org/?mlat=${coordinates.lat}&mlon=${coordinates.lon}#map=16/${point}`
+      : `https://www.openstreetmap.org/search?query=${encodedQuery}`;
+  }
+  if (provider === 'google') {
+    const search = encodeURIComponent(point || query);
+    return isIos ? `comgooglemaps://?q=${search}` : `https://maps.google.com/?q=${search}`;
+  }
+  if (provider === 'apple') {
+    return coordinates
+      ? `https://maps.apple.com/?ll=${point}&q=${encodedQuery}`
+      : `https://maps.apple.com/?q=${encodedQuery}`;
+  }
+  if (provider === 'bing') {
+    return `https://www.bing.com/maps?q=${encodeURIComponent(point || query)}`;
+  }
+  return '#';
 }
 
 function isAppleMobileDevice() {

@@ -28,10 +28,9 @@
     {% include "partials/main-nav.njk" %}
     <div class="detail-topbar-actions flex items-center gap-3 text-slate-500">
       <button class="detail-topbar-mobile-action inline-flex items-center justify-center md:hidden" type="button" data-save-event data-event-id="{{ event.id }}" aria-label="Guardar"><i class="fa-regular fa-bookmark"></i></button>
-      <button class="detail-topbar-mobile-action inline-flex items-center justify-center md:hidden" type="button" data-share-event data-event-id="{{ event.id }}" data-event-url="{{ event.urlPath }}" data-event-title="{{ event.title }}" aria-label="Compartir"><i class="fa-solid fa-share-nodes"></i></button>
       <button class="hidden md:inline-flex h-11 w-11 items-center justify-center rounded-full text-slate-500 transition hover:bg-slate-100 hover:text-brand-700" type="button" data-save-event data-event-id="{{ event.id }}" aria-label="Guardar"><i class="fa-regular fa-bookmark"></i></button>
       <button class="hidden md:inline-flex h-11 w-11 items-center justify-center rounded-full text-slate-500 transition hover:bg-slate-100 hover:text-brand-700" type="button" data-share-event data-event-id="{{ event.id }}" data-event-url="{{ event.urlPath }}" data-event-title="{{ event.title }}" aria-label="Compartir"><i class="fa-solid fa-share-nodes"></i></button>
-      <button class="header-search-btn inline-flex h-11 w-11 items-center justify-center rounded-full text-slate-500 lg:hidden" type="button" data-menu-open aria-label="Abrir menú"><i class="fa-solid fa-bars"></i></button>
+      <button class="header-search-btn inline-flex h-11 w-11 items-center justify-center rounded-full text-slate-500 xl:hidden" type="button" data-menu-open aria-label="Abrir menú"><i class="fa-solid fa-bars"></i></button>
     </div>
   </div>
 </header>
@@ -48,107 +47,158 @@
       style="background-image:url('{{ event.image or '/assets/placeholder-event.svg' }}')"
     ></button>
     <div class="detail-clean-body">
-      {% if event.categoryLabel %}
-      <span class="compact-badge">{{ event.categoryLabel }}</span>
-      {% endif %}
       <h1 class="detail-clean-title">{{ event.title }}</h1>
-      <div class="detail-clean-meta">
-        {% if event.detailScheduleLabel %}<div class="detail-clean-meta-row"><i class="fa-regular fa-calendar"></i><span>{{ event.detailScheduleLabel }}</span></div>{% elif event.detailDateRangeLabel %}<div class="detail-clean-meta-row"><i class="fa-regular fa-calendar"></i><span>{{ event.detailDateRangeLabel }}</span></div>{% endif %}
-        {% if event.location %}<a class="detail-clean-meta-row detail-clean-meta-row-location detail-clean-meta-row-button" data-location-open data-location="{{ event.location }}" href="#"><i class="fa-solid fa-location-dot detail-clean-meta-row-icon"></i><span>{{ event.location }}</span></a>{% endif %}
-        <a href="#comentarios" class="detail-clean-meta-row detail-clean-meta-row-button detail-clean-meta-row-button-muted detail-clean-meta-row-comments js-comment-count-full hidden" data-scroll-to-comments><i class="fa-regular fa-comment"></i><span></span></a>
-      </div>
-      {% if event.descriptionHtml %}
-      <div class="detail-clean-summary detail-clean-description">{{ event.descriptionHtml | safe }}</div>
-      {% else %}
-      <p class="detail-clean-summary">{{ event.summary or event.excerpt }}</p>
+      {% if event.categoryLabel %}
+      <span class="compact-badge detail-category-badge">{{ event.categoryLabel }}</span>
       {% endif %}
 
-      {% if event.price or event.organizer or event.notes %}
-      <section class="detail-clean-extra">
-        {% if event.price %}
-        <div class="detail-clean-extra-row">
-          <div class="detail-clean-extra-label">Precio</div>
-          <div class="detail-clean-extra-value">{{ event.price }}</div>
+      <section class="detail-clean-facts" aria-label="Información del evento">
+        {% if event.detailScheduleLabel %}<div class="detail-clean-meta-row"><i class="fa-regular fa-calendar" aria-hidden="true"></i><span>{{ event.detailScheduleLabel }}</span></div>{% elif event.detailDateRangeLabel %}<div class="detail-clean-meta-row"><i class="fa-regular fa-calendar" aria-hidden="true"></i><span>{{ event.detailDateRangeLabel }}</span></div>{% endif %}
+        {% if event.location %}<a class="detail-clean-meta-row detail-clean-meta-row-location detail-clean-meta-row-button" data-location-open data-location="{{ event.location }}" href="#"><i class="fa-solid fa-location-dot detail-clean-meta-row-icon" aria-hidden="true"></i><span>{{ event.location }}</span></a>{% endif %}
+        <div class="detail-clean-meta-row detail-clean-weather" data-detail-weather data-weather-date="{{ event.startsAtDayKey }}" data-weather-time="{{ event.timeLabel }}" hidden aria-live="polite">
+          <i class="fa-solid" data-detail-weather-icon aria-hidden="true"></i>
+          <span class="detail-clean-weather-copy"><span class="detail-clean-weather-label">Previsión</span><span data-detail-weather-copy></span></span>
+        </div>
+        {% if not event.isFree and event.price %}
+        <div class="detail-clean-meta-row detail-ticket-offer-row">
+          <i class="fa-solid fa-ticket" aria-hidden="true"></i>
+          <span class="detail-ticket-price">{{ event.price }}</span>
+          <button class="detail-ticket-search-button" type="button" data-ticket-search-open aria-label="Buscar entradas">
+            <span>Buscar entradas</span>
+          </button>
+        </div>
+        {% elif not event.isFree %}
+        <button class="detail-clean-meta-row detail-ticket-search-row" type="button" data-ticket-search-open aria-label="Buscar entradas">
+          <i class="fa-solid fa-ticket" aria-hidden="true"></i><span>Buscar entradas</span>
+        </button>
+        {% elif event.price %}
+        <div class="detail-clean-meta-row"><i class="fa-solid fa-ticket" aria-hidden="true"></i><span>{{ event.price }}</span></div>
+        {% endif %}
+      </section>
+
+      <section class="detail-content-block" aria-labelledby="detail-description-title">
+        <h2 id="detail-description-title"><i class="fa-solid fa-person-running" aria-hidden="true"></i>Descripción</h2>
+        {% if event.descriptionHtml %}
+        <div class="detail-clean-summary detail-clean-description">{{ event.descriptionHtml | safe }}</div>
+        {% else %}
+        <p class="detail-clean-summary">{{ event.summary or event.excerpt }}</p>
+        {% endif %}
+        {% if event.organizer or event.notes %}
+        <dl class="detail-content-extra">
+          {% if event.organizer %}<div><dt>Organiza</dt><dd>{{ event.organizer }}</dd></div>{% endif %}
+          {% if event.notes %}<div><dt>Más información</dt><dd>{{ event.notes }}</dd></div>{% endif %}
+        </dl>
+        {% endif %}
+        {% if event.importedFromChatUrl %}
+        <p class="detail-import-note">Evento importado del <a href="{{ event.importedFromChatUrl }}" target="_blank" rel="noopener noreferrer">chat de Aldea Pucela</a>.</p>
+        {% endif %}
+      </section>
+
+      <section class="detail-action-card" aria-label="Acciones del evento">
+        <button class="detail-clean-action detail-action-button" type="button" data-save-event data-event-id="{{ event.id }}" aria-label="Guardar evento" aria-pressed="false">
+          <i class="fa-regular fa-bookmark" aria-hidden="true"></i>
+          <span data-save-label>Guardar</span>
+          <span class="detail-action-count" data-event-save-count data-event-id="{{ event.id }}" hidden><span data-count-value>0</span> <span data-count-label>guardados</span></span>
+        </button>
+        <button class="detail-clean-action detail-action-button" type="button" data-share data-event-id="{{ event.id }}" data-event-title="{{ event.title }}" aria-label="Compartir evento">
+          <i class="fa-solid fa-share-nodes" aria-hidden="true"></i><span>Compartir</span>
+        </button>
+        <button class="detail-clean-action detail-action-button" type="button" data-calendar-open aria-label="Añadir evento al calendario">
+          <i class="fa-regular fa-calendar-plus" aria-hidden="true"></i><span>Añadir al calendario</span>
+        </button>
+      </section>
+
+      <div class="detail-clean-actions detail-clean-actions-sticky md:hidden" role="group" aria-label="Acciones rápidas">
+        <button class="detail-clean-action detail-clean-action-primary" type="button" data-calendar-open aria-label="Añadir al calendario">
+          <i class="fa-regular fa-calendar-plus" aria-hidden="true"></i><span>Calendario</span>
+        </button>
+        <button class="detail-clean-action detail-clean-action-icon-only" type="button" data-comments-open aria-label="Ver comentarios">
+          <i class="fa-regular fa-comment" aria-hidden="true"></i>
+          <span class="js-comment-count-number hidden font-semibold text-sm"></span>
+          <span class="js-comment-label">Comentarios</span>
+        </button>
+        <button class="detail-clean-action detail-clean-action-icon-only" type="button" data-share-event data-event-id="{{ event.id }}" data-event-url="{{ event.urlPath }}" data-event-title="{{ event.title }}" aria-label="Compartir">
+          <i class="fa-solid fa-share-nodes" aria-hidden="true"></i><span>Compartir</span>
+        </button>
+      </div>
+
+      {% if event.location or (event.venueLat != null and event.venueLon != null) %}
+      <section class="detail-map-card" aria-label="Mapa y cómo llegar">
+        {% if event.venueLat != null and event.venueLon != null %}
+        <div class="detail-map" data-event-map data-lat="{{ event.venueLat }}" data-lon="{{ event.venueLon }}" data-title="{{ event.location or event.title }}" role="application" aria-label="Mapa de {{ event.location or event.title }}"></div>
+        <div class="detail-map-error" data-event-map-error hidden role="status"></div>
+        {% else %}
+        <div class="detail-map-empty">
+          <i class="fa-solid fa-map-location-dot" aria-hidden="true"></i>
+          <p>Ubicación en el mapa no disponible.</p>
+          <span>{{ event.location or event.address or 'Lugar por confirmar' }}</span>
         </div>
         {% endif %}
-        {% if event.organizer %}
-        <div class="detail-clean-extra-row">
-          <div class="detail-clean-extra-label">Organiza</div>
-          <div class="detail-clean-extra-value">{{ event.organizer }}</div>
+        <div class="detail-map-actions">
+          <a class="detail-map-action" data-location-open data-location="{{ event.address or event.location or event.title }}" {% if event.venueLat != null and event.venueLon != null %}data-location-lat="{{ event.venueLat }}" data-location-lon="{{ event.venueLon }}"{% endif %} href="#">
+            <i class="fa-regular fa-map" aria-hidden="true"></i><span>Ver en mapa</span>
+          </a>
+          {% if event.venueLat != null and event.venueLon != null %}
+          <button class="detail-map-action" type="button" data-directions-toggle aria-controls="event-directions-options-{{ event.id }}" aria-expanded="false">
+            <i class="fa-solid fa-route" aria-hidden="true"></i><span>Cómo llegar</span>
+          </button>
+          {% else %}
+          <a class="detail-map-action" href="https://www.google.com/maps/dir/?api=1&amp;destination={{ (event.address or event.location) | urlencode }}" target="_blank" rel="noopener noreferrer">
+            <i class="fa-solid fa-route" aria-hidden="true"></i><span>Cómo llegar</span>
+          </a>
+          {% endif %}
         </div>
-        {% endif %}
-        {% if event.notes %}
-        <div class="detail-clean-extra-row">
-          <div class="detail-clean-extra-label">Más información</div>
-          <div class="detail-clean-extra-value">
-            {{ event.notes }}
-            {% if event.importedFromChatUrl %}
-            <p class="mt-3 text-xs leading-relaxed text-slate-500">
-              Evento importado desde el
-              <a href="{{ event.importedFromChatUrl }}" target="_blank" rel="noopener noreferrer" class="font-semibold text-slate-600 underline decoration-slate-300 underline-offset-2 hover:text-brand-700 hover:decoration-brand-300">grupo de chat de Aldea Pucela</a>.
-            </p>
-            {% endif %}
+        {% if event.venueLat != null and event.venueLon != null %}
+        <section class="detail-directions-options" id="event-directions-options-{{ event.id }}" data-directions-options hidden aria-label="Opciones para llegar">
+          <div class="detail-directions-grid">
+            <a class="detail-directions-option" href="https://vallabus.com/#/rutas?origen=eventosaldea" target="_blank" rel="noopener noreferrer" data-vallabus-route data-destination-name="{{ event.location or event.title }}" data-destination-lat="{{ event.venueLat }}" data-destination-lon="{{ event.venueLon }}" data-arrival-date="{{ event.startsAtDayKey }}" data-arrival-time="{{ event.timeLabel }}">
+              <i class="fa-solid fa-bus" aria-hidden="true"></i><span>Bus</span>
+            </a>
+            <a class="detail-directions-option" href="https://vallabus.com/#/rutas?origen=eventosaldea" target="_blank" rel="noopener noreferrer" data-vallabus-route data-route-mode="bike" data-destination-name="{{ event.location or event.title }}" data-destination-lat="{{ event.venueLat }}" data-destination-lon="{{ event.venueLon }}" data-arrival-date="{{ event.startsAtDayKey }}" data-arrival-time="{{ event.timeLabel }}">
+              <i class="fa-solid fa-bicycle" aria-hidden="true"></i><span>Bici/BIKI</span>
+            </a>
+            <a class="detail-directions-option" href="https://www.google.com/maps/dir/?api=1&amp;destination={{ event.venueLat }},{{ event.venueLon }}" target="_blank" rel="noopener noreferrer" data-native-map data-lat="{{ event.venueLat }}" data-lon="{{ event.venueLon }}" data-title="{{ event.location or event.title }}">
+              <i class="fa-solid fa-map-location-dot" aria-hidden="true"></i><span>Tu App</span>
+            </a>
           </div>
-        </div>
+        </section>
+        {% endif %}
+        {% if event.nearbyVallabusLines and event.nearbyVallabusLines.length %}
+        <section class="detail-transit" data-event-transit aria-label="Líneas de autobús cercanas">
+          <div class="detail-transit-row">
+            <span class="detail-transit-icon" aria-hidden="true"><i class="fa-solid fa-bus"></i></span>
+            <button class="detail-transit-scroll" type="button" data-transit-scroll="prev" aria-label="Ver líneas anteriores" aria-controls="event-transit-lines-{{ event.id }}" hidden><i class="fa-solid fa-chevron-left" aria-hidden="true"></i></button>
+            <div class="detail-transit-lines" id="event-transit-lines-{{ event.id }}" data-transit-lines role="group" aria-label="Líneas de autobús cercanas" tabindex="0">
+              {% for line in event.nearbyVallabusLines %}<button class="detail-transit-line" type="button" data-transit-line="{{ line }}" aria-controls="event-transit-stops-{{ event.id }}" aria-expanded="false">{{ line }}</button>{% endfor %}
+            </div>
+            <button class="detail-transit-scroll" type="button" data-transit-scroll="next" aria-label="Ver más líneas" aria-controls="event-transit-lines-{{ event.id }}" hidden><i class="fa-solid fa-chevron-right" aria-hidden="true"></i></button>
+          </div>
+          <div class="detail-transit-details" id="event-transit-stops-{{ event.id }}" data-transit-details hidden>
+            <p class="detail-transit-summary" data-transit-summary></p>
+            <ul class="detail-transit-stop-list" data-transit-stop-list></ul>
+            <a class="detail-transit-planner" href="https://vallabus.com/#/rutas?origen=eventosaldea" target="_blank" rel="noopener noreferrer" data-vallabus-route data-destination-name="{{ event.location or event.title }}" data-destination-lat="{{ event.venueLat }}" data-destination-lon="{{ event.venueLon }}" data-arrival-date="{{ event.startsAtDayKey }}" data-arrival-time="{{ event.timeLabel }}">
+              <i class="fa-solid fa-route" aria-hidden="true"></i><span>Planificar ruta en VallaBus</span>
+            </a>
+          </div>
+        </section>
         {% endif %}
       </section>
       {% endif %}
-      {# Sin precio conocido el botón sigue estando, pero no promete entradas:
-         lleva a buscar cómo se accede al evento. #}
-      {% set accessLabel = 'Buscar entradas' if event.isPaid else 'Buscar más información sobre el acceso al evento' %}
-      {% set accessIcon = 'fa-solid fa-ticket' if event.isPaid else 'fa-solid fa-circle-info' %}
-      {% if not event.isFree %}
-      <div class="detail-ticket-search-mobile md:hidden">
-        <button class="detail-clean-action" type="button" data-ticket-search-open aria-label="{{ accessLabel }}">
-          <i class="{{ accessIcon }}"></i>
-          <span>{{ accessLabel }}</span>
-        </button>
-      </div>
-      {% endif %}
-      <div class="detail-ticket-search-mobile md:hidden">
-        <a
-          class="detail-clean-action"
-          href="https://aldeapucela.org/boletin/?mtm_campaign=webeventos"
-          target="_blank"
-          rel="noopener noreferrer"
-          aria-label="Recibir por email"
-        >
-          <i class="fa-regular fa-envelope"></i>
-          <span>Recibir por email</span>
-        </a>
-      </div>
 
-      <div class="detail-clean-actions detail-clean-actions-sticky">
-        <button class="detail-clean-action detail-clean-action-primary" type="button" data-calendar-open>
-          <i class="fa-regular fa-calendar-plus"></i>
-          <span>Calendario</span>
-        </button>
-        <button class="detail-clean-action detail-clean-action-icon-only" type="button" data-comments-open aria-label="Comentar">
-          <i class="fa-regular fa-comment"></i>
-          <span class="js-comment-count-number hidden font-semibold text-sm"></span>
-          <span class="js-comment-label">Comentar</span>
-        </button>
-        {% if not event.isFree %}
-        <button class="hidden md:flex detail-clean-action detail-clean-action-icon-only" type="button" data-ticket-search-open aria-label="{{ accessLabel }}">
-          <i class="{{ accessIcon }}"></i>
-          <span>{{ 'Entradas' if event.isPaid else accessLabel }}</span>
-        </button>
-        {% endif %}
-        <a
-          class="hidden md:flex detail-clean-action detail-clean-action-icon-only"
-          href="https://aldeapucela.org/boletin/?mtm_campaign=webeventos"
-          target="_blank"
-          rel="noopener noreferrer"
-          aria-label="Recibir por email"
-        >
-          <i class="fa-regular fa-envelope"></i>
-          <span>Recibir por email</span>
-        </a>
-        <button class="detail-clean-action detail-clean-action-icon-only" type="button" data-share data-event-id="{{ event.id }}" aria-label="Compartir">
-          <i class="fa-solid fa-share-nodes"></i>
-          <span>Compartir</span>
-        </button>
-      </div>
+      <aside class="detail-community-card" aria-labelledby="detail-community-title">
+        <div class="detail-community-heading">
+          <img class="detail-community-logo" src="https://aldeapucela.org/img/logo-web.jpg" alt="" />
+          <div><p class="detail-community-kicker">ALDEA PUCELA</p><h2 id="detail-community-title">Los eventos también se viven en comunidad</h2></div>
+        </div>
+        <p class="detail-community-copy">Recibe lo importante cada semana, comenta los planes con otros vecinos y sigue la actualidad de Valladolid.</p>
+        <a class="detail-community-primary" href="https://aldeapucela.org/boletin/?mtm_campaign=webeventos" target="_blank" rel="noopener noreferrer"><i class="fa-regular fa-envelope" aria-hidden="true"></i><span>Recibir el resumen semanal</span></a>
+        <div class="detail-community-secondary">
+          <a href="https://t.me/aldeapucela/59137" target="_blank" rel="noopener noreferrer"><i class="fa-brands fa-telegram" aria-hidden="true"></i><span>Unirme al chat de Aldea Pucela</span></a>
+          <a href="https://aldeapucela.org/whatsapp" target="_blank" rel="noopener noreferrer"><i class="fa-brands fa-whatsapp" aria-hidden="true"></i><span>Canal de WhatsApp</span></a>
+          <a href="https://www.facebook.com/aldeapucela" target="_blank" rel="noopener noreferrer"><i class="fa-brands fa-facebook" aria-hidden="true"></i><span>Página en Facebook</span></a>
+          <a href="https://www.instagram.com/aldeapucela" target="_blank" rel="noopener noreferrer"><i class="fa-brands fa-instagram" aria-hidden="true"></i><span>Instagram</span></a>
+        </div>
+      </aside>
 
 
 
@@ -173,8 +223,8 @@
               </div>
             </div>
             <div class="event-compact-actions">
-              <button class="event-compact-action" type="button" data-save-event data-event-id="{{ related.id }}" aria-label="Guardar evento">
-                <i class="fa-regular fa-bookmark"></i>
+              <button class="event-compact-action" type="button" data-save-event data-event-id="{{ related.id }}" aria-label="Guardar evento" aria-pressed="false">
+                <i class="fa-regular fa-bookmark" aria-hidden="true"></i>
               </button>
             </div>
           </article>
@@ -210,8 +260,8 @@
               </div>
             </div>
             <div class="event-compact-actions">
-              <button class="event-compact-action" type="button" data-save-event data-event-id="{{ related.id }}" aria-label="Guardar evento">
-                <i class="fa-regular fa-bookmark"></i>
+              <button class="event-compact-action" type="button" data-save-event data-event-id="{{ related.id }}" aria-label="Guardar evento" aria-pressed="false">
+                <i class="fa-regular fa-bookmark" aria-hidden="true"></i>
               </button>
             </div>
           </article>

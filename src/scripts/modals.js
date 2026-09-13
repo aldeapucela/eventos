@@ -85,8 +85,8 @@ const TEMPLATES = {
       </button>
     </div>
     <p class="calendar-modal-copy">
-      Se te va a redirigir a la búsqueda de Perplexity para
-      <strong>buscar el sitio oficial de entradas</strong>.
+      Te enviaremos a ChatGPT para que
+      <strong>busque el sitio oficial de entradas de este evento</strong>.
     </p>
     <ul class="calendar-modal-copy-list">
       <li>Verifica siempre el sitio antes de pagar.</li>
@@ -328,6 +328,7 @@ ${categorySection}
     </div>
     <nav class="menu-drawer-nav" aria-label="Navegación">
       ${link('home', '/', 'fa-solid fa-house', 'Inicio')}
+      ${link('popular', '/populares/', 'fa-solid fa-arrow-trend-up', 'Populares')}
       ${link('spaces', '/espacios/', 'fa-solid fa-location-dot', 'Espacios')}
       ${link('types', '/tipos/', 'fa-solid fa-filter', 'Tipos')}
       ${link('saved', '/guardados/', 'fa-regular fa-bookmark', 'Mis guardados')}

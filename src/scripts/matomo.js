@@ -5,8 +5,10 @@ window._paq.push(['enableLinkTracking']);
 
 const MATOMO_ONCE_KEY = 'aldeapucela_matomo_once_v1';
 const MATOMO_EVENT_CATEGORY = 'event_interaction';
+const MATOMO_ACTIVITY_CATEGORY = 'activity';
 const VALID_ORIGINS = new Set(['home', 'detail']);
 const VALID_ACTIONS = new Set(['save', 'share']);
+const VALID_ACTIVITY_ACTIONS = new Set(['save', 'view_detail']);
 
 function getTrackedInteractions() {
   try {
@@ -59,6 +61,25 @@ window.trackMatomoInteractionOnce = function trackMatomoInteractionOnce({ origin
   window._paq.push(['trackEvent', MATOMO_EVENT_CATEGORY, normalizedOrigin, normalizedAction, normalizedEventId]);
   tracked.add(dedupeKey);
   setTrackedInteractions(tracked);
+  return true;
+};
+
+window.trackMatomoActivityOnce = function trackMatomoActivityOnce({ action, eventId }) {
+  if (!window._paq || typeof window._paq.push !== 'function') return false;
+
+  const normalizedAction = normalizeToken(action);
+  const normalizedEventId = normalizeToken(eventId);
+  if (!VALID_ACTIVITY_ACTIONS.has(normalizedAction) || !/^\d{1,12}$/.test(normalizedEventId)) return false;
+
+  const dedupeKey = `activity:${normalizedAction}:${normalizedEventId}`;
+  const tracked = getTrackedInteractions();
+  if (tracked.has(dedupeKey)) return false;
+
+  window._paq.push(['trackEvent', MATOMO_ACTIVITY_CATEGORY, normalizedAction, normalizedEventId]);
+  tracked.add(dedupeKey);
+  try {
+    setTrackedInteractions(tracked);
+  } catch {}
   return true;
 };
 

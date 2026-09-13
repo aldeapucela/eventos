@@ -89,8 +89,8 @@
               </div>
             </div>
             <div class="event-compact-actions">
-              <button class="event-compact-action" type="button" data-save-event data-event-id="{{ event.id }}" aria-label="Guardar evento">
-                <i class="fa-regular fa-bookmark"></i>
+              <button class="event-compact-action" type="button" data-save-event data-event-id="{{ event.id }}" aria-label="Guardar evento" aria-pressed="false">
+                <i class="fa-regular fa-bookmark" aria-hidden="true"></i>
               </button>
             </div>
           </article>
@@ -123,6 +123,10 @@
           <section class="week-day-group" data-week-day-group data-day-key="{{ group.key }}">
             <div class="week-day-header">
               <div class="week-day-label">{{ group.label }}</div>
+              <div class="day-weather" data-day-weather data-weather-date="{{ group.key }}" hidden aria-label="Previsión del día">
+                <i class="fa-solid" data-weather-icon aria-hidden="true"></i>
+                <span data-weather-temperature></span>
+              </div>
             </div>
             <div class="event-row-list">
               {%- for event in group.events %}

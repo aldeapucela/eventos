@@ -1,6 +1,7 @@
 import { initTheme } from './theme.js';
 import { setupSubscribe } from './subscribe.js';
 import { setupMenuDrawer } from './menu-drawer.js';
+import { recordEventSave } from './event-metrics.js';
 
 const storageKey = 'aldeapucela_saved_events';
 const groupsRoot = document.querySelector('[data-saved-groups]');
@@ -25,6 +26,10 @@ document.addEventListener('click', (event) => {
     event.preventDefault();
     event.stopPropagation();
     const action = toggleSaved(saveButton.dataset.eventId);
+    if (action === 'added') {
+      void recordEventSave(saveButton.dataset.eventId);
+      window.trackMatomoActivityOnce?.({ action: 'save', eventId: String(saveButton.dataset.eventId || '') });
+    }
     if (action && typeof window.showSavedToast === 'function') {
       window.showSavedToast({ action });
     }
@@ -143,8 +148,8 @@ function renderCard(event) {
         </div>
       </div>
       <div class="event-compact-actions">
-        <button class="event-compact-action" type="button" data-save-event data-event-id="${event.id}" aria-label="Quitar de guardados">
-          <i class="fa-regular fa-bookmark"></i>
+        <button class="event-compact-action event-compact-action-active" type="button" data-save-event data-event-id="${event.id}" aria-label="Quitar de guardados" aria-pressed="true">
+          <i class="fa-solid fa-bookmark" aria-hidden="true"></i>
         </button>
       </div>
     </article>
@@ -226,6 +231,8 @@ function syncSavedStates() {
     const id = String(button.dataset.eventId || '');
     const active = saved.has(id);
     button.classList.toggle('event-compact-action-active', active);
+    button.setAttribute('aria-pressed', String(active));
+    button.setAttribute('aria-label', active ? 'Quitar de guardados' : 'Guardar evento');
     const icon = button.querySelector('i');
     if (icon) {
       icon.className = active ? 'fa-solid fa-bookmark' : 'fa-regular fa-bookmark';

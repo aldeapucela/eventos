@@ -10,6 +10,7 @@ import { loadCachedEvents } from '../src/data/store.mjs';
 import { deriveFilters, sortEvents, splitFeatured, getPastEvents, groupEventsByMonth, groupFutureEventsByVenue, rotateBySeed } from '../src/data/site.mjs';
 import { DISPLAY_TIMEZONE, buildTextParagraphHtml, cleanDescriptionHtml, detectPriceStatus, escapeHtml, formatDateRange, formatDateTime, isSameMadridDay, normalizePriceLabel, parseDateLike, parseEventMetaFromHtml, stripTags, toMadridDateKey } from '../src/data/format.mjs';
 import { enrichVenueCatalog, mergeSpacesWithVenueCatalog } from '../src/data/venues.mjs';
+import { loadVallabusStops, nearbyVallabusStops } from '../src/data/vallabus.mjs';
 import { canonicalizeVenue, normalizeVenueKey } from '../src/data/venue-aliases.mjs';
 import { buildCollectionPageJsonLd, buildEventJsonLd, buildVenuePageJsonLd, serializeJsonLd } from '../src/data/structured-data.mjs';
 import { getHorizonWindow, getOpenEndedWindow, getTimePages, isWeekendDayKey, resolveBuildNow, selectTimePageEvents } from '../src/data/time-windows.mjs';
@@ -114,6 +115,11 @@ async function copyJs() {
   await fs.copyFile(path.join(root, 'src', 'scripts', 'spaces.js'), path.join(jsDir, 'spaces.js'));
   await fs.copyFile(path.join(root, 'src', 'scripts', 'theme.js'), path.join(jsDir, 'theme.js'));
   await fs.copyFile(path.join(root, 'src', 'scripts', 'matomo.js'), path.join(jsDir, 'matomo.js'));
+  await fs.copyFile(path.join(root, 'src', 'scripts', 'event-metrics.js'), path.join(jsDir, 'event-metrics.js'));
+  await fs.copyFile(path.join(root, 'src', 'scripts', 'weather.js'), path.join(jsDir, 'weather.js'));
+  await fs.copyFile(path.join(root, 'src', 'scripts', 'directions.js'), path.join(jsDir, 'directions.js'));
+  await fs.copyFile(path.join(root, 'src', 'scripts', 'popular.js'), path.join(jsDir, 'popular.js'));
+  await fs.copyFile(path.join(root, 'src', 'scripts', 'popular-ranking.js'), path.join(jsDir, 'popular-ranking.js'));
   await fs.copyFile(path.join(root, 'src', 'scripts', 'install-app.js'), path.join(jsDir, 'install-app.js'));
   await fs.copyFile(path.join(root, 'src', 'scripts', 'search.js'), path.join(jsDir, 'search.js'));
   await fs.copyFile(path.join(root, 'src', 'scripts', 'modals.js'), path.join(jsDir, 'modals.js'));
@@ -426,6 +432,7 @@ function formatInMadrid(_date, options) {
 
 function siteDataPayload(events, filters = deriveFilters(events), options = {}) {
   const spaceNameByVenueKey = options.spaceNameByVenueKey instanceof Map ? options.spaceNameByVenueKey : new Map();
+  const spaceByVenueKey = options.spaceByVenueKey instanceof Map ? options.spaceByVenueKey : new Map();
   const spaces = Array.isArray(options.spaces) ? options.spaces : [];
   const enriched = events.map(enrichEvent);
   return JSON.stringify({
@@ -433,15 +440,25 @@ function siteDataPayload(events, filters = deriveFilters(events), options = {}) 
     spaces: spaces.map((space) => ({
       slug: space.slug,
       name: space.name,
-      canonicalVenue: space.canonicalVenue
+      canonicalVenue: space.canonicalVenue,
+      venueKey: normalizeVenueKey(canonicalizeVenue(space.canonicalVenue)),
+      lat: Number.isFinite(space.lat) ? space.lat : null,
+      lon: Number.isFinite(space.lon) ? space.lon : null
     })),
-    events: enriched.map((event) => ({
-      ...event,
-      venueKey: normalizeVenueKey(canonicalizeVenue(event.venue || event.location || '')),
-      venueLabel: spaceNameByVenueKey.get(normalizeVenueKey(canonicalizeVenue(event.venue || event.location || ''))) || '',
-      startsAtIso: event.startsAt,
-      endsAtIso: event.endsAt
-    }))
+    events: enriched.map((event) => {
+      const venueKey = normalizeVenueKey(canonicalizeVenue(event.venue || event.location || ''));
+      const venue = spaceByVenueKey.get(venueKey) || {};
+      return {
+        ...event,
+        venueKey,
+        venueLabel: spaceNameByVenueKey.get(venueKey) || '',
+        venueLat: Number.isFinite(venue.lat) ? venue.lat : null,
+        venueLon: Number.isFinite(venue.lon) ? venue.lon : null,
+        nearbyVallabusStops: Array.isArray(venue.nearbyVallabusStops) ? venue.nearbyVallabusStops : [],
+        startsAtIso: event.startsAt,
+        endsAtIso: event.endsAt
+      };
+    })
   });
 }
 
@@ -545,6 +562,12 @@ async function computeAssetVersion() {
     path.join(root, 'src', 'scripts', 'search.js'),
     // Los modales viven aquí, no en partials, desde que salieron del HTML servido.
     path.join(root, 'src', 'scripts', 'modals.js'),
+    path.join(root, 'src', 'scripts', 'event-metrics.js'),
+    path.join(root, 'src', 'scripts', 'weather.js'),
+    path.join(root, 'src', 'scripts', 'directions.js'),
+    path.join(root, 'src', 'scripts', 'popular.js'),
+    path.join(root, 'src', 'scripts', 'popular-ranking.js'),
+    path.join(root, 'src', 'data', 'vallabus.mjs'),
     path.join(root, 'src', 'scripts', 'subscribe.js'),
     path.join(root, 'src', 'scripts', 'menu-drawer.js'),
     path.join(root, 'src', 'scripts', 'location-link.js'),
@@ -587,7 +610,11 @@ async function buildSite(events) {
   // el contador de /espacios/ sea coherente con /tipos/ y no se limite a 6 meses.
   const groupedSpaces = groupFutureEventsByVenue(sorted, { openEnded: true });
   const venueCatalog = await enrichVenueCatalog(groupedSpaces);
-  const spaces = mergeSpacesWithVenueCatalog(groupedSpaces, venueCatalog);
+  const vallabusStops = await loadVallabusStops();
+  const spaces = mergeSpacesWithVenueCatalog(groupedSpaces, venueCatalog).map((space) => ({
+    ...space,
+    nearbyVallabusStops: nearbyVallabusStops(space, vallabusStops)
+  }));
   const spaceSlugByVenueKey = new Map(
     spaces
       .filter((space) => space?.name && space?.slug)
@@ -608,11 +635,19 @@ async function buildSite(events) {
   // espacio canónico (no por el texto de ubicación en crudo).
   const withVenueKeys = (event) => {
     const venueKey = normalizeVenueKey(canonicalizeVenue(event.venue || event.location || ''));
-    return { ...event, venueKey, venueLabel: spaceNameByVenueKey.get(venueKey) || '' };
+    const venue = spaceByVenueKey.get(venueKey) || {};
+    return {
+      ...event,
+      venueKey,
+      venueLabel: spaceNameByVenueKey.get(venueKey) || '',
+      venueLat: Number.isFinite(venue.lat) ? venue.lat : null,
+      venueLon: Number.isFinite(venue.lon) ? venue.lon : null,
+      nearbyVallabusStops: Array.isArray(venue.nearbyVallabusStops) ? venue.nearbyVallabusStops : []
+    };
   };
   const assetVersion = await computeAssetVersion();
   // Se sirve solo como /site-data.json (ver layout.njk): ya no se inyecta inline.
-  const eventsPayload = siteDataPayload(events, filters, { spaces, spaceNameByVenueKey });
+  const eventsPayload = siteDataPayload(events, filters, { spaces, spaceNameByVenueKey, spaceByVenueKey });
   console.log(`build: data ${elapsedMs('data').toFixed(1)}ms`);
   const categoryFeeds = filters.map((category) => ({
     label: category,
@@ -714,6 +749,24 @@ async function buildSite(events) {
     today: today.map(enrichEvent),
     todayCount: today.length,
     categories: filters,
+    includeSiteData: true,
+    ...sharedContext
+  }));
+
+  await writeFile('populares/index.html', render('popular-events.njk', {
+    title: 'Eventos populares | Aldea Pucela Eventos',
+    meta: { description: 'Los eventos más guardados y visitados de Valladolid.' },
+    canonicalUrl: `${publicBaseUrl}/populares/`,
+    social: {
+      type: 'website',
+      title: 'Eventos populares | Aldea Pucela Eventos',
+      description: 'Los eventos más guardados y visitados de Valladolid.',
+      ...socialPreview,
+      url: `${publicBaseUrl}/populares/`
+    },
+    pageCss: 'home.css',
+    pageJs: 'popular.js',
+    activeNav: 'popular',
     includeSiteData: true,
     ...sharedContext
   }));
@@ -1029,6 +1082,16 @@ async function buildSite(events) {
       ? (venuePageSlugs.has(venueSlug) ? `/espacios/${venueSlug}/` : `/espacios/#${venueSlug}`)
       : '/espacios/';
     const venueEntry = eventVenueKey ? spaceByVenueKey.get(eventVenueKey) || null : null;
+    const nearbyStops = Array.isArray(venueEntry?.nearbyVallabusStops) ? venueEntry.nearbyVallabusStops : [];
+    const nearbyLines = [...new Set(nearbyStops.flatMap((stop) => Array.isArray(stop.lines) ? stop.lines.map(String) : []))]
+      .sort((left, right) => left.localeCompare(right, 'es', { numeric: true, sensitivity: 'base' }));
+    const detailEvent = {
+      ...event,
+      venueLat: Number.isFinite(venueEntry?.lat) ? venueEntry.lat : null,
+      venueLon: Number.isFinite(venueEntry?.lon) ? venueEntry.lon : null,
+      nearbyVallabusStops: nearbyStops,
+      nearbyVallabusLines: nearbyLines
+    };
 
     await writeFile(path.join('e', String(event.id), event.slug, 'index.html'), render('event-detail.njk', {
       title: `${event.title} | Eventos Valladolid | Aldea Pucela`,
@@ -1040,7 +1103,7 @@ async function buildSite(events) {
       jsonLd: serializeJsonLd(buildEventJsonLd(event, { publicBaseUrl, venueEntry })),
       pageCss: 'event-detail.css',
       pageJs: 'event-detail.js',
-      event,
+      event: detailEvent,
       relatedEvents,
       moreInVenueEvents,
       moreInVenueTitle,
@@ -1052,12 +1115,18 @@ async function buildSite(events) {
         sourceUrl: event.sourceUrl,
         startsAtIso: event.startsAt,
         endsAtIso: event.endsAt,
+        id: String(event.id),
+        startsAtDayKey: detailEvent.startsAtDayKey,
+        timeLabel: detailEvent.timeLabel,
         // Los tres siguientes los usa la búsqueda del botón de acceso para
         // acotar el evento (ver event-detail.js): sin ellos preguntaba solo con
         // título, fecha y lugar.
         categoryLabel: event.categoryLabel,
         organizer: event.organizer,
         notes: event.notes,
+        venueLat: detailEvent.venueLat,
+        venueLon: detailEvent.venueLon,
+        nearbyVallabusStops: detailEvent.nearbyVallabusStops,
         // El botón de acceso pregunta una cosa u otra según sepamos o no que se
         // cobra (ver event-detail.js).
         priceStatus: event.priceStatus
