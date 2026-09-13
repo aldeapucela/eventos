@@ -240,7 +240,7 @@ export function extractParagraphLines(html = '') {
   return normalized.filter((line) => !isBoilerplateLine(line));
 }
 
-export function cleanDescriptionHtml(html = '', title = '') {
+export function cleanDescriptionHtml(html = '', title = '', eventUrl = '') {
   let output = removeBalancedDivs(String(html), /<div[^>]*class="[^"]*\bdiscourse-post-event\b[^"]*"/i);
   output = removeBalancedDivs(output, /<div[^>]*class="[^"]*\blightbox-wrapper\b[^"]*"/i);
   output = output
@@ -251,9 +251,25 @@ export function cleanDescriptionHtml(html = '', title = '') {
     .replace(/<p>\s*<img[^>]*alt=":round_pushpin:"[^>]*>\s*([^<]+)\s*<\/p>/gi, '')
     .replace(/<p>\s*(Categor[ií]a|Organizador|Notas|Lugar|Ubicaci[oó]n|Precio)\s*:[\s\S]*?<\/p>/gi, '')
     .replace(/<p>\s*<em>\s*Evento importado desde[\s\S]*?<\/em>\s*<\/p>/gi, '')
-    // El enlace a la ficha propia se añade después del despliegue remoto. No debe
-    // volver a entrar como contenido de la descripción en la siguiente sincronización.
-    .replace(/<p\b[^>]*>\s*<a\b(?=[^>]*href=["'][^"']*eventos\.aldeapucela\.org\/e\/)[^>]*>\s*Ver el evento en la web\s*<\/a>\s*<\/p>/gi, '')
+    // El enlace al título de esta misma ficha se conserva en el foro, pero no en la web.
+    .replace(/<p\b[^>]*>\s*<a\b([^>]*)>([\s\S]*?)<\/a>\s*<\/p>/gi, (paragraph, attributes, labelHtml) => {
+      const href = attributes.match(/\bhref=["']([^"']+)["']/i)?.[1] || '';
+      const normalizedHref = normalizeComparableUrl(href);
+      const normalizedOwnUrl = normalizeComparableUrl(eventUrl);
+      const label = normalizeComparableText(labelHtml.replace(/<[^>]*>/g, ''));
+      const normalizedTitle = normalizeComparableText(title);
+      const ownEventPage = /^https?:\/\/eventos\.aldeapucela\.org\/e\/\d+\/[^/]+$/i.test(normalizedHref);
+      const ownEventId = normalizedOwnUrl.match(/^https?:\/\/eventos\.aldeapucela\.org\/e\/(\d+)\//i)?.[1];
+      const linkedEventId = normalizedHref.match(/^https?:\/\/eventos\.aldeapucela\.org\/e\/(\d+)\//i)?.[1];
+      const selfLink = ownEventId
+        ? ownEventPage && linkedEventId === ownEventId
+        : ownEventPage && (
+          label === 'ver el evento en la web' ||
+          label === normalizedTitle ||
+          label === normalizedTitle + ' en eventos.aldeapucela.org'
+        );
+      return selfLink ? '' : paragraph;
+    })
     .trim();
 
   const escapedTitle = escapeRegExp(title.trim());
@@ -261,6 +277,24 @@ export function cleanDescriptionHtml(html = '', title = '') {
     output = output.replace(new RegExp(`^<p>${escapedTitle}<\\/p>\\s*`, 'i'), '');
   }
   return dropEmptyBlocks(output);
+}
+
+function normalizeComparableUrl(value = '') {
+  try {
+    const url = new URL(decodeHtmlEntities(String(value)).trim());
+    url.search = '';
+    url.hash = '';
+    return (url.origin.toLowerCase() + url.pathname.replace(/\/+$/, '')).toLowerCase();
+  } catch {
+    return '';
+  }
+}
+
+export function normalizeComparableText(value = '') {
+  return decodeHtmlEntities(String(value))
+    .replace(/\s+/g, ' ')
+    .trim()
+    .toLocaleLowerCase('es');
 }
 
 // Discourse anida divs dentro de `lightbox-wrapper` (el `.meta` del pie), así
