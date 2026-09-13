@@ -59,7 +59,15 @@
           <i class="fa-solid" data-detail-weather-icon aria-hidden="true"></i>
           <span class="detail-clean-weather-copy"><span class="detail-clean-weather-label">Previsión</span><span data-detail-weather-copy></span></span>
         </div>
-        {% if not event.isFree and event.price %}
+        {% if event.ticketUrl %}
+        <div class="detail-clean-meta-row detail-ticket-offer-row">
+          <i class="fa-solid fa-ticket" aria-hidden="true"></i>
+          {% if event.price %}<span class="detail-ticket-price">{{ event.price }}</span>{% else %}<span class="detail-ticket-price">Entradas</span>{% endif %}
+          <a class="detail-ticket-search-button" href="{{ event.ticketUrl }}" target="_blank" rel="noopener noreferrer" aria-label="{{ 'Inscribirse' if event.isFree else 'Comprar entradas' }}">
+            <span>{{ 'Inscribirse' if event.isFree else 'Comprar entradas' }}</span>
+          </a>
+        </div>
+        {% elif not event.isFree and event.price %}
         <div class="detail-clean-meta-row detail-ticket-offer-row">
           <i class="fa-solid fa-ticket" aria-hidden="true"></i>
           <span class="detail-ticket-price">{{ event.price }}</span>

@@ -2,10 +2,12 @@ import {
   buildTextParagraphHtml,
   buildExcerpt,
   cleanDescriptionHtml,
+  decodeHtmlEntities,
   detectPriceStatus,
   extractParagraphLines,
   normalizeImage,
   parseEventMetaFromHtml,
+  normalizePriceLabel,
   titleCase,
   toSlug
 } from './format.mjs';
@@ -129,6 +131,7 @@ export function topicSignature(topic) {
 export function normalizeDiscourseTopic(topic, detail) {
   const detailPost = detail?.post_stream?.posts?.[0];
   const event = detailPost?.event || {};
+  const customFields = event.custom_fields || {};
   const rawHtml = detailPost?.cooked || '';
   const meta = parseEventMetaFromHtml(rawHtml);
   const image = normalizeImage(topic.image_url || detail?.image_url || detail?.thumbnails?.[0]?.url || null);
@@ -139,12 +142,18 @@ export function normalizeDiscourseTopic(topic, detail) {
   const lines = extractParagraphLines(rawHtml);
   const summary = normalizeEventSummary(event.description || extractSummary(lines, title));
   const descriptionHtml = resolveDescriptionHtml(rawHtml, title, event.description_html, event.description);
-  const categoryLabel = normalizeCategory(meta.categoryLabel);
-  const location = normalizeLocation(meta.location || event.location || meta.inferredLocation || '', title);
+  const categoryLabel = normalizeCategory(readEventCustomField(customFields, 'event_category') || meta.categoryLabel);
+  const location = normalizeLocation(event.location || meta.location || meta.inferredLocation || '', title);
   const parsedLocation = parseLocationParts(location, title);
-  const organizer = meta.organizer || '';
+  const organizer = readEventCustomField(customFields, 'organizer') || meta.organizer || '';
   const notes = meta.notes || '';
-  const price = meta.price || '';
+  const price = normalizePriceLabel(readEventCustomField(customFields, 'price') || meta.price || '');
+  const address = readEventCustomField(customFields, 'address') || parsedLocation.venueAddress;
+  const { latitude, longitude } = parseEventCoordinates(
+    readEventCustomField(customFields, 'latitude'),
+    readEventCustomField(customFields, 'longitude')
+  );
+  const ticketUrl = normalizeHttpUrl(readEventCustomField(customFields, 'ticket_url'));
   const priceStatus = detectPriceStatus({ price, text: `${summary} ${notes} ${rawHtml}` });
   const importedFromChatUrl = meta.importedFromChatUrl || '';
 
@@ -166,11 +175,14 @@ export function normalizeDiscourseTopic(topic, detail) {
     timezone: event.timezone || 'Europe/Madrid',
     location,
     venue: parsedLocation.venueName,
-    address: parsedLocation.venueAddress,
+    address,
+    latitude,
+    longitude,
     categoryLabel,
     organizer,
     notes,
     price,
+    ticketUrl,
     importedFromChatUrl,
     isSticky: Boolean(topic.pinned || topic.pinned_globally || topic.featured_link),
     priceStatus,
@@ -181,6 +193,36 @@ export function normalizeDiscourseTopic(topic, detail) {
     publishedAt: topic.created_at || detailPost?.created_at || detail?.created_at || '',
     updatedAt: topic.last_posted_at || detailPost?.updated_at || topic.created_at || ''
   };
+}
+
+function readEventCustomField(fields, name) {
+  const raw = fields?.[name] ?? fields?.[name.replaceAll('_', '-')];
+  if (raw === null || raw === undefined) return '';
+  const value = decodeHtmlEntities(Array.isArray(raw) ? raw[0] : raw).replace(/\s+/g, ' ').trim();
+  return value && value.toLowerCase() !== 'null' && value.toLowerCase() !== 'undefined' ? value : '';
+}
+
+function parseEventCoordinates(latitude, longitude) {
+  const rawLat = String(latitude ?? '').replace(',', '.').trim();
+  const rawLon = String(longitude ?? '').replace(',', '.').trim();
+  if (!rawLat || !rawLon) return { latitude: null, longitude: null };
+  const lat = Number(rawLat);
+  const lon = Number(rawLon);
+  if (!Number.isFinite(lat) || !Number.isFinite(lon) || Math.abs(lat) > 90 || Math.abs(lon) > 180) {
+    return { latitude: null, longitude: null };
+  }
+  return { latitude: lat, longitude: lon };
+}
+
+function normalizeHttpUrl(value) {
+  const candidate = String(value || '').trim();
+  if (!candidate) return '';
+  try {
+    const parsed = new URL(candidate);
+    return ['http:', 'https:'].includes(parsed.protocol) ? parsed.href : '';
+  } catch {
+    return '';
+  }
 }
 
 function normalizeEventSummary(value = '') {

@@ -127,7 +127,7 @@ function createCartoLayer(leaflet) {
   const theme = document.documentElement.classList.contains('dark') ? 'dark' : 'light';
   return leaflet.tileLayer(CARTO_LAYERS[theme], {
     maxZoom: 19,
-    attribution: '&copy; OpenStreetMap &copy; CARTO'
+    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>'
   });
 }
 

@@ -40,8 +40,8 @@ export function serializeJsonLd(value) {
 export function buildEventJsonLd(event, { publicBaseUrl, venueEntry = null } = {}) {
   const eventUrl = `${publicBaseUrl}/e/${event.id}/${event.slug}/`;
   const description = eventDescriptionText(event);
-  const venueName = String(venueEntry?.name || event.venue || event.location || '').trim();
-  const streetAddress = String(venueEntry?.address || event.address || '').trim();
+  const venueName = String(event.venue || venueEntry?.name || event.location || '').trim();
+  const streetAddress = String(event.address || venueEntry?.address || '').trim();
 
   const address = {
     '@type': 'PostalAddress',
@@ -56,11 +56,17 @@ export function buildEventJsonLd(event, { publicBaseUrl, venueEntry = null } = {
     name: venueName || 'Valladolid',
     address
   };
-  if (Number.isFinite(venueEntry?.lat) && Number.isFinite(venueEntry?.lon)) {
+  const eventLat = event.latitude === null || event.latitude === undefined || event.latitude === '' ? NaN : Number(event.latitude);
+  const eventLon = event.longitude === null || event.longitude === undefined || event.longitude === '' ? NaN : Number(event.longitude);
+  const venueLat = venueEntry?.lat === null || venueEntry?.lat === undefined || venueEntry?.lat === '' ? NaN : Number(venueEntry.lat);
+  const venueLon = venueEntry?.lon === null || venueEntry?.lon === undefined || venueEntry?.lon === '' ? NaN : Number(venueEntry.lon);
+  const hasEventCoordinates = Number.isFinite(eventLat) && Number.isFinite(eventLon) && Math.abs(eventLat) <= 90 && Math.abs(eventLon) <= 180;
+  const hasVenueCoordinates = Number.isFinite(venueLat) && Number.isFinite(venueLon) && Math.abs(venueLat) <= 90 && Math.abs(venueLon) <= 180;
+  if (hasEventCoordinates || hasVenueCoordinates) {
     location.geo = {
       '@type': 'GeoCoordinates',
-      latitude: venueEntry.lat,
-      longitude: venueEntry.lon
+      latitude: hasEventCoordinates ? eventLat : venueLat,
+      longitude: hasEventCoordinates ? eventLon : venueLon
     };
   }
 
