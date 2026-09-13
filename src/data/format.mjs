@@ -244,9 +244,16 @@ export function cleanDescriptionHtml(html = '', title = '') {
   let output = removeBalancedDivs(String(html), /<div[^>]*class="[^"]*\bdiscourse-post-event\b[^"]*"/i);
   output = removeBalancedDivs(output, /<div[^>]*class="[^"]*\blightbox-wrapper\b[^"]*"/i);
   output = output
+    // Discourse cocina [details] como HTML nativo <details><summary>…</summary>…</details>.
+    // En el foro queda plegado; en la ficha web mostramos su contenido completo.
+    .replace(/<summary\b[^>]*>[\s\S]*?<\/summary>/gi, '')
+    .replace(/<\/?details\b[^>]*>/gi, '')
     .replace(/<p>\s*<img[^>]*alt=":round_pushpin:"[^>]*>\s*([^<]+)\s*<\/p>/gi, '')
     .replace(/<p>\s*(Categor[ií]a|Organizador|Notas|Lugar|Ubicaci[oó]n|Precio)\s*:[\s\S]*?<\/p>/gi, '')
     .replace(/<p>\s*<em>\s*Evento importado desde[\s\S]*?<\/em>\s*<\/p>/gi, '')
+    // El enlace a la ficha propia se añade después del despliegue remoto. No debe
+    // volver a entrar como contenido de la descripción en la siguiente sincronización.
+    .replace(/<p\b[^>]*>\s*<a\b(?=[^>]*href=["'][^"']*eventos\.aldeapucela\.org\/e\/)[^>]*>\s*Ver el evento en la web\s*<\/a>\s*<\/p>/gi, '')
     .trim();
 
   const escapedTitle = escapeRegExp(title.trim());
