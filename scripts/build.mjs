@@ -8,7 +8,7 @@ import autoprefixer from 'autoprefixer';
 import { fileURLToPath } from 'node:url';
 import { loadCachedEvents } from '../src/data/store.mjs';
 import { deriveFilters, sortEvents, splitFeatured, getPastEvents, groupEventsByMonth, groupFutureEventsByVenue, rotateBySeed } from '../src/data/site.mjs';
-import { DISPLAY_TIMEZONE, buildTextParagraphHtml, cleanDescriptionHtml, detectPriceStatus, escapeHtml, formatDateRange, formatDateTime, isSameMadridDay, normalizePriceLabel, parseDateLike, parseEventMetaFromHtml, stripTags, toMadridDateKey } from '../src/data/format.mjs';
+import { DISPLAY_TIMEZONE, buildExcerpt, buildTextParagraphHtml, cleanDescriptionHtml, cleanEventSummary, detectPriceStatus, escapeHtml, formatDateRange, formatDateTime, isSameMadridDay, normalizePriceLabel, parseDateLike, parseEventMetaFromHtml, stripTags, toMadridDateKey } from '../src/data/format.mjs';
 import { enrichVenueCatalog, mergeSpacesWithVenueCatalog } from '../src/data/venues.mjs';
 import { loadVallabusStops, nearbyVallabusStops } from '../src/data/vallabus.mjs';
 import { canonicalizeVenue, normalizeVenueKey } from '../src/data/venue-aliases.mjs';
@@ -317,12 +317,13 @@ function buildCalendarIcs(events, options = {}) {
 
 function enrichEvent(event) {
   const descriptionHtml = resolveEventDescriptionHtml(event);
+  const summary = resolveEventSummary(event, descriptionHtml);
   const price = resolveEventPrice(event);
   const ticketUrl = resolveEventTicketUrl(event.ticketUrl);
   const eventCoordinates = validCoordinatePair(event.latitude, event.longitude);
   const priceStatus = detectPriceStatus({
     price,
-    text: `${event.summary || ''} ${event.notes || ''} ${stripTags(descriptionHtml)}`
+    text: `${summary} ${event.notes || ''} ${stripTags(descriptionHtml)}`
   });
   const startsAtDate = event.startsAt ? parseDateLike(event.startsAt) : null;
   const endsAtDate = event.endsAt ? parseDateLike(event.endsAt) : null;
@@ -396,6 +397,8 @@ function enrichEvent(event) {
     // los arregla sin re-sincronizar. Idempotente.
     urlPath: `${String(event.urlPath || `/e/${event.id}/${event.slug}`).replace(/\/+$/, '')}/`,
     descriptionHtml,
+    summary,
+    excerpt: buildExcerpt(summary || descriptionHtml, 160),
     price,
     ticketUrl,
     latitude: eventCoordinates?.latitude ?? null,
@@ -426,6 +429,12 @@ function resolveEventDescriptionHtml(event) {
 // Los registros cacheados antes de que `price` existiera todavía llevan la
 // línea "Precio:" dentro de descriptionHtml: se rescata de ahí en vez de
 // refetchear el foro entero.
+function resolveEventSummary(event, descriptionHtml) {
+  return cleanEventSummary(event.summary, event.title, event.id) ||
+    cleanEventSummary(event.excerpt, event.title, event.id) ||
+    buildExcerpt(descriptionHtml, 240);
+}
+
 function resolveEventPrice(event) {
   const stored = normalizePriceLabel(event.price || '');
   if (stored) return stored;

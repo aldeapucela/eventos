@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { normalizeDiscourseTopic } from '../src/data/discourse.mjs';
-import { cleanDescriptionHtml } from '../src/data/format.mjs';
+import { cleanDescriptionHtml, cleanEventSummary } from '../src/data/format.mjs';
 
 test('excludes the linked event title from imported and cached descriptions while preserving other links', () => {
   const ownHref = 'https://eventos.aldeapucela.org/e/9001/old-slug/';
@@ -22,4 +22,20 @@ test('excludes the linked event title from imported and cached descriptions whil
   const event = normalizeDiscourseTopic(topic, detail);
   assert.equal(event.summary, 'Descripción real suficientemente larga para la ficha.');
   assert.doesNotMatch(event.descriptionHtml, /9001\/old-slug/);
+});
+
+
+test('cleans self-link labels inherited from cached summaries', () => {
+  assert.equal(
+    cleanEventSummary('Concierto en Valladolid en eventos.aldeapucela.org', 'Concierto en Valladolid', 9001),
+    ''
+  );
+  assert.equal(
+    cleanEventSummary('<a href="https://eventos.aldeapucela.org/e/9001/slug/">Enlace propio</a>', 'Concierto en Valladolid', 9001),
+    ''
+  );
+  assert.equal(
+    cleanEventSummary('Una descripción real del evento.', 'Concierto en Valladolid', 9001),
+    'Una descripción real del evento.'
+  );
 });

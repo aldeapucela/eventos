@@ -297,6 +297,22 @@ export function normalizeComparableText(value = '') {
     .toLocaleLowerCase('es');
 }
 
+export function cleanEventSummary(value = '', title = '', eventId = '') {
+  const original = String(value || '').trim();
+  if (!original) return '';
+  const text = decodeHtmlEntities(stripTags(original)).replace(/\s+/g, ' ').trim();
+  const normalized = normalizeComparableText(text);
+  const normalizedTitle = normalizeComparableText(title);
+  const labelIsSelfLink = normalized === normalizedTitle ||
+    normalized === normalizedTitle + ' en eventos.aldeapucela.org' ||
+    normalized === 'ver el evento en la web';
+  const urlIsSelfLink = eventId && new RegExp(
+    'https?:\\\\/\\\\/eventos\\\\.aldeapucela\\\\.org\\\\/e\\\\/' + String(eventId) + '(?:\\\\/|\\\\b)',
+    'i'
+  ).test(original);
+  return labelIsSelfLink || urlIsSelfLink ? '' : text;
+}
+
 // Discourse anida divs dentro de `lightbox-wrapper` (el `.meta` del pie), así
 // que un regex no balanceado corta en el primer `</div>` y deja el resto del
 // cartel suelto en mitad del texto. Recortamos contando aperturas y cierres.
