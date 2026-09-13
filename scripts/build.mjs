@@ -1,4 +1,944 @@
-YªçŠx-®éÜj×¢ëiºÚ+Š§j[h‘éÜ¢éí×Ï6í:-jZ.¶›­–)Ş³V–×÷'Bg2g&öÒvæöFS¦g2÷&öÖ—6W2s°¦–×÷'BF‚g&öÒvæöFS§F‚s°¦–×÷'B²7&VFT†6‚Òg&öÒvæöFS¦7'—Fòs°¦–×÷'BçVæ§V6·2g&öÒvçVæ§V6·2s°¦–×÷'B÷7F772g&öÒw÷7F772s°¦–×÷'BF–Çv–æF772g&öÒwF–Çv–æF772s°¦–×÷'BWF÷&Vf—†W"g&öÒvWF÷&Vf—†W"s°¦–×÷'B²f–ÆUU$ÅFõF‚Òg&öÒvæöFS§W&Âs°¦–×÷'B²ÆöD66†VDWfVçG2Òg&öÒrââ÷7&2öFF÷7F÷&RæÖ§2s°¦–×÷'B²FW&—fTf–ÇFW'2Â6÷'DWfVçG2Â7Æ—DfVGW&VBÂvWE7DWfVçG2Âw&÷WWfVçG4'”ÖöçF‚Âw&÷WgWGW&TWfVçG4'•fVçVRÂ&÷FFT'•6VVBÒg&öÒrââ÷7&2öFF÷6—FRæÖ§2s°¦–×÷'B²D•5Ä•õD”ÔU¤ôäRÂ'V–ÆEFW‡E&w&„‡FÖÂÂ6ÆVäFW67&—F–öä‡FÖÂÂFWFV7E&–6U7FGW2ÂW66T‡FÖÂÂf÷&ÖDFFU&ævRÂf÷&ÖDFFUF–ÖRÂ—56ÖTÖG&–DF’Âæ÷&ÖÆ—¦U&–6TÆ&VÂÂ'6TFFTÆ–¶RÂ'6TWfVçDÖWFg&öÔ‡FÖÂÂ7G&—Fw2ÂFôÖG&–DFFT¶W’Òg&öÒrââ÷7&2öFFöf÷&ÖBæÖ§2s°¦–×÷'B²Vç&–6…fVçVT6FÆörÂÖW&vU76W5v—F…fVçVT6FÆörÒg&öÒrââ÷7&2öFF÷fVçVW2æÖ§2s°¦–×÷'B²ÆöEfÆÆ'W57F÷2ÂæV&'•fÆÆ'W57F÷2Òg&öÒrââ÷7&2öFF÷fÆÆ'W2æÖ§2s°¦–×÷'B²6æöæ–6Æ—¦UfVçVRÂæ÷&ÖÆ—¦UfVçVT¶W’Òg&öÒrââ÷7&2öFF÷fVçVRÖÆ–6W2æÖ§2s°¦–×÷'B²'V–ÆD6öÆÆV7F–öåvT§6öäÆBÂ'V–ÆDWfVçD§6öäÆBÂ'V–ÆEfVçVUvT§6öäÆBÂ6W&–Æ—¦T§6öäÆBÒg&öÒrââ÷7&2öFF÷7G'V7GW&VBÖFFæÖ§2s°¦–×÷'B²vWD†÷&—¦öåv–æF÷rÂvWD÷VäVæFVEv–æF÷rÂvWEF–ÖUvW2Â—5vVV¶VæDF”¶W’Â&W6öÇfT'V–ÆDæ÷rÂ6VÆV7EF–ÖUvTWfVçG2Òg&öÒrââ÷7&2öFF÷F–ÖR×v–æF÷w2æÖ§2s°¦–×÷'B²vWD6FVv÷'•vW2ÂÖVD6FVv÷'”Æ&VÇ2Òg&öÒrââ÷7&2öFFö6FVv÷'’×vW2æÖ§2s°¦–×÷'B²vWEfVçVUvW2Òg&öÒrââ÷7&2öFF÷fVçVR×vW2æÖ§2s°¦–×÷'B²6æöæ–6Æ—¦T6FVv÷'’Òg&öÒrââ÷7&2öFFö6FVv÷'’ÖÆ–6W2æÖ§2s°¦–×÷'B²7–æ4WfVçG2Òg&öÒrâ÷7–æ2ÖÆ–"æÖ§2s° ¢òòL:Ö2VRÆ—7F%,;7†–Ö÷2WfVçF÷2"VâÆ÷'FFâ†öÖRæ§2ÆòÆVRFP¢òòFFÖ†÷&—¦öâÖF—2&æòGWÆ–6"VÂì;¦ÖW&òà¦6öç7B„ôÔUô„õ$•¤ôåôD•2Ò3° ¦6öç7BõöF—&æÖRÒF‚æF—&æÖR†f–ÆUU$ÅFõF‚†–×÷'BæÖWFçW&Â’“°¦6öç7B&ö÷BÒF‚ç&W6öÇfR…õöF—&æÖRÂrââr“°¦6öç7BF—7BÒF‚æ¦ö–â‡&ö÷BÂvF—7Br“°¦6öç7B76WG4F—"ÒF‚æ¦ö–â†F—7BÂv76WG2r“°¦6öç7B÷7FW'4F—"ÒF‚æ¦ö–â†F—7BÂw÷7FW'2r“°¦6öç7B774F—"ÒF‚æ¦ö–â†76WG4F—"Âv772r“°¦6öç7B§4F—"ÒF‚æ¦ö–â†76WG4F—"Âv§2r“°¦6öç7BV&Æ–4&6UW&ÂÒv‡GG3¢òöWfVçF÷2æÆFVV6VÆæ÷&rs°¢òò–ÖvVâFR&Wf—7VÆ—¦6œ;6âVâ&VFW2†ös¦–ÖvR’âVÂæöÖ'&RffW'6–öæFò¢òò&÷;76—Fó¢Â7W7F—GV—"Æ÷2'—FW2ÖçFVæ–VæFòÆÖ—6ÖU$ÂÂÆ2&VFW0¢òò6ö6–ÆW26–wVVâ6—'f–VæFòÆ6÷–66†VF†<:Ò&V&V<:ÖVÂ—6÷F—ğ¢òòçF–wVòFVÂ6öæFRç<;§&W¢’â6’Æ–ÖvVâgVVÇfR6Ö&–"Â7V&RÆfW'6œ;6à¢òòFVÂæöÖ'&RFVÂ&6†—fòVâfW¢FR6ö'&W67&–&—&Æòà¦6öç7B6ö6–Å&Wf–WrÒ°¢–ÖvS¢G·V&Æ–4&6UW&ÇÒö76WG2÷6ö6–Â×&Wf–Wr×c2æ§vÀ¢–ÖvUv–GFƒ¢s3À¢–ÖvT†V–v‡C¢“’À¢–ÖvTÇC¢u\:’†6W"VâfÆÆFöÆ–BÂvVæFfV6–æÂFRWfVçF÷27VÇGW&ÆW2FRÆFVV6VÆp§Ó°¢òòfW&–f–66œ;6âFR&÷–VFBVâvöövÆR6V&6‚6öç6öÆR‡6öÆòVâÆ÷'FF’à¦6öç7BvöövÆU6—FUfW&–f–6F–öâÒut“EU62ÕF%DÆW§S•¦f#$£•—g·vsƒ‡Ew¤W‡Ee$Wrs° ¢òò7\:çF÷2WfVçF÷2f–vVçFW2æV6W6—FVæ:v–æFRF—òòFRW76–ò&6W ¢òò–æFW†&ÆRâ÷"FV&¦òFVÂVÖ'&ÂÆ:v–æ6R6–wVRvVæW&æFò’VæÆ¦æFòFW6FP¢òò7R‡V"†W2;§F–Â&æfVv"’ÂW&òÆÆWfæö–æFW‚’6ÆRFVÂ6—FVÖ¢VæÆ—7F¢òòFRF÷2WfVçF÷2æò÷'FæFVRæòW7L:’–VâÆ2f–6†2â6R&V6Æ7VÆVâ6F¢òò'V–ÆBÂ<:ÒVRVæ:v–æ7'W¦VÂVÖ'&ÂVâÆ÷2F÷26VçF–F÷2÷"<:Ò6öÆà¦6öç7BÔ”åô”äDU„$ÄUô4DTtõ%•ôUdTåE2Ò°¦6öç7BÔ”åô”äDU„$ÄUõdTåTUôUdTåE2ÒS° ¢òò7\:çF÷2WfVçF÷2Vç6\;6öÖòfæ6R6FF&¦WFFRÆ÷2‡V'2÷F—÷2ò’öW76–÷2òà¢òòVÂÆ—7FFò6ö×ÆWFòW7L:Vâ6Æ–2ÂVâ÷BóÇ6ÇVsâò’öW76–÷2óÇ6ÇVsâòà¦6öç7B…T%ô4$EôUdTåE2ÒC° ¦6öç7B&w2ÒæWr6WB‡&ö6W72æ&wbç6Æ–6Rƒ"’“° ¦6öç7BVçbÒçVæ§V6·2æ6öæf–wW&R‡F‚æ¦ö–â‡&ö÷BÂw7&2rÂwFV×ÆFW2r’Â°¢WFöW66S¢G'VRÀ¢æô66†S¢G'VP§Ò“° ¦7–æ2gVæ7F–öâVç7W&TF—'2‚’°¢v—Bg2æÖ¶F—"†774F—"Â²&V7W'6—fS¢G'VRÒ“°¢v—Bg2æÖ¶F—"†§4F—"Â²&V7W'6—fS¢G'VRÒ“°¢v—Bg2æÖ¶F—"‡÷7FW'4F—"Â²&V7W'6—fS¢G'VRÒ“°¢v—Bg2æÖ¶F—"‡F‚æ¦ö–â†76WG4F—"ÂvföçFvW6öÖRr’Â²&V7W'6—fS¢G'VRÒ“°§Ğ ¦7–æ2gVæ7F–öâ6÷•7FF–476WG2‚’°¢v—Bg2æ7‡F‚æ¦ö–â‡&ö÷BÂw7&2rÂv76WG2r’Â76WG4F—"Â²&V7W'6—fS¢G'VRÒ“°§Ğ ¦7–æ2gVæ7F–öâ6÷•fW'6–öæVE÷7FW'2‚’°¢6öç7B6÷W&6RÒF‚æ¦ö–â‡&ö÷BÂw7&2rÂw÷7FW'2r“°¢G'’°¢v—Bg2æ66W72‡6÷W&6R“°¢Ò6F6‚°¢&WGW&ã°¢Ğ¢v—Bg2æ7‡6÷W&6RÂ÷7FW'4F—"Â²&V7W'6—fS¢G'VRÒ“°§Ğ ¦7–æ2gVæ7F–öâ6÷”föçDvW6öÖR‚’°¢6öç7B6÷W&6RÒF‚æ¦ö–â‡&ö÷BÂvæöFUöÖöGVÆW2rÂtf÷'FvW6öÖRrÂvföçFvW6öÖRÖg&VRr“°¢6öç7BF&vWBÒF‚æ¦ö–â†76WG4F—"ÂvföçFvW6öÖRr“°¢v—Bg2æÖ¶F—"‡F‚æ¦ö–â‡F&vWBÂv772r’Â²&V7W'6—fS¢G'VRÒ“°¢v—Bg2æÖ¶F—"‡F‚æ¦ö–â‡F&vWBÂwvV&föçG2r’Â²&V7W'6—fS¢G'VRÒ“°¢v—Bg2æ6÷”f–ÆR‡F‚æ¦ö–â‡6÷W&6RÂv772rÂvÆÂæÖ–âæ772r’ÂF‚æ¦ö–â‡F&vWBÂv772rÂvÆÂæÖ–âæ772r’“°¢v—Bg2æ7‡F‚æ¦ö–â‡6÷W&6RÂwvV&föçG2r’ÂF‚æ¦ö–â‡F&vWBÂwvV&föçG2r’Â²&V7W'6—fS¢G'VRÒ“°§Ğ ¦7–æ2gVæ7F–öâ6ö×–ÆT772†–çWDf–ÆRÂ÷WGWDf–ÆR’°¢6öç7B&6RÒv—Bg2ç&VDf–ÆR‡F‚æ¦ö–â‡&ö÷BÂw7&2rÂw7G–ÆW2rÂv&6Ræ772r’ÂwWFc‚r“°¢6öç7BvRÒv—Bg2ç&VDf–ÆR†–çWDf–ÆRÂwWFc‚r“°¢6öç7B&W7VÇBÒv—B÷7F772…°¢F–Çv–æF772‡²6öæf–s¢F‚æ¦ö–â‡&ö÷BÂwF–Çv–æBæ6öæf–ræ§2r’Ò’À¢WF÷&Vf—†W"‚¢Ò’ç&ö6W72†G¶&6WÕÆâG·vWÖÂ²g&öÓ¢–çWDf–ÆRÂFó¢÷WGWDf–ÆRÒ“°¢v—Bg2çw&—FTf–ÆR†÷WGWDf–ÆRÂ&W7VÇBæ772“°§Ğ ¦7–æ2gVæ7F–öâ6÷”§2‚’°¢v—Bg2æ6÷”f–ÆR‡F‚æ¦ö–â‡&ö÷BÂw7&2rÂw67&—G2rÂv†öÖRæ§2r’ÂF‚æ¦ö–â†§4F—"Âv†öÖRæ§2r’“°¢v—Bg2æ6÷”f–ÆR‡F‚æ¦ö–â‡&ö÷BÂw7&2rÂw67&—G2rÂvWfVçBÖFWF–Âæ§2r’ÂF‚æ¦ö–â†§4F—"ÂvWfVçBÖFWF–Âæ§2r’“°¢v—Bg2æ6÷”f–ÆR‡F‚æ¦ö–â‡&ö÷BÂw7&2rÂw67&—G2rÂv6öÖÖVçG2æ§2r’ÂF‚æ¦ö–â†§4F—"Âv6öÖÖVçG2æ§2r’“°¢v—Bg2æ6÷”f–ÆR‡F‚æ¦ö–â‡&ö÷BÂw7&2rÂw67&—G2rÂvÆö6F–öâÖÆ–æ²æ§2r’ÂF‚æ¦ö–â†§4F—"ÂvÆö6F–öâÖÆ–æ²æ§2r’“°¢v—Bg2æ6÷”f–ÆR‡F‚æ¦ö–â‡&ö÷BÂw7&2rÂw67&—G2rÂw7V'67&–&Ræ§2r’ÂF‚æ¦ö–â†§4F—"Âw7V'67&–&Ræ§2r’“°¢v—Bg2æ6÷”f–ÆR‡F‚æ¦ö–â‡&ö÷BÂw7&2rÂw67&—G2rÂvÖVçRÖG&vW"æ§2r’ÂF‚æ¦ö–â†§4F—"ÂvÖVçRÖG&vW"æ§2r’“°¢v—Bg2æ6÷”f–ÆR‡F‚æ¦ö–â‡&ö÷BÂw7&2rÂw67&—G2rÂw6fVBÖWfVçG2æ§2r’ÂF‚æ¦ö–â†§4F—"Âw6fVBÖWfVçG2æ§2r’“°¢v—Bg2æ6÷”f–ÆR‡F‚æ¦ö–â‡&ö÷BÂw7&2rÂw67&—G2rÂw76W2æ§2r’ÂF‚æ¦ö–â†§4F—"Âw76W2æ§2r’“°¢v—Bg2æ6÷”f–ÆR‡F‚æ¦ö–â‡&ö÷BÂw7&2rÂw67&—G2rÂwF†VÖRæ§2r’ÂF‚æ¦ö–â†§4F—"ÂwF†VÖRæ§2r’“°¢v—Bg2æ6÷”f–ÆR‡F‚æ¦ö–â‡&ö÷BÂw7&2rÂw67&—G2rÂvÖFöÖòæ§2r’ÂF‚æ¦ö–â†§4F—"ÂvÖFöÖòæ§2r’“°¢v—Bg2æ6÷”f–ÆR‡F‚æ¦ö–â‡&ö÷BÂw7&2rÂw67&—G2rÂvWfVçBÖÖWG&–72æ§2r’ÂF‚æ¦ö–â†§4F—"ÂvWfVçBÖÖWG&–72æ§2r’“°¢v—Bg2æ6÷”f–ÆR‡F‚æ¦ö–â‡&ö÷BÂw7&2rÂw67&—G2rÂwvVF†W"æ§2r’ÂF‚æ¦ö–â†§4F—"ÂwvVF†W"æ§2r’“°¢v—Bg2æ6÷”f–ÆR‡F‚æ¦ö–â‡&ö÷BÂw7&2rÂw67&—G2rÂvF—&V7F–öç2æ§2r’ÂF‚æ¦ö–â†§4F—"ÂvF—&V7F–öç2æ§2r’“°¢v—Bg2æ6÷”f–ÆR‡F‚æ¦ö–â‡&ö÷BÂw7&2rÂw67&—G2rÂw÷VÆ"æ§2r’ÂF‚æ¦ö–â†§4F—"Âw÷VÆ"æ§2r’“°¢v—Bg2æ6÷”f–ÆR‡F‚æ¦ö–â‡&ö÷BÂw7&2rÂw67&—G2rÂw÷VÆ"×&æ¶–æræ§2r’ÂF‚æ¦ö–â†§4F—"Âw÷VÆ"×&æ¶–æræ§2r’“°¢v—Bg2æ6÷”f–ÆR‡F‚æ¦ö–â‡&ö÷BÂw7&2rÂw67&—G2rÂv–ç7FÆÂÖæ§2r’ÂF‚æ¦ö–â†§4F—"Âv–ç7FÆÂÖæ§2r’“°¢v—Bg2æ6÷”f–ÆR‡F‚æ¦ö–â‡&ö÷BÂw7&2rÂw67&—G2rÂw6V&6‚æ§2r’ÂF‚æ¦ö–â†§4F—"Âw6V&6‚æ§2r’“°¢v—Bg2æ6÷”f–ÆR‡F‚æ¦ö–â‡&ö÷BÂw7&2rÂw67&—G2rÂvÖöFÇ2æ§2r’ÂF‚æ¦ö–â†§4F—"ÂvÖöFÇ2æ§2r’“°§Ğ ¦gVæ7F–öâ6ÇVv–g’‡fÇVRÒrr’°¢&WGW&â7G&–ær‡fÇVR¢ææ÷&ÖÆ—¦R‚tädBr¢ç&WÆ6R‚õµÇS3ÕÇS3feÒörÂrr¢çFôÆ÷vW$66R‚¢çG&–Ò‚¢ç&WÆ6R‚õµæ×£Ó•Ò²örÂrÒr¢ç&WÆ6R‚õâÒ·ÂÒ²BörÂrr¢ÇÂv6FVv÷&–s°§Ğ ¦gVæ7F–öâ&VæFW"‡FV×ÆFRÂ6öçFW‡B’°¢&WGW&âVçbç&VæFW"‡FV×ÆFRÂ6öçFW‡B“°§Ğ ¦7–æ2gVæ7F–öâw&—FTf–ÆR‡&VÅF‚Â6öçFVçB’°¢6öç7Bf–ÆUF‚ÒF‚æ¦ö–â†F—7BÂ&VÅF‚“°¢v—Bg2æÖ¶F—"‡F‚æF—&æÖR†f–ÆUF‚’Â²&V7W'6—fS¢G'VRÒ“°¢v—Bg2çw&—FTf–ÆR†f–ÆUF‚Â6öçFVçB“°§Ğ ¦gVæ7F–öâFô'6öÇWFUW&Â‡fÇVRÒrr’°¢–b‚fÇVR’&WGW&âV&Æ–4&6UW&Ã°¢–b‚õæ‡GG3ó¥ÂõÂòö’çFW7B‡fÇVR’’&WGW&âfÇVS°¢&WGW&âG·V&Æ–4&6UW&ÇÒG·fÇVRç7F'G5v—F‚‚ròr’òfÇVR¢òG·fÇVWÖÖ°§Ğ ¦gVæ7F–öâFõ&f3#ƒ#"‡fÇVR’°¢–b‚fÇVR’&WGW&âæWrFFR‚’çFõUD57G&–ær‚“°¢6öç7BFFRÒ'6TFFTÆ–¶R‡fÇVR“°¢&WGW&âçVÖ&W"æ—4æâ†FFRævWEF–ÖR‚’’òæWrFFR‚’çFõUD57G&–ær‚’¢FFRçFõUD57G&–ær‚“°§Ğ ¦gVæ7F–öâf÷&ÖEWF4–74FFR†FFR’°¢6öç7BBÒ†â’Óâ7G&–ær†â’çE7F'Bƒ"Âsr“°¢&WGW&âG¶FFRævWEUD4gVÆÅ–V"‚—ÒG·B†FFRævWEUD4ÖöçF‚‚’²—ÒG·B†FFRævWEUD4FFR‚’—ÕBG·B†FFRævWEUD4†÷W'2‚’—ÒG·B†FFRævWEUD4Ö–çWFW2‚’—ÒG·B†FFRævWEUD56V6öæG2‚’—Õ¦°§Ğ ¦gVæ7F–öâW66T–72‡fÇVRÒrr’°¢&WGW&â7G&–ær‡fÇVR¢ç&WÆ6TÆÂ‚uÅÂrÂuÅÅÅÂr¢ç&WÆ6TÆÂ‚uÆârÂuÅÆâr¢ç&WÆ6TÆÂ‚uÇ"rÂrr¢ç&WÆ6TÆÂ‚rÂrÂuÅÂÂr¢ç&WÆ6TÆÂ‚s²rÂuÅÃ²r“°§Ğ ¦gVæ7F–öâ'V–ÆE'75†ÖÂ†WfVçG2’°¢6öç7B6÷'FVD'•V&Æ—6†VDFW62Ò²ââæWfVçG5Òç6÷'B‚†Â"’Óâ°¢6öç7BF–ÖRÒ'6TFFTÆ–¶R†çV&Æ—6†VDBÇÂçWFFVDBÇÂç7F'G4BÇÂ’ævWEF–ÖR‚“°¢6öç7B%F–ÖRÒ'6TFFTÆ–¶R†"çV&Æ—6†VDBÇÂ"çWFFVDBÇÂ"ç7F'G4BÇÂ’ævWEF–ÖR‚“°¢&WGW&â%F–ÖRÒF–ÖS°¢Ò“°¢6öç7BÆ7D'V–ÆDFFRÒ6÷'FVD'•V&Æ—6†VDFW62æÆVæwF€¢òFõ&f3#ƒ#"‡6÷'FVD'•V&Æ—6†VDFW65³ÒçV&Æ—6†VDBÇÂ6÷'FVD'•V&Æ—6†VDFW65³ÒçWFFVDBÇÂ6÷'FVD'•V&Æ—6†VDFW65³Òç7F'G4B¢¢æWrFFR‚’çFõUD57G&–ær‚“°¢6öç7B—FV×2Ò6÷'FVD'•V&Æ—6†VDFW62æÖ‚†WfVçB’Óâ°¢6öç7BWfVçEW&ÂÒFô'6öÇWFUW&Â†öRòG¶WfVçBæ–GÒòG¶WfVçBç6ÇVwÒö“°¢òòô¤ó¢VÂwV–BW2Æ–FVçF–FBFVÂ—FVÒ&Æ÷2ÆV7F÷&W2FR%52ÂæòVà¢òòVæÆ6Râ6RVVF4”â&'&f–æÂÂVRW26öÖò6RV&Æ–<;2FW6FRVÀ¢òò&–æ6—–ó¢6Ö&–&Æò&VæöÖ'&,:ÖFRvöÇRÆ÷2ãã—FV×2FVÂfVVB¢òòÆ÷27W67&—F÷&W2ÆòfW,:ÖâVçFW&ò6öÖòæòÆ\:ÖFòâÆ&'&6öÆòfVà¢òòÆÆ–æ³âÂVRW2VÂVR6R6–wVR’6R&7G&Và¢6öç7BWfVçDwV–BÒFô'6öÇWFUW&Â†öRòG¶WfVçBæ–GÒòG¶WfVçBç6ÇVwÖ“°¢6öç7BF—FÆRÒW66T‡FÖÂ†WfVçBçF—FÆRÇÂtWfVçFòr“°¢6öç7BFW67&—F–öâÒ'V–ÆE'74—FVÔFW67&—F–öâ†WfVçBÂWfVçEW&Â“°¢6öç7BV$FFRÒFõ&f3#ƒ#"†WfVçBçV&Æ—6†VDBÇÂWfVçBçWFFVDBÇÂWfVçBç7F'G4B“°¢&WGW&â°¢rÆ—FVÓârÀ¢ÇF—FÆSâG·F—FÆWÓÂ÷F—FÆSæÀ¢ÆÆ–æ³âG¶WfVçEW&ÇÓÂöÆ–æ³æÀ¢ÆwV–B—5W&ÖÆ–æ³Ò'G'VR#âG¶WfVçDwV–GÓÂöwV–CæÀ¢ÇV$FFSâG·V$FFWÓÂ÷V$FFSæÀ¢ÆFW67&—F–öããÂ´4DD²G¶FW67&—F–öçÕÕÓãÂöFW67&—F–öãæÀ¢rÂö—FVÓâp¢Òæ¦ö–â‚uÆâr“°¢Ò’æ¦ö–â‚uÆâr“° ¢&WGW&â°¢sÃ÷†ÖÂfW'6–öãÒ#ã"Væ6öF–æsÒ%UDbÓ‚#óârÀ¢sÇ'72fW'6–öãÒ#"ã#ârÀ¢rÆ6†ææVÃârÀ¢rÇF—FÆSäWfVçF÷2fÆÆFöÆ–BÒÆFVV6VÆÂ÷F—FÆSârÀ¢rÆÆ–æ³æ‡GG3¢òöWfVçF÷2æÆFVV6VÆæ÷&róÂöÆ–æ³ârÀ¢rÆFW67&—F–öãäfVVB%52FRWfVçF÷2V&Æ–6F÷2VâÆFVV6VÆãÂöFW67&—F–öãârÀ¢rÆÆæwVvSæW2ÖW3ÂöÆæwVvSârÀ¢ÆÆ7D'V–ÆDFFSâG¶Æ7D'V–ÆDFFWÓÂöÆ7D'V–ÆDFFSæÀ¢—FV×2À¢rÂö6†ææVÃârÀ¢sÂ÷'73ârÀ¢rp¢Òæ¦ö–â‚uÆâr“°§Ğ ¦gVæ7F–öâ'V–ÆE'74—FVÔFW67&—F–öâ†WfVçBÂWfVçEW&Â’°¢6öç7BFFTÆ&VÂÒWfVçBç7F'G4Bòf÷&ÖDFFUF–ÖR†WfVçBç7F'G4B’¢rs°¢6öç7BÆö6F–öâÒ7G&–ær†WfVçBæÆö6F–öâÇÂrr’çG&–Ò‚“°¢6öç7B7VÖÖ'’Ò7G&–ær†WfVçBç7VÖÖ'’ÇÂWfVçBæW†6W'BÇÂrr’çG&–Ò‚“°¢6öç7B–ÖvRÒWfVçBæ–ÖvRòFô'6öÇWFUW&Â†WfVçBæ–ÖvR’¢rs°¢6öç7B'G2ÒµÓ° ¢–b†–ÖvR’°¢'G2çW6‚†ÇãÆ–Ör7&3Ò"G¶W66T‡FÖÂ†–ÖvR—Ò"ÇCÒ"G¶W66T‡FÖÂ†WfVçBçF—FÆRÇÂtWfVçFòr—Ò"óãÂ÷æ“°¢Ğ¢–b†FFTÆ&VÂ’°¢'G2çW6‚†ÇãÇ7G&öæsäfV6†£Â÷7G&öæsâG¶W66T‡FÖÂ†FFTÆ&VÂ—ÓÂ÷æ“°¢Ğ¢–b†Æö6F–öâ’°¢'G2çW6‚†ÇãÇ7G&öæsåV&–66œ;6ã£Â÷7G&öæsâG¶W66T‡FÖÂ†Æö6F–öâ—ÓÂ÷æ“°¢Ğ¢–b‡7VÖÖ'’’°¢'G2çW6‚†ÇâG¶W66T‡FÖÂ‡7VÖÖ'’—ÓÂ÷æ“°¢Ğ¢'G2çW6‚†ÇãÆ‡&VcÒ"G¶W66T‡FÖÂ†WfVçEW&Â—Ò#åfW"WfVçFóÂöãÂ÷æ“° ¢&WGW&â'G2æ¦ö–â‚rr’ç&WÆ6TÆÂ‚uÕÓârÂuÕÒfwC²r“°§Ğ ¦gVæ7F–öâ'V–ÆE6—FVÖ†ÖÂ‡²7FF–5vW2ÂWfVçG2Ò’°¢6öç7BW&Ç2ÒµÓ°¢f÷"†6öç7BvRöb7FF–5vW2’°¢W&Ç2çW6‚‡²Æö3¢Fô'6öÇWFUW&Â‡vRçF‚’ÂÆ7FÖöC¢vRæÆ7FÖöBÒ“°¢Ğ¢f÷"†6öç7BWfVçBöbWfVçG2’°¢6öç7BÆ7FÖöDFFRÒWfVçBçWFFVDBò'6TFFTÆ–¶R†WfVçBçWFFVDB’¢çVÆÃ°¢W&Ç2çW6‚‡°¢Æö3¢Fô'6öÇWFUW&Â†öRòG¶WfVçBæ–GÒòG¶WfVçBç6ÇVwÒö’À¢Æ7FÖöC¢Æ7FÖöDFFRbbçVÖ&W"æ—4æâ†Æ7FÖöDFFRævWEF–ÖR‚’’òÆ7FÖöDFFRçFô•4õ7G&–ær‚’¢rp¢Ò“°¢Ğ¢6öç7BVçG&–W2ÒW&Ç2æÖ‚‡W&Â’Óâ°¢rÇW&ÃârÀ¢ÆÆö3âG¶W66T‡FÖÂ‡W&ÂæÆö2—ÓÂöÆö3æÀ¢âââ‡W&ÂæÆ7FÖöBò¶ÆÆ7FÖöCâG·W&ÂæÆ7FÖöGÓÂöÆ7FÖöCæÒ¢µÒ’À¢rÂ÷W&Ãâp¢Òæ¦ö–â‚uÆâr’’æ¦ö–â‚uÆâr“°¢&WGW&â°¢sÃ÷†ÖÂfW'6–öãÒ#ã"Væ6öF–æsÒ%UDbÓ‚#óârÀ¢sÇW&Ç6WB†ÖÆç3Ò&‡GG¢ò÷wwrç6—FVÖ2æ÷&r÷66†VÖ2÷6—FVÖóã’#ârÀ¢VçG&–W2À¢sÂ÷W&Ç6WCârÀ¢rp¢Òæ¦ö–â‚uÆâr“°§Ğ ¦gVæ7F–öâ'V–ÆD6ÆVæF$–72†WfVçG2Â÷F–öç2Ò·Ò’°¢6öç7B6ÆVæF$æÖRÒ÷F–öç2ææÖRÇÂtWfVçF÷2fÆÆFöÆ–BÒÆFVV6VÆs°¢6öç7Bæ÷rÒæWrFFR‚“°¢6öç7BGG7F×Òf÷&ÖEWF4–74FFR†æ÷r“°¢6öç7B6÷'FVBÒ6÷'DWfVçG2†WfVçG2“°¢6öç7B&÷w2Ò°¢t$Tt”ã¥d4ÄTäD"rÀ¢udU%4”ôã£"ãrÀ¢u$ôD”C¢ÒòôWfVçF÷2fÆÆFöÆ–BÒÆFVV6VÆòôWfVçF÷2òôU2rÀ¢t4Å44ÄS¤u$Ttõ$”ârÀ¢tÔUD„ôC¥T$Ä•4‚rÀ¢‚Õu"Ô4ÄäÔS¢G¶W66T–72†6ÆVæF$æÖR—ÖÀ¢‚Õu"ÕD”ÔU¤ôäS¢G´D•5Ä•õD”ÔU¤ôäWÖ ¢Ó° ¢f÷"†6öç7BWfVçBöb6÷'FVB’°¢6öç7B7F'DFFRÒWfVçBç7F'G4Bò'6TFFTÆ–¶R†WfVçBç7F'G4B’¢çVÆÃ°¢–b‚7F'DFFRÇÂçVÖ&W"æ—4æâ‡7F'DFFRævWEF–ÖR‚’’’6öçF–çVS°¢6öç7BVæDFFU&rÒWfVçBæVæG4Bò'6TFFTÆ–¶R†WfVçBæVæG4B’¢çVÆÃ°¢6öç7BVæDFFRÒVæDFFU&rbbçVÖ&W"æ—4æâ†VæDFFU&rævWEF–ÖR‚’¢òVæDFFU&p¢¢æWrFFR‡7F'DFFRævWEF–ÖR‚’²c¢c¢“°¢6öç7BWfVçEW&ÂÒFô'6öÇWFUW&Â†öRòG¶WfVçBæ–GÒòG¶WfVçBç6ÇVwÒö“°¢6öç7BV–BÒG¶WfVçBæ–GÔWfVçF÷2æÆFVV6VÆæ÷&v°¢6öç7BFW67&—F–öâÒ7G&–ær†WfVçBç7VÖÖ'’ÇÂWfVçBæW†6W'BÇÂrr’çG&–Ò‚“°¢6öç7BGF6†ÖVçBÒWfVçBæ–ÖvRòED4ƒ´dÕEE•SÖ–ÖvRö§Vs¢G¶W66T–72†WfVçBæ–ÖvR—Ö¢çVÆÃ°¢&÷w2çW6‚€¢t$Tt”ã¥dUdTåBrÀ¢T”C¢G¶W66T–72‡V–B—ÖÀ¢EE5DÕ¢G¶GG7F×ÖÀ¢EE5D%C¢G¶f÷&ÖEWF4–74FFR‡7F'DFFR—ÖÀ¢EDTäC¢G¶f÷&ÖEWF4–74FFR†VæDFFR—ÖÀ¢5TÔÔ%“¢G¶W66T–72†WfVçBçF—FÆRÇÂtWfVçFòr—ÖÀ¢DU45$•D”ôã¢G¶W66T–72†FW67&—F–öâ—ÖÀ¢Äô4D”ôã¢G¶W66T–72†WfVçBæÆö6F–öâÇÂrr—ÖÀ¢U$Ã¢G¶W66T–72†WfVçEW&Â—ÖÀ¢âââ†GF6†ÖVçBò¶GF6†ÖVçEÒ¢µÒ’À¢tTäC¥dUdTåBp¢“°¢Ğ ¢&÷w2çW6‚‚tTäC¥d4ÄTäD"rÂrr“°¢&WGW&â&÷w2æ¦ö–â‚uÇ%Æâr“°§Ğ ¦gVæ7F–öâVç&–6„WfVçB†WfVçB’°¢6öç7BFW67&—F–öä‡FÖÂÒ&W6öÇfTWfVçDFW67&—F–öä‡FÖÂ†WfVçB“°¢6öç7B&–6RÒ&W6öÇfTWfVçE&–6R†WfVçB“°¢6öç7BF–6¶WEW&ÂÒ&W6öÇfTWfVçEF–6¶WEW&Â†WfVçBçF–6¶WEW&Â“°¢6öç7BWfVçD6ö÷&F–æFW2ÒfÆ–D6ö÷&F–æFU—"†WfVçBæÆF—GVFRÂWfVçBæÆöæv—GVFR“°¢6öç7B&–6U7FGW2ÒFWFV7E&–6U7FGW2‡°¢&–6RÀ¢FW‡C¢G¶WfVçBç7VÖÖ'’ÇÂrwÒG¶WfVçBææ÷FW2ÇÂrwÒG·7G&—Fw2†FW67&—F–öä‡FÖÂ—Ö ¢Ò“°¢6öç7B7F'G4DFFRÒWfVçBç7F'G4Bò'6TFFTÆ–¶R†WfVçBç7F'G4B’¢çVÆÃ°¢6öç7BVæG4DFFRÒWfVçBæVæG4Bò'6TFFTÆ–¶R†WfVçBæVæG4B’¢çVÆÃ°¢6öç7B—4×VÇF”F’Ò&ööÆVâ‡7F'G4DFFRbbVæG4DFFRbb6ÖTF’‡7F'G4DFFRÂVæG4DFFR’“°¢6öç7B6ö×7DFFTÆ&VÂÒ7F'G4DFFP¢òf÷&ÖD–äÖG&–B‡7F'G4DFFRÂ²vVV¶F“¢w6†÷'BrÂF“¢vçVÖW&–2rÂÖöçFƒ¢w6†÷'BrÒ¢æf÷&ÖB‡7F'G4DFFR¢ç&WÆ6R‚rÂrÂrr¢ç&WÆ6R‚õÆ%ÇròÂ†Ò’ÓâÒçFõWW$66R‚’¢¢r<Û»h‘éì¶»§q«^ugina /t/<slug>/. Se alimenta de lo que ya calcula este bucle.
+import fs from 'node:fs/promises';
+import path from 'node:path';
+import { createHash } from 'node:crypto';
+import nunjucks from 'nunjucks';
+import postcss from 'postcss';
+import tailwindcss from 'tailwindcss';
+import autoprefixer from 'autoprefixer';
+import { fileURLToPath } from 'node:url';
+import { loadCachedEvents } from '../src/data/store.mjs';
+import { deriveFilters, sortEvents, splitFeatured, getPastEvents, groupEventsByMonth, groupFutureEventsByVenue, rotateBySeed } from '../src/data/site.mjs';
+import { DISPLAY_TIMEZONE, buildTextParagraphHtml, cleanDescriptionHtml, detectPriceStatus, escapeHtml, formatDateRange, formatDateTime, isSameMadridDay, normalizePriceLabel, parseDateLike, parseEventMetaFromHtml, stripTags, toMadridDateKey } from '../src/data/format.mjs';
+import { enrichVenueCatalog, mergeSpacesWithVenueCatalog } from '../src/data/venues.mjs';
+import { loadVallabusStops, nearbyVallabusStops } from '../src/data/vallabus.mjs';
+import { canonicalizeVenue, normalizeVenueKey } from '../src/data/venue-aliases.mjs';
+import { buildCollectionPageJsonLd, buildEventJsonLd, buildVenuePageJsonLd, serializeJsonLd } from '../src/data/structured-data.mjs';
+import { getHorizonWindow, getOpenEndedWindow, getTimePages, isWeekendDayKey, resolveBuildNow, selectTimePageEvents } from '../src/data/time-windows.mjs';
+import { getCategoryPages, mappedCategoryLabels } from '../src/data/category-pages.mjs';
+import { getVenuePages } from '../src/data/venue-pages.mjs';
+import { canonicalizeCategory } from '../src/data/category-aliases.mjs';
+import { syncEvents } from './sync-lib.mjs';
+
+// DÃ­as que lista "PrÃ³ximos eventos" en la portada. home.js lo lee de
+// data-horizon-days para no duplicar el nÃºmero.
+const HOME_HORIZON_DAYS = 30;
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const root = path.resolve(__dirname, '..');
+const dist = path.join(root, 'dist');
+const assetsDir = path.join(dist, 'assets');
+const postersDir = path.join(dist, 'posters');
+const cssDir = path.join(assetsDir, 'css');
+const jsDir = path.join(assetsDir, 'js');
+const publicBaseUrl = 'https://eventos.aldeapucela.org';
+// Imagen de previsualizaciÃ³n en redes (og:image). El nombre va versionado a
+// propÃ³sito: al sustituir los bytes manteniendo la misma URL, las redes
+// sociales siguen sirviendo la copia cacheada (asÃ­ reaparecÃ­a el isotipo
+// antiguo del Conde AnsÃºrez). Si la imagen vuelve a cambiar, sube la versiÃ³n
+// del nombre del archivo en vez de sobrescribirlo.
+const socialPreview = {
+  image: `${publicBaseUrl}/assets/social-preview-v3.jpg`,
+  imageWidth: 1731,
+  imageHeight: 909,
+  imageAlt: 'QuÃ© hacer en Valladolid, agenda vecinal de eventos culturales de Aldea Pucela'
+};
+// VerificaciÃ³n de propiedad en Google Search Console (solo en la portada).
+const googleSiteVerification = 'WI4USc-QdbTLezu0qIZfb2J9Yvqkwg818tWzExtVREw';
+
+// CuÃ¡ntos eventos vigentes necesita una pÃ¡gina de tipo o de espacio para ser
+// indexable. Por debajo del umbral la pÃ¡gina se sigue generando y enlazando desde
+// su hub (es Ãºtil para navegar), pero lleva noindex y sale del sitemap: una lista
+// de dos eventos no aporta nada que no estÃ© ya en las fichas. Se recalcula en cada
+// build, asÃ­ que una pÃ¡gina cruza el umbral en los dos sentidos por sÃ­ sola.
+const MIN_INDEXABLE_CATEGORY_EVENTS = 10;
+const MIN_INDEXABLE_VENUE_EVENTS = 5;
+
+// CuÃ¡ntos eventos enseÃ±a como avance cada tarjeta de los hubs /tipos/ y /espacios/.
+// El listado completo estÃ¡ a un clic, en /t/<slug>/ y /espacios/<slug>/.
+const HUB_CARD_EVENTS = 4;
+
+const args = new Set(process.argv.slice(2));
+
+const env = nunjucks.configure(path.join(root, 'src', 'templates'), {
+  autoescape: true,
+  noCache: true
+});
+
+async function ensureDirs() {
+  await fs.mkdir(cssDir, { recursive: true });
+  await fs.mkdir(jsDir, { recursive: true });
+  await fs.mkdir(postersDir, { recursive: true });
+  await fs.mkdir(path.join(assetsDir, 'fontawesome'), { recursive: true });
+}
+
+async function copyStaticAssets() {
+  await fs.cp(path.join(root, 'src', 'assets'), assetsDir, { recursive: true });
+}
+
+async function copyVersionedPosters() {
+  const source = path.join(root, 'src', 'posters');
+  try {
+    await fs.access(source);
+  } catch {
+    return;
+  }
+  await fs.cp(source, postersDir, { recursive: true });
+}
+
+async function copyFontAwesome() {
+  const source = path.join(root, 'node_modules', '@fortawesome', 'fontawesome-free');
+  const target = path.join(assetsDir, 'fontawesome');
+  await fs.mkdir(path.join(target, 'css'), { recursive: true });
+  await fs.mkdir(path.join(target, 'webfonts'), { recursive: true });
+  await fs.copyFile(path.join(source, 'css', 'all.min.css'), path.join(target, 'css', 'all.min.css'));
+  await fs.cp(path.join(source, 'webfonts'), path.join(target, 'webfonts'), { recursive: true });
+}
+
+async function compileCss(inputFile, outputFile) {
+  const base = await fs.readFile(path.join(root, 'src', 'styles', 'base.css'), 'utf8');
+  const page = await fs.readFile(inputFile, 'utf8');
+  const result = await postcss([
+    tailwindcss({ config: path.join(root, 'tailwind.config.js') }),
+    autoprefixer()
+  ]).process(`${base}\n${page}`, { from: inputFile, to: outputFile });
+  await fs.writeFile(outputFile, result.css);
+}
+
+async function copyJs() {
+  await fs.copyFile(path.join(root, 'src', 'scripts', 'home.js'), path.join(jsDir, 'home.js'));
+  await fs.copyFile(path.join(root, 'src', 'scripts', 'event-detail.js'), path.join(jsDir, 'event-detail.js'));
+  await fs.copyFile(path.join(root, 'src', 'scripts', 'comments.js'), path.join(jsDir, 'comments.js'));
+  await fs.copyFile(path.join(root, 'src', 'scripts', 'location-link.js'), path.join(jsDir, 'location-link.js'));
+  await fs.copyFile(path.join(root, 'src', 'scripts', 'subscribe.js'), path.join(jsDir, 'subscribe.js'));
+  await fs.copyFile(path.join(root, 'src', 'scripts', 'menu-drawer.js'), path.join(jsDir, 'menu-drawer.js'));
+  await fs.copyFile(path.join(root, 'src', 'scripts', 'saved-events.js'), path.join(jsDir, 'saved-events.js'));
+  await fs.copyFile(path.join(root, 'src', 'scripts', 'spaces.js'), path.join(jsDir, 'spaces.js'));
+  await fs.copyFile(path.join(root, 'src', 'scripts', 'theme.js'), path.join(jsDir, 'theme.js'));
+  await fs.copyFile(path.join(root, 'src', 'scripts', 'matomo.js'), path.join(jsDir, 'matomo.js'));
+  await fs.copyFile(path.join(root, 'src', 'scripts', 'event-metrics.js'), path.join(jsDir, 'event-metrics.js'));
+  await fs.copyFile(path.join(root, 'src', 'scripts', 'weather.js'), path.join(jsDir, 'weather.js'));
+  await fs.copyFile(path.join(root, 'src', 'scripts', 'directions.js'), path.join(jsDir, 'directions.js'));
+  await fs.copyFile(path.join(root, 'src', 'scripts', 'popular.js'), path.join(jsDir, 'popular.js'));
+  await fs.copyFile(path.join(root, 'src', 'scripts', 'popular-ranking.js'), path.join(jsDir, 'popular-ranking.js'));
+  await fs.copyFile(path.join(root, 'src', 'scripts', 'install-app.js'), path.join(jsDir, 'install-app.js'));
+  await fs.copyFile(path.join(root, 'src', 'scripts', 'search.js'), path.join(jsDir, 'search.js'));
+  await fs.copyFile(path.join(root, 'src', 'scripts', 'modals.js'), path.join(jsDir, 'modals.js'));
+}
+
+function slugify(value = '') {
+  return String(value)
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase()
+    .trim()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '')
+    || 'categoria';
+}
+
+function render(template, context) {
+  return env.render(template, context);
+}
+
+async function writeFile(relPath, content) {
+  const filePath = path.join(dist, relPath);
+  await fs.mkdir(path.dirname(filePath), { recursive: true });
+  await fs.writeFile(filePath, content);
+}
+
+function toAbsoluteUrl(value = '') {
+  if (!value) return publicBaseUrl;
+  if (/^https?:\/\//i.test(value)) return value;
+  return `${publicBaseUrl}${value.startsWith('/') ? value : `/${value}`}`;
+}
+
+function toRfc2822(value) {
+  if (!value) return new Date().toUTCString();
+  const date = parseDateLike(value);
+  return Number.isNaN(date.getTime()) ? new Date().toUTCString() : date.toUTCString();
+}
+
+function formatUtcIcsDate(date) {
+  const pad = (n) => String(n).padStart(2, '0');
+  return `${date.getUTCFullYear()}${pad(date.getUTCMonth() + 1)}${pad(date.getUTCDate())}T${pad(date.getUTCHours())}${pad(date.getUTCMinutes())}${pad(date.getUTCSeconds())}Z`;
+}
+
+function escapeIcs(value = '') {
+  return String(value)
+    .replaceAll('\\', '\\\\')
+    .replaceAll('\n', '\\n')
+    .replaceAll('\r', '')
+    .replaceAll(',', '\\,')
+    .replaceAll(';', '\\;');
+}
+
+function buildRssXml(events) {
+  const sortedByPublishedDesc = [...events].sort((a, b) => {
+    const aTime = parseDateLike(a.publishedAt || a.updatedAt || a.startsAt || 0).getTime();
+    const bTime = parseDateLike(b.publishedAt || b.updatedAt || b.startsAt || 0).getTime();
+    return bTime - aTime;
+  });
+  const lastBuildDate = sortedByPublishedDesc.length
+    ? toRfc2822(sortedByPublishedDesc[0].publishedAt || sortedByPublishedDesc[0].updatedAt || sortedByPublishedDesc[0].startsAt)
+    : new Date().toUTCString();
+  const items = sortedByPublishedDesc.map((event) => {
+    const eventUrl = toAbsoluteUrl(`/e/${event.id}/${event.slug}/`);
+    // OJO: el guid es la identidad del item para los lectores de RSS, no un
+    // enlace. Se queda SIN barra final, que es como se publicÃ³ desde el
+    // principio: cambiarlo renombrarÃ­a de golpe los ~1.100 items del feed y
+    // los suscriptores lo verÃ­an entero como no leÃ­do. La barra solo va en
+    // <link>, que es el que se sigue y se rastrea.
+    const eventGuid = toAbsoluteUrl(`/e/${event.id}/${event.slug}`);
+    const title = escapeHtml(event.title || 'Evento');
+    const description = buildRssItemDescription(event, eventUrl);
+    const pubDate = toRfc2822(event.publishedAt || event.updatedAt || event.startsAt);
+    return [
+      '    <item>',
+      `      <title>${title}</title>`,
+      `      <link>${eventUrl}</link>`,
+      `      <guid isPermaLink="true">${eventGuid}</guid>`,
+      `      <pubDate>${pubDate}</pubDate>`,
+      `      <description><![CDATA[${description}]]></description>`,
+      '    </item>'
+    ].join('\n');
+  }).join('\n');
+
+  return [
+    '<?xml version="1.0" encoding="UTF-8"?>',
+    '<rss version="2.0">',
+    '  <channel>',
+    '    <title>Eventos Valladolid - Aldea Pucela</title>',
+    '    <link>https://eventos.aldeapucela.org/</link>',
+    '    <description>Feed RSS de eventos publicados en Aldea Pucela.</description>',
+    '    <language>es-es</language>',
+    `    <lastBuildDate>${lastBuildDate}</lastBuildDate>`,
+    items,
+    '  </channel>',
+    '</rss>',
+    ''
+  ].join('\n');
+}
+
+function buildRssItemDescription(event, eventUrl) {
+  const dateLabel = event.startsAt ? formatDateTime(event.startsAt) : '';
+  const location = String(event.location || '').trim();
+  const summary = String(event.summary || event.excerpt || '').trim();
+  const image = event.image ? toAbsoluteUrl(event.image) : '';
+  const parts = [];
+
+  if (image) {
+    parts.push(`<p><img src="${escapeHtml(image)}" alt="${escapeHtml(event.title || 'Evento')}" /></p>`);
+  }
+  if (dateLabel) {
+    parts.push(`<p><strong>Fecha:</strong> ${escapeHtml(dateLabel)}</p>`);
+  }
+  if (location) {
+    parts.push(`<p><strong>UbicaciÃ³n:</strong> ${escapeHtml(location)}</p>`);
+  }
+  if (summary) {
+    parts.push(`<p>${escapeHtml(summary)}</p>`);
+  }
+  parts.push(`<p><a href="${escapeHtml(eventUrl)}">Ver evento</a></p>`);
+
+  return parts.join('').replaceAll(']]>', ']]&gt;');
+}
+
+function buildSitemapXml({ staticPages, events }) {
+  const urls = [];
+  for (const page of staticPages) {
+    urls.push({ loc: toAbsoluteUrl(page.path), lastmod: page.lastmod });
+  }
+  for (const event of events) {
+    const lastmodDate = event.updatedAt ? parseDateLike(event.updatedAt) : null;
+    urls.push({
+      loc: toAbsoluteUrl(`/e/${event.id}/${event.slug}/`),
+      lastmod: lastmodDate && !Number.isNaN(lastmodDate.getTime()) ? lastmodDate.toISOString() : ''
+    });
+  }
+  const entries = urls.map((url) => [
+    '  <url>',
+    `    <loc>${escapeHtml(url.loc)}</loc>`,
+    ...(url.lastmod ? [`    <lastmod>${url.lastmod}</lastmod>`] : []),
+    '  </url>'
+  ].join('\n')).join('\n');
+  return [
+    '<?xml version="1.0" encoding="UTF-8"?>',
+    '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">',
+    entries,
+    '</urlset>',
+    ''
+  ].join('\n');
+}
+
+function buildCalendarIcs(events, options = {}) {
+  const calendarName = options.name || 'Eventos Valladolid - Aldea Pucela';
+  const now = new Date();
+  const dtstamp = formatUtcIcsDate(now);
+  const sorted = sortEvents(events);
+  const rows = [
+    'BEGIN:VCALENDAR',
+    'VERSION:2.0',
+    'PRODID:-//Eventos Valladolid - Aldea Pucela//Eventos//ES',
+    'CALSCALE:GREGORIAN',
+    'METHOD:PUBLISH',
+    `X-WR-CALNAME:${escapeIcs(calendarName)}`,
+    `X-WR-TIMEZONE:${DISPLAY_TIMEZONE}`
+  ];
+
+  for (const event of sorted) {
+    const startDate = event.startsAt ? parseDateLike(event.startsAt) : null;
+    if (!startDate || Number.isNaN(startDate.getTime())) continue;
+    const endDateRaw = event.endsAt ? parseDateLike(event.endsAt) : null;
+    const endDate = endDateRaw && !Number.isNaN(endDateRaw.getTime())
+      ? endDateRaw
+      : new Date(startDate.getTime() + 60 * 60 * 1000);
+    const eventUrl = toAbsoluteUrl(`/e/${event.id}/${event.slug}/`);
+    const uid = `${event.id}@eventos.aldeapucela.org`;
+    const description = String(event.summary || event.excerpt || '').trim();
+    const attachment = event.image ? `ATTACH;FMTTYPE=image/jpeg:${escapeIcs(event.image)}` : null;
+    rows.push(
+      'BEGIN:VEVENT',
+      `UID:${escapeIcs(uid)}`,
+      `DTSTAMP:${dtstamp}`,
+      `DTSTART:${formatUtcIcsDate(startDate)}`,
+      `DTEND:${formatUtcIcsDate(endDate)}`,
+      `SUMMARY:${escapeIcs(event.title || 'Evento')}`,
+      `DESCRIPTION:${escapeIcs(description)}`,
+      `LOCATION:${escapeIcs(event.location || '')}`,
+      `URL:${escapeIcs(eventUrl)}`,
+      ...(attachment ? [attachment] : []),
+      'END:VEVENT'
+    );
+  }
+
+  rows.push('END:VCALENDAR', '');
+  return rows.join('\r\n');
+}
+
+function enrichEvent(event) {
+  const descriptionHtml = resolveEventDescriptionHtml(event);
+  const price = resolveEventPrice(event);
+  const ticketUrl = resolveEventTicketUrl(event.ticketUrl);
+  const eventCoordinates = validCoordinatePair(event.latitude, event.longitude);
+  const priceStatus = detectPriceStatus({
+    price,
+    text: `${event.summary || ''} ${event.notes || ''} ${stripTags(descriptionHtml)}`
+  });
+  const startsAtDate = event.startsAt ? parseDateLike(event.startsAt) : null;
+  const endsAtDate = event.endsAt ? parseDateLike(event.endsAt) : null;
+  const isMultiDay = Boolean(startsAtDate && endsAtDate && !sameDay(startsAtDate, endsAtDate));
+  const compactDateLabel = startsAtDate
+    ? formatInMadrid(startsAtDate, { weekday: 'short', day: 'numeric', month: 'short' })
+        .format(startsAtDate)
+        .replace(',', '')
+        .replace(/\b\w/, (m) => m.toUpperCase())
+    : '';
+  const startsAtDateLabel = startsAtDate
+    ? formatInMadrid(startsAtDate, { day: 'numeric', month: 'short' })
+        .format(startsAtDate)
+        .replace(',', '')
+        .replace(/\b\w/, (m) => m.toUpperCase())
+    : '';
+  // Con aÃ±o: solo para la ficha de evento (ya hay eventos de aÃ±os futuros).
+  const startsAtDateYearLabel = startsAtDate
+    ? formatInMadrid(startsAtDate, { day: 'numeric', month: 'short', year: 'numeric' })
+        .format(startsAtDate)
+        .replace(',', '')
+        .replace(/\b\w/, (m) => m.toUpperCase())
+    : '';
+  const startsAtTimeLabel = startsAtDate
+    ? formatInMadrid(startsAtDate, { hour: '2-digit', minute: '2-digit' }).format(startsAtDate)
+    : '';
+  return {
+    ...event,
+    startsAtLabel: formatDateTime(event.startsAt),
+    endsAtLabel: event.endsAt ? formatDateTime(event.endsAt) : '',
+    endsAtDayLabel: event.endsAt
+      ? formatInMadrid(endsAtDate, { day: 'numeric', month: 'short' })
+          .format(endsAtDate)
+          .replace(',', '')
+          .replace(/\b\w/, (m) => m.toUpperCase())
+      : '',
+    dateRangeLabel: formatDateRange(event.startsAt, event.endsAt),
+    scheduleLabel: isMultiDay
+      ? formatDateRange(event.startsAt, event.endsAt)
+      : startsAtDate
+        ? `${startsAtDateLabel}${startsAtTimeLabel ? ` Â· ${startsAtTimeLabel}` : ''}`
+        : '',
+    // Variantes con aÃ±o para la ficha de evento (el resto de tarjetas van sin aÃ±o).
+    detailDateRangeLabel: formatDateRange(event.startsAt, event.endsAt, 'es-ES', { withYear: true }),
+    detailScheduleLabel: isMultiDay
+      ? formatDateRange(event.startsAt, event.endsAt, 'es-ES', { withYear: true })
+      : startsAtDate
+        ? `${startsAtDateYearLabel}${startsAtTimeLabel ? ` Â· ${startsAtTimeLabel}` : ''}`
+        : '',
+    compactDateLabel,
+    startsAtDayKey: startsAtDate ? toLocalDateKey(startsAtDate) : '',
+    startsAtDayLabel: startsAtDate
+      ? formatInMadrid(startsAtDate, {
+          weekday: 'short',
+          day: 'numeric',
+          month: 'short'
+        })
+          .format(startsAtDate)
+          .replace(',', '')
+          .replace(/\b\w/, (m) => m.toUpperCase())
+      : '',
+    timeLabel: startsAtTimeLabel,
+    updatedAtLabel: formatDateTime(event.updatedAt),
+    monthLabel: startsAtDate ? formatInMadrid(startsAtDate, { month: 'short' }).format(startsAtDate).toUpperCase() : '',
+    dayLabel: startsAtDate ? formatInMadrid(startsAtDate, { day: 'numeric' }).format(startsAtDate) : '',
+    hasEnded: endsAtDate ? endsAtDate < new Date() : startsAtDate ? startsAtDate < new Date() : false,
+    // discourse.mjs ya genera urlPath con barra final, pero los ~1.100 registros
+    // de cache/data/ se escribieron sin ella y solo se re-normalizan si cambia su
+    // firma en el foro (sync-lib.mjs), lo que implicarÃ­a refetchearlos todos.
+    // Normalizar aquÃ­, que es por donde pasa todo evento antes de una plantilla,
+    // los arregla sin re-sincronizar. Idempotente.
+    urlPath: `${String(event.urlPath || `/e/${event.id}/${event.slug}`).replace(/\/+$/, '')}/`,
+    descriptionHtml,
+    price,
+    ticketUrl,
+    latitude: eventCoordinates?.latitude ?? null,
+    longitude: eventCoordinates?.longitude ?? null,
+    priceStatus,
+    isFree: priceStatus === 'free',
+    isPaid: priceStatus === 'paid'
+  };
+}
+
+// La descripciÃ³n se vuelve a limpiar aquÃ­, no solo al sincronizar, por el mismo
+// motivo que urlPath: los registros de cache/data/ se guardaron con los restos
+// del cartel y de las lÃ­neas de metadatos, y solo se re-normalizan si cambia su
+// firma en el foro. Es idempotente.
+function resolveEventDescriptionHtml(event) {
+  const cleaned = cleanDescriptionHtml(event.descriptionHtml || '', event.title || '');
+  if (cleaned) return cleaned;
+  const fallback = String(event.summary || event.excerpt || '').trim();
+  return fallback ? buildTextParagraphHtml(fallback) : '';
+}
+
+// `priceStatus` tambiÃ©n se recalcula aquÃ­, con el precio y la descripciÃ³n ya
+// resueltos: los registros de cache/data/ se guardaron con la detecciÃ³n binaria
+// antigua, que marcaba de pago cualquier texto con un "entradas" o un "taquilla"
+// suelto.
+//
+// Los registros cacheados antes de que `price` existiera todavÃ­a llevan la
+// lÃ­nea "Precio:" dentro de descriptionHtml: se rescata de ahÃ­ en vez de
+// refetchear el foro entero.
+function resolveEventPrice(event) {
+  const stored = normalizePriceLabel(event.price || '');
+  if (stored) return stored;
+  return parseEventMetaFromHtml(event.descriptionHtml || '').price;
+}
+
+function resolveEventTicketUrl(value) {
+  const candidate = String(value || '').trim();
+  if (!candidate) return '';
+  try {
+    const parsed = new URL(candidate);
+    return ['http:', 'https:'].includes(parsed.protocol) ? parsed.href : '';
+  } catch {
+    return '';
+  }
+}
+
+function validCoordinatePair(latitude, longitude) {
+  if (latitude === null || latitude === undefined || latitude === '' || longitude === null || longitude === undefined || longitude === '') {
+    return null;
+  }
+  const lat = Number(latitude);
+  const lon = Number(longitude);
+  if (!Number.isFinite(lat) || !Number.isFinite(lon) || Math.abs(lat) > 90 || Math.abs(lon) > 180) return null;
+  return { latitude: lat, longitude: lon };
+}
+
+function resolveVenueCoordinates(event, venue = {}) {
+  const eventCoordinates = validCoordinatePair(event.latitude, event.longitude);
+  if (eventCoordinates) return { venueLat: eventCoordinates.latitude, venueLon: eventCoordinates.longitude };
+  const venueCoordinates = validCoordinatePair(venue.lat, venue.lon);
+  return venueCoordinates
+    ? { venueLat: venueCoordinates.latitude, venueLon: venueCoordinates.longitude }
+    : { venueLat: null, venueLon: null };
+}
+
+function formatInMadrid(_date, options) {
+  return new Intl.DateTimeFormat('es-ES', { ...options, timeZone: DISPLAY_TIMEZONE });
+}
+
+function siteDataPayload(events, filters = deriveFilters(events), options = {}) {
+  const spaceNameByVenueKey = options.spaceNameByVenueKey instanceof Map ? options.spaceNameByVenueKey : new Map();
+  const spaceByVenueKey = options.spaceByVenueKey instanceof Map ? options.spaceByVenueKey : new Map();
+  const spaces = Array.isArray(options.spaces) ? options.spaces : [];
+  const enriched = events.map(enrichEvent);
+  return JSON.stringify({
+    filters,
+    spaces: spaces.map((space) => ({
+      slug: space.slug,
+      name: space.name,
+      canonicalVenue: space.canonicalVenue,
+      venueKey: normalizeVenueKey(canonicalizeVenue(space.canonicalVenue)),
+      lat: Number.isFinite(space.lat) ? space.lat : null,
+      lon: Number.isFinite(space.lon) ? space.lon : null
+    })),
+    events: enriched.map((event) => {
+      const venueKey = normalizeVenueKey(canonicalizeVenue(event.venue || event.location || ''));
+      const venue = spaceByVenueKey.get(venueKey) || {};
+      const coordinates = resolveVenueCoordinates(event, venue);
+      return {
+        ...event,
+        venueKey,
+        venueLabel: spaceNameByVenueKey.get(venueKey) || '',
+        ...coordinates,
+        nearbyVallabusStops: Array.isArray(venue.nearbyVallabusStops) ? venue.nearbyVallabusStops : [],
+        startsAtIso: event.startsAt,
+        endsAtIso: event.endsAt
+      };
+    })
+  });
+}
+
+// Ãndice de bÃºsqueda ligero para el buscador global (src/scripts/search.js).
+// Solo eventos vigentes/prÃ³ximos (no archivo), mÃ¡s el catÃ¡logo de espacios y
+// tipos. Se sirve como /search-index.json y se descarga de forma perezosa.
+// `events` debe llegar ya acotado a la ventana vigente/prÃ³xima con la misma
+// lÃ³gica que las pÃ¡ginas de tipo/espacio (selectTimePageEvents), no con
+// hasEnded: asÃ­ los eventos de dÃ­a completo siguen buscables toda su jornada.
+function buildSearchIndex({ events, spaces, renderedVenueSlugs, typesArchive }) {
+  const seenSpace = new Set();
+  return JSON.stringify({
+    types: (typesArchive || []).map((type) => ({
+      title: type.label,
+      url: type.path,
+      count: type.count || 0
+    })),
+    spaces: (spaces || [])
+      .filter((space) => {
+        if (!space || !space.name || !space.slug || seenSpace.has(space.slug)) return false;
+        seenSpace.add(space.slug);
+        return true;
+      })
+      .map((space) => ({
+        title: space.name,
+        url: renderedVenueSlugs.has(space.slug) ? `/espacios/${space.slug}/` : `/espacios/#${space.slug}`,
+        count: space.count || 0
+      })),
+    events: (events || []).map((event) => ({
+      title: event.title,
+      url: `/e/${event.id}/${event.slug}/`,
+      category: event.categoryLabel || '',
+      venue: canonicalizeVenue(event.venue || '') || event.venue || event.location || '',
+      date: event.scheduleLabel || event.startsAtDayLabel || '',
+      // No se muestra: solo alimenta el haystack del buscador, para que
+      // "Festival Tonal" o un nombre de calle encuentren el evento.
+      extra: [event.organizer, event.address].filter(Boolean).join(' ')
+    }))
+  });
+}
+
+function dayKeyLabel(key) {
+  const [year, month, day] = key.split('-').map(Number);
+  const date = new Date(Date.UTC(year, month - 1, day, 12));
+  return formatInMadrid(date, { weekday: 'short', day: 'numeric', month: 'short' })
+    .format(date)
+    .replace(',', '')
+    .replace(/\b\w/, (m) => m.toUpperCase());
+}
+
+function buildTimePageDayGroups(enrichedEvents, now, options = {}) {
+  const { weekendOnly = false, windowStartKey = '' } = options;
+  const todayKey = toLocalDateKey(now);
+  const tomorrowKey = toLocalDateKey(new Date(now.getTime() + 24 * 60 * 60 * 1000));
+  const groups = new Map();
+  for (const event of enrichedEvents) {
+    let key = event.startsAtDayKey;
+    if (!key) continue;
+    // Un multi-dÃ­a que empieza antes de la ventana se lista en el primer dÃ­a
+    // de esta, para no mostrar fechas fuera del rango que la pÃ¡gina declara.
+    if (windowStartKey && key < windowStartKey) key = windowStartKey;
+    if (weekendOnly && !isWeekendDayKey(key)) continue;
+    if (!groups.has(key)) groups.set(key, []);
+    groups.get(key).push(event);
+  }
+  return [...groups.keys()].sort().map((key) => {
+    const baseLabel = dayKeyLabel(key);
+    const prefix = key === todayKey ? 'Hoy' : key === tomorrowKey ? 'MaÃ±ana' : '';
+    return {
+      key,
+      label: prefix ? `${prefix}, ${baseLabel}` : baseLabel,
+      events: groups.get(key)
+    };
+  });
+}
+
+function sameDay(a, b) {
+  return isSameMadridDay(a, b);
+}
+
+function toLocalDateKey(date) {
+  return toMadridDateKey(date);
+}
+
+async function computeAssetVersion() {
+  const files = [
+    path.join(root, 'src', 'styles', 'base.css'),
+    path.join(root, 'src', 'styles', 'home.css'),
+    path.join(root, 'src', 'styles', 'event-detail.css'),
+    path.join(root, 'src', 'scripts', 'home.js'),
+    path.join(root, 'src', 'scripts', 'location-link.js'),
+    path.join(root, 'src', 'scripts', 'subscribe.js'),
+    path.join(root, 'src', 'scripts', 'menu-drawer.js'),
+    path.join(root, 'src', 'scripts', 'spaces.js'),
+    path.join(root, 'src', 'scripts', 'saved-events.js'),
+    path.join(root, 'src', 'scripts', 'event-detail.js'),
+    path.join(root, 'src', 'scripts', 'comments.js'),
+    path.join(root, 'src', 'scripts', 'theme.js'),
+    path.join(root, 'src', 'scripts', 'matomo.js'),
+    path.join(root, 'src', 'scripts', 'install-app.js'),
+    path.join(root, 'src', 'scripts', 'search.js'),
+    // Los modales viven aquÃ­, no en partials, desde que salieron del HTML servido.
+    path.join(root, 'src', 'scripts', 'modals.js'),
+    path.join(root, 'src', 'scripts', 'event-metrics.js'),
+    path.join(root, 'src', 'scripts', 'weather.js'),
+    path.join(root, 'src', 'scripts', 'directions.js'),
+    path.join(root, 'src', 'scripts', 'popular.js'),
+    path.join(root, 'src', 'scripts', 'popular-ranking.js'),
+    path.join(root, 'src', 'data', 'vallabus.mjs'),
+    path.join(root, 'src', 'scripts', 'subscribe.js'),
+    path.join(root, 'src', 'scripts', 'menu-drawer.js'),
+    path.join(root, 'src', 'scripts', 'location-link.js'),
+    path.join(root, 'src', 'templates', 'layout.njk')
+  ];
+  const hash = createHash('sha1');
+  for (const file of files) {
+    hash.update(await fs.readFile(file));
+  }
+  return hash.digest('hex').slice(0, 10);
+}
+
+async function buildSite(events) {
+  const timings = new Map();
+  const mark = (label) => timings.set(label, process.hrtime.bigint());
+  const elapsedMs = (label) => Number(process.hrtime.bigint() - (timings.get(label) || process.hrtime.bigint())) / 1e6;
+
+  mark('total');
+  await fs.rm(dist, { recursive: true, force: true });
+  mark('assets');
+  await ensureDirs();
+  await copyStaticAssets();
+  await copyVersionedPosters();
+  await copyFontAwesome();
+  await compileCss(path.join(root, 'src', 'styles', 'home.css'), path.join(cssDir, 'home.css'));
+  await compileCss(path.join(root, 'src', 'styles', 'event-detail.css'), path.join(cssDir, 'event-detail.css'));
+  await copyJs();
+  console.log(`build: assets ${elapsedMs('assets').toFixed(1)}ms`);
+
+  mark('data');
+  // Canonicaliza la categorÃ­a en un Ãºnico punto: todo lo demÃ¡s (filtro Tipo,
+  // tarjetas, pÃ¡ginas de categorÃ­a, JSON-LD, feeds) hereda la etiqueta unificada.
+  events = events.map((event) => (
+    event.categoryLabel ? { ...event, categoryLabel: canonicalizeCategory(event.categoryLabel) } : event
+  ));
+  const sorted = sortEvents(events).map(enrichEvent);
+  const filters = deriveFilters(events);
+  const { featured, week, ongoing, today } = splitFeatured(events);
+  // Ventana abierta (todo el futuro), igual que las pÃ¡ginas de tipo/espacio, para que
+  // el contador de /espacios/ sea coherente con /tipos/ y no se limite a 6 meses.
+  const groupedSpaces = groupFutureEventsByVenue(sorted, { openEnded: true });
+  const venueCatalog = await enrichVenueCatalog(groupedSpaces);
+  const vallabusStops = await loadVallabusStops();
+  const spaces = mergeSpacesWithVenueCatalog(groupedSpaces, venueCatalog).map((space) => ({
+    ...space,
+    nearbyVallabusStops: nearbyVallabusStops(space, vallabusStops)
+  }));
+  const spaceSlugByVenueKey = new Map(
+    spaces
+      .filter((space) => space?.name && space?.slug)
+      .map((space) => [normalizeVenueKey(canonicalizeVenue(space.name)), space.slug])
+  );
+  const spaceNameByVenueKey = new Map(
+    spaces
+      .filter((space) => space?.name)
+      .map((space) => [normalizeVenueKey(canonicalizeVenue(space.name)), space.name])
+  );
+  const spaceByVenueKey = new Map(
+    spaces
+      .filter((space) => space?.name)
+      .map((space) => [normalizeVenueKey(canonicalizeVenue(space.name)), space])
+  );
+  // AÃ±ade venueKey/venueLabel canÃ³nicos a un evento enriquecido, igual que
+  // siteDataPayload, para que las tarjetas server-rendered filtren por el
+  // espacio canÃ³nico (no por el texto de ubicaciÃ³n en crudo).
+  const withVenueKeys = (event) => {
+    const venueKey = normalizeVenueKey(canonicalizeVenue(event.venue || event.location || ''));
+    const venue = spaceByVenueKey.get(venueKey) || {};
+    const coordinates = resolveVenueCoordinates(event, venue);
+    return {
+      ...event,
+      venueKey,
+      venueLabel: spaceNameByVenueKey.get(venueKey) || '',
+      ...coordinates,
+      nearbyVallabusStops: Array.isArray(venue.nearbyVallabusStops) ? venue.nearbyVallabusStops : []
+    };
+  };
+  const assetVersion = await computeAssetVersion();
+  // Se sirve solo como /site-data.json (ver layout.njk): ya no se inyecta inline.
+  const eventsPayload = siteDataPayload(events, filters, { spaces, spaceNameByVenueKey, spaceByVenueKey });
+  console.log(`build: data ${elapsedMs('data').toFixed(1)}ms`);
+  const categoryFeeds = filters.map((category) => ({
+    label: category,
+    slug: slugify(category),
+    path: `/calendar/${slugify(category)}.ics`,
+    url: toAbsoluteUrl(`/calendar/${slugify(category)}.ics`),
+    webcalUrl: `webcal://eventos.aldeapucela.org/calendar/${slugify(category)}.ics`
+  }));
+
+  const buildNow = resolveBuildNow();
+  // Ventana abierta (de hoy en adelante) con lÃ­mites de dÃ­a de Madrid: el conjunto
+  // vigente/prÃ³ximo. Es la fuente Ãºnica de quÃ© se considera "no pasado" y la usan
+  // las pÃ¡ginas de tipo/espacio, el Ã­ndice de bÃºsqueda, el sitemap y el meta robots
+  // de cada ficha, para que las cuatro cosas no puedan divergir.
+  const categoryWindow = getOpenEndedWindow(buildNow);
+  const { ongoing: searchOngoing, listed: searchListed } = selectTimePageEvents(events, categoryWindow, buildNow);
+  const searchableEvents = sortEvents([...searchOngoing, ...searchListed]).map(enrichEvent);
+  const upcomingSiteDataPayload = siteDataPayload(
+    searchableEvents,
+    deriveFilters(searchableEvents),
+    { spaces, spaceNameByVenueKey }
+  );
+  // Solo las fichas vigentes/prÃ³ximas son indexables: las pasadas viven en /archivo/
+  // y llevan noindex (ver el bucle de fichas mÃ¡s abajo).
+  const indexableEventIds = new Set(searchableEvents.map((event) => event.id));
+
+  const categoryPages = getCategoryPages(events);
+  // Cada etiqueta (clave o alias) apunta a su pÃ¡gina, para enrutar "Solo".
+  const categoryPagePaths = Object.fromEntries(
+    categoryPages.flatMap((page) => page.labels.map((label) => [label, page.path]))
+  );
+  // Aviso si alguna categorÃ­a con eventos se queda sin pÃ¡gina (la omitirÃ­a el
+  // filtrado por categorÃ­a). "Otro" se excluye a propÃ³sito.
+  const mapped = new Set(mappedCategoryLabels());
+  const unmapped = filters.filter((label) => label !== 'Otros' && !mapped.has(label));
+  if (unmapped.length) {
+    console.warn(`build: categorÃ­as sin pÃ¡gina (aÃ±Ã¡delas a category-pages.mjs): ${unmapped.join(', ')}`);
+  }
+
+  // PÃ¡ginas por ubicaciÃ³n (/espacios/<slug>/), una por venue con eventos suficientes.
+  const venuePages = getVenuePages(spaces);
+  const venuePageSlugs = new Set(venuePages.map((page) => page.slug));
+
+  const sharedContext = {
+    filtersJson: JSON.stringify(filters),
+    // El modal de suscripciÃ³n se inyecta por JS, asÃ­ que el catÃ¡logo de feeds
+    // viaja como dato y no como markup (ver layout.njk y modals.js).
+    categoryFeedsJson: JSON.stringify(categoryFeeds),
+    filters,
+    categoryFeeds,
+    categoryPagePaths,
+    assetVersion
+  };
+
+  mark('pages');
+  const homeFeatured = featured ? enrichEvent(featured) : null;
+  const homeOngoing = ongoing.map(enrichEvent).map(withVenueKeys);
+  // "PrÃ³ximos eventos" de la portada, renderizado en el build con la misma
+  // ventana que pinta home.js por defecto (HOME_HORIZON_DAYS). El JS, al
+  // arrancar, repinta #week-groups con markup idÃ©ntico, asÃ­ que sin JS (y para
+  // el buscador) la portada trae el listado completo y con JS no hay salto.
+  const homeWindow = getHorizonWindow(buildNow, HOME_HORIZON_DAYS);
+  const { listed: homeListed } = selectTimePageEvents(events, homeWindow, buildNow);
+  const homeDayGroups = buildTimePageDayGroups(sortEvents(homeListed).map(enrichEvent).map(withVenueKeys), buildNow);
+  // ItemList de la portada: lo que va de verdad en el HTML servido (destacado,
+  // carrusel "En curso" y el listado por dÃ­as). Dedupe por id: el destacado
+  // puede estar tambiÃ©n en "En curso".
+  const homeItems = [...(homeFeatured ? [homeFeatured] : []), ...homeOngoing, ...homeDayGroups.flatMap((group) => group.events)]
+    .filter((event, index, list) => list.findIndex((other) => other.id === event.id) === index)
+    .map((event) => ({ url: `${publicBaseUrl}/e/${event.id}/${event.slug}/`, name: event.title }));
+  await writeFile('index.html', render('home.njk', {
+    title: 'QuÃ© hacer en Valladolid | Aldea Pucela',
+    meta: { description: 'Agenda cultural de Valladolid alimentada desde el foro de Aldea Pucela.' },
+    canonicalUrl: `${publicBaseUrl}/`,
+    googleSiteVerification,
+    jsonLd: homeItems.length
+      ? serializeJsonLd(buildCollectionPageJsonLd({
+          name: 'QuÃ© hacer en Valladolid',
+          description: 'Agenda cultural de Valladolid alimentada desde el foro de Aldea Pucela.',
+          url: `${publicBaseUrl}/`,
+          items: homeItems
+        }))
+      : null,
+    social: {
+      type: 'website',
+      title: 'QuÃ© hacer en Valladolid | Aldea Pucela',
+      description: 'Agenda cultural de Valladolid alimentada desde el foro de Aldea Pucela.',
+      ...socialPreview,
+      url: `${publicBaseUrl}/`
+    },
+    pageCss: 'home.css',
+    pageJs: 'home.js',
+    activeNav: 'home',
+    featured: homeFeatured,
+    week: week.map(enrichEvent),
+    ongoing: homeOngoing,
+    dayGroups: homeDayGroups,
+    horizonDays: HOME_HORIZON_DAYS,
+    today: today.map(enrichEvent),
+    todayCount: today.length,
+    categories: filters,
+    includeSiteData: true,
+    ...sharedContext
+  }));
+
+  await writeFile('populares/index.html', render('popular-events.njk', {
+    title: 'Eventos populares | Aldea Pucela Eventos',
+    meta: { description: 'Los eventos mÃ¡s guardados y visitados de Valladolid.' },
+    canonicalUrl: `${publicBaseUrl}/populares/`,
+    social: {
+      type: 'website',
+      title: 'Eventos populares | Aldea Pucela Eventos',
+      description: 'Los eventos mÃ¡s guardados y visitados de Valladolid.',
+      ...socialPreview,
+      url: `${publicBaseUrl}/populares/`
+    },
+    pageCss: 'home.css',
+    pageJs: 'popular.js',
+    activeNav: 'popular',
+    includeSiteData: true,
+    ...sharedContext
+  }));
+
+  await writeFile('guardados/index.html', render('saved-events.njk', {
+    title: 'Mis guardados | Eventos Valladolid | Aldea Pucela',
+    meta: { description: 'Tus eventos guardados en Aldea Pucela Eventos.' },
+    robotsMeta: 'noindex,follow',
+    social: {
+      type: 'website',
+      title: 'Mis guardados | Eventos Valladolid | Aldea Pucela',
+      description: 'Tus eventos guardados en Aldea Pucela Eventos.',
+      ...socialPreview,
+      url: `${publicBaseUrl}/guardados/`
+    },
+    pageCss: 'home.css',
+    pageJs: 'saved-events.js',
+    includeSiteData: true,
+    ...sharedContext
+  }));
+
+  const pastEvents = getPastEvents(events).map(enrichEvent);
+  const groups = groupEventsByMonth(pastEvents);
+
+  await writeFile('archivo/index.html', render('archivo.njk', {
+    title: 'Archivo de eventos | Eventos Valladolid | Aldea Pucela',
+    meta: { description: 'HistÃ³rico de eventos culturales pasados en Valladolid.' },
+    canonicalUrl: `${publicBaseUrl}/archivo/`,
+    // Hub de lo ya celebrado: se mantiene navegable, pero no queremos indexar
+    // pasado. Igual que las fichas que lista (ver el bucle de fichas).
+    robotsMeta: 'noindex,follow',
+    social: {
+      type: 'website',
+      title: 'Archivo de eventos | Eventos Valladolid | Aldea Pucela',
+      description: 'HistÃ³rico de eventos culturales pasados en Valladolid.',
+      ...socialPreview,
+      url: `${publicBaseUrl}/archivo/`
+    },
+    pageCss: 'home.css',
+    pageJs: 'home.js',
+    groups,
+    includeSiteData: true,
+    ...sharedContext
+  }));
+
+  const spacesByCount = [...spaces].sort((a, b) => b.count - a.count || a.name.localeCompare(b.name, 'es'));
+  await writeFile('espacios/index.html', render('spaces.njk', {
+    title: 'Espacios | Eventos Valladolid | Aldea Pucela',
+    meta: { description: 'Eventos en los prÃ³ximos seis meses agrupados por espacio en Valladolid.' },
+    canonicalUrl: `${publicBaseUrl}/espacios/`,
+    social: {
+      type: 'website',
+      title: 'Espacios | Eventos Valladolid | Aldea Pucela',
+      description: 'Eventos en los prÃ³ximos seis meses agrupados por espacio en Valladolid.',
+      ...socialPreview,
+      url: `${publicBaseUrl}/espacios/`
+    },
+    pageCss: 'home.css',
+    pageJs: 'home.js',
+    activeNav: 'spaces',
+    // Los espacios con mÃ¡s programaciÃ³n primero. groupFutureEventsByVenue ordena
+    // por prÃ³ximo evento, que es lo que quieren otros consumidores, asÃ­ que el
+    // orden por volumen se aplica solo aquÃ­, al pintar el hub.
+    spaces: spacesByCount.map((space) => ({
+      ...space,
+      // Avance de 4 eventos por tarjeta, como /tipos/: el listado completo vive en
+      // /espacios/<slug>/. Antes la tarjeta pintaba TODOS los eventos del espacio,
+      // asÃ­ que el hub repetÃ­a entero el contenido de cada pÃ¡gina de espacio.
+      // `space.count` sigue mostrando el total real.
+      events: space.events.slice(0, HUB_CARD_EVENTS),
+      pageHref: venuePageSlugs.has(space.slug) ? `/espacios/${space.slug}/` : null
+    })),
+    spacesCount: spaces.length,
+    futureEventsCount: spaces.reduce((total, space) => total + space.count, 0),
+    includeSiteData: true,
+    spacesDataJson: JSON.stringify(spacesByCount.map((space) => ({
+      slug: space.slug,
+      name: space.name,
+      address: space.address,
+      count: space.count,
+      lat: space.lat,
+      lon: space.lon,
+      hasMapPoint: space.hasMapPoint
+    }))),
+    ...sharedContext
+  }));
+
+  for (const page of getTimePages(buildNow)) {
+    const { ongoing: pageOngoing, listed } = selectTimePageEvents(events, page.window, buildNow);
+    const enrichedListed = sortEvents(listed).map(enrichEvent).map(withVenueKeys);
+    const enrichedOngoing = sortEvents(pageOngoing).map(enrichEvent).map(withVenueKeys);
+    const dayGroups = buildTimePageDayGroups(enrichedListed, buildNow, {
+      weekendOnly: page.weekendOnly,
+      windowStartKey: toLocalDateKey(page.window.start)
+    });
+    const pageUrl = `${publicBaseUrl}${page.path}`;
+    const itemListItems = [...enrichedOngoing, ...dayGroups.flatMap((group) => group.events)].map((event) => ({
+      url: `${publicBaseUrl}/e/${event.id}/${event.slug}/`,
+      name: event.title
+    }));
+    await writeFile(path.join(page.slug, 'index.html'), render('time-page.njk', {
+      title: page.title,
+      meta: { description: page.description },
+      canonicalUrl: pageUrl,
+      jsonLd: itemListItems.length
+        ? serializeJsonLd(buildCollectionPageJsonLd({
+            name: page.h1,
+            description: page.description,
+            url: pageUrl,
+            items: itemListItems
+          }))
+        : null,
+      social: {
+        type: 'website',
+        title: page.title,
+        description: page.description,
+        ...socialPreview,
+        url: pageUrl
+      },
+      pageCss: 'home.css',
+      pageJs: 'home.js',
+      activeNav: 'home',
+      pageH1: page.h1,
+      pageH2: page.h2,
+      timeFilterKey: page.filterKey,
+      ongoing: enrichedOngoing,
+      dayGroups,
+      categories: filters,
+      includeSiteData: true,
+      ...sharedContext
+    }));
+  }
+
+  // PÃ¡ginas por tipo (/t/musica/, /t/cine/...): mismo patrÃ³n que las temporales
+  // pero con ventana abierta (de hoy en adelante, `categoryWindow`) filtrada por categorÃ­a.
+  // Archivo de tipos (/tipos/): un avance por categorÃ­a; el listado completo vive
+  // en cada pÃ¡gina /t/<slug>/. Se alimenta de lo que ya calcula este bucle.
   const typesArchive = [];
   // PÃ¡ginas de tipo que llegan al umbral: las Ãºnicas que se anuncian en el
   // sitemap (ver mÃ¡s abajo). Las que no llegan â€”incluidas las que se quedan a
