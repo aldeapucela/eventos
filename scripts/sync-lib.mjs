@@ -5,7 +5,7 @@ import { fetchCategoryTopics, fetchTopicDetail, normalizeDetailToRecord, shouldS
 import { ensureCacheDirs, readIndex, writeCachedTopic, writeIndex } from '../src/data/store.mjs';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
-const CACHE_SCHEMA_VERSION = 2;
+const CACHE_SCHEMA_VERSION = 3;
 // El listado de la categoría no cambia (last_posted_at, bumped_at...) cuando se
 // edita el post de un evento, así que la firma no detecta ediciones: hay que
 // volver a pedir el detalle cada cierto tiempo.
