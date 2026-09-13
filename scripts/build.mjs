@@ -630,6 +630,11 @@ async function buildSite(events) {
   const categoryWindow = getOpenEndedWindow(buildNow);
   const { ongoing: searchOngoing, listed: searchListed } = selectTimePageEvents(events, categoryWindow, buildNow);
   const searchableEvents = sortEvents([...searchOngoing, ...searchListed]).map(enrichEvent);
+  const upcomingSiteDataPayload = siteDataPayload(
+    searchableEvents,
+    deriveFilters(searchableEvents),
+    { spaces, spaceNameByVenueKey }
+  );
   // Solo las fichas vigentes/próximas son indexables: las pasadas viven en /archivo/
   // y llevan noindex (ver el bucle de fichas más abajo).
   const indexableEventIds = new Set(searchableEvents.map((event) => event.id));
@@ -1075,6 +1080,7 @@ async function buildSite(events) {
 
   mark('feeds');
   await writeFile('site-data.json', eventsPayload);
+  await writeFile('upcoming-site-data.json', upcomingSiteDataPayload);
   const renderedVenueSlugs = new Set(renderedVenuePages.map((page) => page.slug));
   await writeFile('search-index.json', buildSearchIndex({
     events: searchableEvents,

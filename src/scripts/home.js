@@ -100,6 +100,7 @@ let activeVenueFilter = initialState.venue;
 setupScrollTopButton();
 setupTypeCheckboxes();
 setupLocationLinks();
+setupLazyEventImages();
 // Drawer y modal de suscripción: módulos compartidos con la ficha de evento.
 // home.js tenía su propia copia de las dos cosas (era lo que pedían los
 // comentarios ponytail de menu-drawer.js y subscribe.js).
@@ -902,7 +903,7 @@ async function loadSiteData() {
     return { events, filters: availableFilters, spaces: availableSpaces };
   }
   if (!siteDataPromise) {
-    siteDataPromise = fetch('/site-data.json')
+    siteDataPromise = fetch('/upcoming-site-data.json')
       .then(async (response) => {
         if (!response.ok) {
           throw new Error(`Failed to load site data: ${response.status}`);
@@ -1000,6 +1001,7 @@ function renderWeekGroups() {
   const keys = Object.keys(grouped);
   if (!keys.length) {
     weekGroups.innerHTML = '<p class="text-sm leading-6 text-slate-500">No hay eventos en este periodo.</p>';
+    setupLazyEventImages();
     updateCards();
     updateLoadMoreButton();
     return;
@@ -1023,6 +1025,7 @@ function renderWeekGroups() {
       `;
     })
     .join('');
+  setupLazyEventImages();
   
   updateCards();
   syncSavedStates();
@@ -1145,10 +1148,11 @@ function closeAddEventModal() {
 // Espejo de src/templates/partials/event-compact.njk: si cambias este markup,
 // cambia también el partial (y viceversa).
 function renderWeekItem(event) {
+    const image = event.image ? `data-src="${escapeHtmlAttribute(event.image)}"` : '';
     return `
       <article class="event-compact" data-category="${event.categoryLabel || ''}" data-free="${event.isFree ? 'true' : 'false'}" data-venue="${event.venueLabel || event.location || ''}" data-venue-key="${event.venueKey || ''}" data-starts-at="${event.startsAtIso || ''}" data-ends-at="${event.endsAtIso || ''}">
         <div class="event-compact-link">
-          <img class="event-compact-image" src="${event.image || '/assets/placeholder-event.svg'}" alt="" width="400" height="500" loading="lazy" decoding="async" />
+          <img class="event-compact-image" src="/assets/placeholder-event.svg" ${image} alt="" width="400" height="500" loading="lazy" decoding="async" />
           <div class="event-compact-copy">
           <div class="event-compact-topline">
             <span>${event.scheduleLabel || `${event.compactDateLabel || ''}${event.timeLabel ? ` · ${event.timeLabel}` : ''}`}</span>
@@ -1169,6 +1173,44 @@ function renderWeekItem(event) {
       </article>
     `;
   }
+
+function setupLazyEventImages() {
+  const images = Array.from(document.querySelectorAll('img[data-src]'));
+  if (!('IntersectionObserver' in window)) {
+    images.forEach(loadLazyEventImage);
+    return;
+  }
+
+  if (!setupLazyEventImages.observer) {
+    setupLazyEventImages.observer = new IntersectionObserver((entries, observer) => {
+      entries.forEach((entry) => {
+        if (!entry.isIntersecting) return;
+        loadLazyEventImage(entry.target);
+        observer.unobserve(entry.target);
+      });
+    }, { rootMargin: '200px 0px' });
+  } else {
+    setupLazyEventImages.observer.disconnect();
+  }
+
+  images.forEach((image) => setupLazyEventImages.observer.observe(image));
+}
+
+function loadLazyEventImage(image) {
+  const source = image.dataset.src;
+  if (!source) return;
+  image.loading = 'eager';
+  image.src = source;
+  image.removeAttribute('data-src');
+}
+
+function escapeHtmlAttribute(value) {
+  return String(value ?? '')
+    .replace(/&/g, '&amp;')
+    .replace(/"/g, '&quot;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;');
+}
 
 function isWithinListingWindow(event) {
   if (!event?.startsAtIso) return false;
