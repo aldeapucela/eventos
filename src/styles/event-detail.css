@@ -28,6 +28,17 @@
     padding: 0.32rem 0.8rem;
     font-size: 0.85rem;
     font-weight: 800;
+    text-decoration: none;
+    transition: filter 150ms ease;
+  }
+
+  .detail-category-badge:hover {
+    filter: brightness(0.96);
+  }
+
+  .detail-category-badge:focus-visible {
+    outline: 2px solid currentColor;
+    outline-offset: 3px;
   }
 
   .detail-clean-facts,

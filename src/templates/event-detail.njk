@@ -49,7 +49,7 @@
     <div class="detail-clean-body">
       <h1 class="detail-clean-title">{{ event.title }}</h1>
       {% if event.categoryLabel %}
-      <span class="compact-badge detail-category-badge">{{ event.categoryLabel }}</span>
+      <a class="compact-badge detail-category-badge" href="{% if categoryPagePaths and categoryPagePaths[event.categoryLabel] %}{{ categoryPagePaths[event.categoryLabel] }}{% else %}/?type={{ event.categoryLabel | urlencode }}#results{% endif %}" aria-label="Ver todos los eventos de {{ event.categoryLabel }}">{{ event.categoryLabel }}</a>
       {% endif %}
 
       <section class="detail-clean-facts" aria-label="Información del evento">
