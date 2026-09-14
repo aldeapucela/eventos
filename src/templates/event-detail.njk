@@ -26,10 +26,12 @@
       </span>
     </a>
     {% include "partials/main-nav.njk" %}
-    <div class="detail-topbar-actions flex items-center gap-3 text-slate-500">
+    <div class="detail-topbar-actions flex items-center gap-2 text-slate-500 ml-auto">
       <button class="detail-topbar-mobile-action inline-flex items-center justify-center md:hidden" type="button" data-save-event data-event-id="{{ event.id }}" aria-label="Guardar"><i class="fa-regular fa-bookmark"></i></button>
       <button class="hidden md:inline-flex h-11 w-11 items-center justify-center rounded-full text-slate-500 transition hover:bg-slate-100 hover:text-brand-700" type="button" data-save-event data-event-id="{{ event.id }}" aria-label="Guardar"><i class="fa-regular fa-bookmark"></i></button>
       <button class="hidden md:inline-flex h-11 w-11 items-center justify-center rounded-full text-slate-500 transition hover:bg-slate-100 hover:text-brand-700" type="button" data-share-event data-event-id="{{ event.id }}" data-event-url="{{ event.urlPath }}" data-event-title="{{ event.title }}" aria-label="Compartir"><i class="fa-solid fa-share-nodes"></i></button>
+      <button class="hidden xl:inline-flex h-11 w-11 items-center justify-center rounded-full text-slate-500 transition hover:bg-slate-100 hover:text-brand-700" type="button" data-search-open aria-label="Buscar"><i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i></button>
+      {% include "partials/header-more.njk" %}
       <button class="header-search-btn inline-flex h-11 w-11 items-center justify-center rounded-full text-slate-500 xl:hidden" type="button" data-menu-open aria-label="Abrir menú"><i class="fa-solid fa-bars"></i></button>
     </div>
   </div>

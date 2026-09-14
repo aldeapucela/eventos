@@ -278,8 +278,9 @@ const MAX_TYPES = 6;
   const searchGoesInDrawer = document.body.classList.contains('page-event-detail');
 
   function injectTriggers() {
+    const headerHasSearch = Boolean(document.querySelector('.topbar [data-search-open]'));
     document.querySelectorAll('.header-main-nav').forEach((nav) => {
-      if (nav.querySelector('[data-search-open]')) return;
+      if (nav.querySelector('[data-search-open]') || headerHasSearch) return;
       const button = document.createElement('button');
       button.type = 'button';
       button.className = 'nav-link';
@@ -303,7 +304,8 @@ const MAX_TYPES = 6;
     }
 
     document.querySelectorAll('[data-menu-open]').forEach((menuButton) => {
-      if (menuButton.previousElementSibling && menuButton.previousElementSibling.hasAttribute('data-search-open')) return;
+      const actionGroup = menuButton.closest('.topbar-actions, .detail-topbar-actions') || menuButton.parentElement;
+      if (actionGroup?.querySelector('[data-search-open]')) return;
       const button = document.createElement('button');
       button.type = 'button';
       button.className = 'header-search-btn inline-flex h-11 w-11 items-center justify-center rounded-full text-slate-500 lg:hidden';
@@ -323,3 +325,41 @@ const MAX_TYPES = 6;
     if (event.detail?.key === 'menuDrawer') injectTriggers();
   });
 }
+
+function setHeaderMoreOpen(wrapper, open) {
+  const trigger = wrapper.querySelector('[data-header-more-toggle]');
+  const menu = wrapper.querySelector('[data-header-more-menu]');
+  if (!trigger || !menu) return;
+  menu.hidden = !open;
+  trigger.setAttribute('aria-expanded', String(open));
+}
+
+document.addEventListener('click', (event) => {
+  const trigger = event.target.closest('[data-header-more-toggle]');
+  if (trigger) {
+    event.preventDefault();
+    const wrapper = trigger.closest('[data-header-more]');
+    const open = trigger.getAttribute('aria-expanded') !== 'true';
+    document.querySelectorAll('[data-header-more]').forEach((item) => setHeaderMoreOpen(item, false));
+    if (open && wrapper) setHeaderMoreOpen(wrapper, true);
+    return;
+  }
+
+  if (event.target.closest('[data-header-more-item]')) {
+    const wrapper = event.target.closest('[data-header-more]');
+    if (wrapper) setHeaderMoreOpen(wrapper, false);
+    return;
+  }
+
+  if (!event.target.closest('[data-header-more]')) {
+    document.querySelectorAll('[data-header-more]').forEach((item) => setHeaderMoreOpen(item, false));
+  }
+});
+
+window.addEventListener('keydown', (event) => {
+  if (event.key !== 'Escape') return;
+  const openWrapper = document.querySelector('[data-header-more-toggle][aria-expanded="true"]')?.closest('[data-header-more]');
+  if (!openWrapper) return;
+  setHeaderMoreOpen(openWrapper, false);
+  openWrapper.querySelector('[data-header-more-toggle]')?.focus();
+});

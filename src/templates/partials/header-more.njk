@@ -1,0 +1,37 @@
+<div class="header-more hidden xl:block" data-header-more>
+  <button
+    class="header-more-trigger{% if activeNav == 'archive' %} header-more-trigger-active{% endif %}"
+    type="button"
+    data-header-more-toggle
+    aria-expanded="false"
+    aria-controls="header-more-menu"
+  >
+    <span>Más</span>
+    <i class="fa-solid fa-chevron-down" aria-hidden="true"></i>
+  </button>
+  <div class="header-more-menu" id="header-more-menu" data-header-more-menu hidden>
+    <a class="header-more-item{% if activeNav == 'archive' %} header-more-item-active{% endif %}" href="/archivo/" data-header-more-item {% if activeNav == 'archive' %}aria-current="page"{% endif %}>
+      <i class="fa-solid fa-box-archive" aria-hidden="true"></i>
+      <span>Archivo</span>
+    </a>
+    <button class="header-more-item" type="button" data-subscribe-open data-header-more-item>
+      <i class="fa-solid fa-rss" aria-hidden="true"></i>
+      <span>Suscribirse</span>
+    </button>
+    <a class="header-more-item" href="https://aldeapucela.org" target="_blank" rel="noopener noreferrer" data-header-more-item>
+      <i class="fa-solid fa-people-group" aria-hidden="true"></i>
+      <span>Comunidad</span>
+      <i class="fa-solid fa-arrow-up-right-from-square header-more-external" aria-hidden="true"></i>
+    </a>
+    <a class="header-more-item" href="https://t.me/aldeapucela/244" target="_blank" rel="noopener noreferrer" data-header-more-item>
+      <i class="fa-brands fa-telegram" aria-hidden="true"></i>
+      <span>Chat sobre eventos</span>
+      <i class="fa-solid fa-arrow-up-right-from-square header-more-external" aria-hidden="true"></i>
+    </a>
+    <div class="header-more-divider" aria-hidden="true"></div>
+    <button class="header-more-item header-more-theme" type="button" data-theme-toggle aria-label="Cambiar tema" aria-pressed="false" data-header-more-item>
+      <i class="fa-regular fa-moon" aria-hidden="true"></i>
+      <span data-theme-toggle-label>Modo oscuro</span>
+    </button>
+  </div>
+</div>

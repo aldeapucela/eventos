@@ -101,7 +101,16 @@
   }
 
   .header-search-btn {
-    @apply ml-auto shrink-0;
+    @apply shrink-0;
+  }
+
+  .topbar-actions .header-search-btn,
+  .detail-topbar-actions .header-search-btn {
+    @apply rounded-full transition hover:bg-slate-100 hover:text-brand-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-400;
+  }
+
+  .topbar-actions {
+    @apply ml-auto flex shrink-0 items-center gap-2;
   }
 
   /* La búsqueda y el menú forman un único grupo de acciones en móvil. */
@@ -111,6 +120,46 @@
 
   .header-main-nav {
     @apply items-center gap-1;
+  }
+
+  .header-more {
+    @apply relative;
+  }
+
+  .header-more-trigger {
+    @apply inline-flex h-11 items-center gap-2 rounded-full px-3 text-sm font-medium text-slate-600 transition hover:bg-slate-100 hover:text-brand-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-400;
+  }
+
+  .header-more-trigger-active {
+    @apply bg-brand-50 text-brand-700;
+  }
+
+  .header-more-menu {
+    @apply absolute right-0 top-[calc(100%+0.5rem)] z-50 w-64 rounded-2xl border border-line bg-white p-2 shadow-xl;
+  }
+
+  .header-more-menu[hidden] {
+    display: none !important;
+  }
+
+  .header-more-item {
+    @apply flex min-h-11 w-full items-center gap-3 rounded-xl px-3 text-left text-sm font-medium text-slate-600 transition hover:bg-slate-100 hover:text-brand-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-400;
+  }
+
+  .header-more-item > i:first-child {
+    @apply w-5 shrink-0 text-center text-slate-500;
+  }
+
+  .header-more-item-active {
+    @apply bg-brand-50 text-brand-700;
+  }
+
+  .header-more-external {
+    @apply ml-auto text-[10px] text-slate-400;
+  }
+
+  .header-more-divider {
+    @apply my-2 border-t border-line;
   }
 
   .menu-drawer {
@@ -2457,6 +2506,37 @@ html.dark .site-footer-copy a {
     @apply text-brand-200;
   }
 
+  html.dark .header-more-trigger,
+  html.dark .header-more-item {
+    color: var(--text-secondary);
+  }
+
+  html.dark .topbar-actions .header-search-btn:hover,
+  html.dark .detail-topbar-actions .header-search-btn:hover {
+    @apply bg-white/10 text-brand-200;
+  }
+
+  html.dark .header-more-trigger:hover,
+  html.dark .header-more-item:hover,
+  html.dark .header-more-trigger-active,
+  html.dark .header-more-item-active {
+    @apply bg-brand-900/40 text-brand-200;
+  }
+
+  html.dark .header-more-menu {
+    border-color: var(--border-light);
+    background: var(--bg-container);
+  }
+
+  html.dark .header-more-item > i:first-child,
+  html.dark .header-more-external {
+    color: var(--text-muted);
+  }
+
+  html.dark .header-more-divider {
+    border-color: var(--border-light);
+  }
+
   html.dark .pill,
   html.dark .btn-ghost,
   html.dark .search-field,
@@ -3204,22 +3284,6 @@ html.dark .site-footer-copy a {
     .popular-event-save {
       width: 1.85rem;
       height: 1.85rem;
-    }
-  }
-
-  @media (min-width: 1280px) and (max-width: 1535px) {
-    .header-main-nav {
-      gap: 0;
-    }
-
-    .header-main-nav .nav-link {
-      gap: 0.35rem;
-      padding-inline: 0.4rem;
-      font-size: 0.75rem;
-    }
-
-    .topbar-inner {
-      gap: 0.5rem;
     }
   }
 
