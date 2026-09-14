@@ -1,7 +1,7 @@
 import { initTheme } from './theme.js';
 import { setupMenuDrawer } from './menu-drawer.js';
 import { setupSubscribe } from './subscribe.js';
-import { loadEventMetrics, recordEventSave } from './event-metrics.js';
+import { getEventMetric, loadEventMetrics, recordEventSave } from './event-metrics.js';
 import { rankPopularEvents } from './popular-ranking.js';
 
 const list = document.querySelector('[data-popular-list]');
@@ -71,7 +71,12 @@ function renderEvent(event) {
   const date = event.compactDateLabel || event.scheduleLabel || event.detailScheduleLabel || '';
   const time = event.timeLabel === '00:00' ? '' : event.timeLabel || '';
   const location = event.location || event.venueLabel || '';
+  const saveCount = toCount(event.metrics?.saveCount);
+  const visitCount = toCount(event.metrics?.visitCount);
   const eventUrl = safeEventPath(event.urlPath, event.id, event.slug);
+  const visitCountMarkup = mode === 'visits' && visitCount > 0
+    ? `<span class="popular-event-ranking-count"><i class="fa-solid fa-eye" aria-hidden="true"></i>${escapeHtml(formatCount(visitCount))} visitas</span>`
+    : '';
   return `
     <li class="popular-event-item">
       <article class="popular-event-row ${time ? 'has-time' : 'no-time'}">
@@ -82,11 +87,13 @@ function renderEvent(event) {
             <span class="popular-event-date">${escapeHtml(date)}</span>
             <span class="popular-event-title">${escapeHtml(event.title || 'Evento')}</span>
             ${location ? `<span class="popular-event-location"><i class="fa-solid fa-location-dot" aria-hidden="true"></i><span>${escapeHtml(location)}</span></span>` : ''}
+            ${visitCountMarkup}
           </span>
         </a>
         <div class="popular-event-actions">
           <button class="event-compact-action popular-event-save" type="button" data-save-event data-event-id="${escapeAttribute(event.id)}" aria-label="Guardar evento">
             <i class="fa-regular fa-bookmark" aria-hidden="true"></i>
+            <span class="popular-event-save-count" aria-hidden="true"${saveCount > 0 ? '' : ' hidden'}>${saveCount > 0 ? saveCount : ''}</span>
           </button>
         </div>
       </article>
@@ -103,9 +110,17 @@ function syncSavedButtons() {
   const saved = readSavedIds();
   list?.querySelectorAll('[data-save-event]').forEach((button) => {
     const isSaved = saved.has(String(button.dataset.eventId));
+    const saveCount = toCount(getEventMetric(button.dataset.eventId)?.saveCount
+      ?? metrics?.activities?.find((activity) => String(activity.id) === String(button.dataset.eventId))?.saveCount);
     button.classList.toggle('event-compact-action-active', isSaved);
     button.setAttribute('aria-pressed', String(isSaved));
-    button.setAttribute('aria-label', isSaved ? 'Quitar de guardados' : 'Guardar evento');
+    const countDescription = saveCount > 0 ? `. ${formatCount(saveCount)} ${saveCount === 1 ? 'persona ha' : 'personas han'} guardado este evento` : '';
+    button.setAttribute('aria-label', `${isSaved ? 'Quitar de guardados' : 'Guardar evento'}${countDescription}`);
+    const countBadge = button.querySelector('.popular-event-save-count');
+    if (countBadge) {
+      countBadge.textContent = saveCount > 0 ? String(saveCount) : '';
+      countBadge.hidden = saveCount <= 0;
+    }
     const icon = button.querySelector('i');
     if (icon) icon.className = `${isSaved ? 'fa-solid' : 'fa-regular'} fa-bookmark`;
   });
@@ -131,7 +146,19 @@ function toggleSaved(id) {
   } catch {}
   syncSavedButtons();
   if (added) {
-    void recordEventSave(key);
+    void recordEventSave(key).then((recorded) => {
+      if (!recorded || !metrics) return;
+      const updatedMetric = getEventMetric(key);
+      if (!updatedMetric) return;
+      metrics = {
+        ...metrics,
+        activities: [
+          ...metrics.activities.filter((activity) => String(activity.id) !== key),
+          updatedMetric
+        ]
+      };
+      render();
+    });
     window.trackMatomoActivityOnce?.({ action: 'save', eventId: key });
   }
   window.showSavedToast?.({ action: added ? 'added' : 'removed' });
@@ -155,6 +182,15 @@ function escapeHtml(value) {
 
 function escapeAttribute(value) {
   return escapeHtml(value).replace(/`/g, '&#96;');
+}
+
+function toCount(value) {
+  const number = Number(value);
+  return Number.isFinite(number) && number > 0 ? Math.floor(number) : 0;
+}
+
+function formatCount(value) {
+  return new Intl.NumberFormat('es-ES').format(value);
 }
 
 modeButtons.forEach((button) => button.addEventListener('click', () => {

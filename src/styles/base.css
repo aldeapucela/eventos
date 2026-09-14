@@ -2919,10 +2919,6 @@ html.dark .site-footer-copy a {
     @apply mt-2 max-w-xl text-sm leading-6 text-slate-500 sm:text-base;
   }
 
-  .popular-back-link {
-    @apply inline-flex shrink-0 items-center gap-2 text-sm font-semibold text-brand-700 hover:text-brand-800;
-  }
-
   .popular-toolbar {
     @apply flex items-center justify-center rounded-2xl border border-line/70 bg-white/90 p-3 shadow-sm sm:p-4;
   }
@@ -2932,7 +2928,11 @@ html.dark .site-footer-copy a {
   }
 
   .popular-ranking-switch button {
-    @apply flex min-h-11 items-center justify-center rounded-lg px-3 text-sm font-semibold text-slate-500 transition sm:px-4;
+    @apply flex min-h-11 items-center justify-center gap-2 rounded-lg px-3 text-sm font-semibold text-slate-500 transition sm:px-4;
+  }
+
+  .popular-ranking-switch button > i {
+    @apply text-[0.95rem];
   }
 
   .popular-ranking-switch button[aria-pressed="true"] {
@@ -3069,9 +3069,43 @@ html.dark .site-footer-copy a {
   }
 
   .popular-event-save {
-    width: 2rem;
-    height: 2rem;
+    width: 2.6rem;
+    min-width: 2.6rem;
+    height: 2.6rem;
+    min-height: 2.6rem;
     margin-top: 0.2rem;
+    gap: 0.25rem;
+    padding-inline: 0.22rem;
+    white-space: nowrap;
+  }
+
+  .popular-event-save-count {
+    display: inline-flex;
+    align-items: center;
+    color: currentColor;
+    font-size: 0.62rem;
+    font-variant-numeric: tabular-nums;
+    font-weight: 800;
+    line-height: 1;
+    pointer-events: none;
+  }
+
+  .popular-event-save-count[hidden] {
+    display: none;
+  }
+
+  .popular-event-ranking-count {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    color: #73579f;
+    font-size: 0.72rem;
+    font-weight: 800;
+    line-height: 1.1;
+  }
+
+  .popular-event-ranking-count > i {
+    font-size: 0.68rem;
   }
 
   .day-weather {
@@ -3206,6 +3240,10 @@ html.dark .site-footer-copy a {
     background: var(--bg-card);
   }
 
+  html.dark .popular-event-ranking-count {
+    color: #c8b3e5;
+  }
+
   html.dark .popular-event-title {
     color: var(--text-header);
   }
@@ -3282,8 +3320,16 @@ html.dark .site-footer-copy a {
     }
 
     .popular-event-save {
-      width: 1.85rem;
-      height: 1.85rem;
+      width: 2.6rem;
+      min-width: 2.6rem;
+      height: 2.6rem;
+      min-height: 2.6rem;
+      gap: 0.25rem;
+      padding-inline: 0.22rem;
+    }
+
+    .popular-event-save-count {
+      font-size: 0.58rem;
     }
   }
 
