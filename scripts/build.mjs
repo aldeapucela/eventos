@@ -1309,6 +1309,9 @@ async function buildSite(events) {
 
 async function main() {
   await ensureDirs();
+  // El camino normal conserva la caché y refresca únicamente los temas que el
+  // detector ha marcado. --rebuild solo reutiliza una caché ya resincronizada
+  // por el workflow manual de recuperación; no lo uses en cada deploy.
   const events = args.has('--rebuild')
     ? (await loadCachedEvents()).events
     : await syncEvents({

@@ -135,6 +135,46 @@ Ventajas:
 - menor riesgo ante caídas o latencia de Discourse;
 - despliegue reproducible.
 
+### Sincronización incremental y caché
+
+La caché no es un detalle de implementación prescindible: es la pieza que
+permite que los cron de GitHub Pages sean ligeros. En un deploy normal no se
+vuelven a descargar los detalles de todos los temas.
+
+El flujo de `.github/workflows/deploy-pages.yml` es:
+
+1. Restaura `cache/` y el estado de `.ci-state/`.
+2. `scripts/check-events-signature.mjs` consulta el listado de Discourse y
+   compara su digest con el anterior. Además, detecta ediciones del primer
+   post mediante `updated_at` y firmas de contenido. Para no cargar el foro,
+   solo sondea una tanda rotatoria de eventos vigentes o futuros (por defecto,
+   20 por intervalo).
+3. Si encuentra cambios, publica sus IDs en `refresh_ids`.
+4. `scripts/build.mjs` llama al sincronizador con `rebuild: false`. Este
+   conserva los registros cuyo `topicSignature` no ha cambiado y solo vuelve a
+   leer los temas nuevos, editados o forzados mediante `EVENT_REFRESH_IDS`.
+5. Guarda la caché actualizada y publica `dist/` en GitHub Pages.
+
+Esto significa que si alguien edita manualmente el primer post de un evento
+vigente o futuro, un deploy posterior reconstruye únicamente ese evento. Si se
+necesita forzar un tema concreto, se puede pasar su ID mediante
+`workflow_dispatch`/`EVENT_REFRESH_IDS`. No se utiliza un webhook: la
+detección sucede durante el propio deploy leyendo Discourse por HTTP.
+
+Reglas importantes para mantenimiento:
+
+- No usar `--rebuild` en el deploy normal. La reconstrucción integral está
+  reservada al workflow manual `resync-pages.yml`.
+- No eliminar la restauración/guardado de `cache/`, `EVENT_REFRESH_IDS`, el
+  detector de firmas ni `postUpdatedAt` del índice.
+- No sustituir el camino normal por `loadCachedEvents`: impediría recoger
+  ediciones del foro.
+- No añadir una descarga completa de detalles al cron de 15 minutos.
+- `cache/`, `dist/` y `.ci-state/` son artefactos generados y no se versionan.
+
+La especificación ampliada para agentes de programación está en
+[`AGENTS.md`](AGENTS.md).
+
 ## Estructura principal
 
 ```text
@@ -167,7 +207,7 @@ Si detectas datos desactualizados o inconsistencias de cache, ejecuta `npm run r
 El repositorio incluye workflow para:
 
 - ejecución en cada `push` a `main`;
-- ejecución programada por `cron` (actualmente cada hora, minuto `00`, UTC);
+- ejecución programada por `cron` (actualmente cada 15 minutos, UTC);
 - ejecución manual desde GitHub Actions.
 
 Flujo del workflow:
@@ -186,7 +226,8 @@ Flujo del workflow:
 ## Configuración operativa
 
 - Frecuencia de actualización: configurable en `cron` del workflow.
-- Cache local: `cache/` reduce llamadas innecesarias y acelera builds.
+- Cache local: `cache/` reduce llamadas innecesarias y acelera builds; el
+  deploy normal solo refresca los temas nuevos o modificados.
 - Reconstrucción forzada: `npm run rebuild` para refresco integral.
 - Artefactos generados (`dist/`, `cache/`) no necesitan versionarse.
 
@@ -195,7 +236,9 @@ Flujo del workflow:
 - Error por versión de Node:
   - confirma `node -v` y usa Node.js 20+.
 - Build sin eventos o datos viejos:
-  - ejecuta `npm run rebuild`.
+  - revisa primero la salida de `check-events-signature.mjs` y la caché
+    restaurada;
+  - ejecuta `npm run rebuild` solo si necesitas una resincronización integral.
 - Diferencias entre local y producción:
   - revisa la última ejecución del workflow en GitHub Actions.
 - Fallo de publicación en Pages:

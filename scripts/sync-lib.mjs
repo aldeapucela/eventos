@@ -43,6 +43,15 @@ async function removeOrphanedCacheFiles(knownTopicIds) {
   }
 }
 
+/**
+ * Sincroniza la categoría conservando la caché por tema.
+ *
+ * Este es el camino normal de cada deploy: con rebuild=false solo se descarga
+ * el detalle de temas nuevos, editados o forzados por refreshTopicIds. El
+ * detector de GitHub Pages alimenta refreshTopicIds tras comprobar ediciones
+ * del primer post. No convertir esta función en una resincronización completa:
+ * --rebuild queda reservado al workflow manual de recuperación.
+ */
 export async function syncEvents({ rebuild = false, refreshTopicIds = [] } = {}) {
   await ensureCacheDirs();
   const index = await readIndex();

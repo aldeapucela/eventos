@@ -24,6 +24,13 @@ const PROBE_PAUSE_MS = 300;
 const PAST_EVENT_GRACE_MS = 24 * 60 * 60 * 1000;
 const RECENT_POST_SEARCH_URL = `${FORUM_BASE}/search.json?q=${encodeURIComponent('category:eventos in:first order:latest')}`;
 
+// Este detector corre antes del build normal. Su trabajo es decidir si hace
+// falta desplegar y pasar una lista pequeña de IDs a EVENT_REFRESH_IDS; no
+// debe convertirse en una sincronización completa del detalle del foro.
+// La tanda rotatoria limita las peticiones de updated_at a los eventos
+// vigentes/futuros y permite que las ediciones terminen detectándose en un
+// deploy posterior sin penalizar cada cron de 15 minutos.
+
 function topicSignature(topic) {
   return [
     dataTopicSignature(topic),
@@ -82,6 +89,8 @@ async function findEditedTopicIds(topics, now = Date.now()) {
     if (fetched > 0) await sleep(PROBE_PAUSE_MS);
     fetched += 1;
     const detail = await fetchTopicDetail(topic.slug, topic.id);
+    // updated_at del primer post es la señal que permite refrescar una edición
+    // manual aunque el listado del tema no cambie su last_posted_at.
     const currentUpdatedAt = firstPostUpdatedAt(detail);
     if (currentUpdatedAt && currentUpdatedAt !== cachedUpdatedAt) {
       editedIds.push(String(topic.id));
@@ -191,6 +200,9 @@ async function main() {
   const recent = await findRecentlyEditedTopicIds(index);
   const probe = await findEditedTopicIds(topics);
   const editedIds = [...new Set([...recent.editedIds, ...probe.editedIds])];
+  // El build solo se omite cuando el cron no tiene nada que publicar. En un
+  // push o ejecución manual el workflow sigue construyendo, pero conserva la
+  // misma lógica incremental de syncEvents.
   const changed = previous !== digest || recent.stateChanged || editedIds.length > 0;
 
   await writeCurrentDigest(digest);
