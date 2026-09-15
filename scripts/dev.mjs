@@ -45,10 +45,13 @@ async function handleDevMetrics(req, res) {
   const events = await loadDevEvents();
   if (req.method === 'GET') {
     const activities = [...devMetrics.values()];
+    const visitRankIds = [...activities]
+      .sort((left, right) => right.visitCount - left.visitCount || right.saveCount - left.saveCount)
+      .map((activity) => String(activity.id));
     send(res, 200, JSON.stringify({
       ok: true,
-      activities,
-      totalVisits: activities.reduce((total, activity) => total + activity.visitCount, 0),
+      activities: activities.map((activity) => ({ id: activity.id, saveCount: activity.saveCount })),
+      visitRankIds,
       generatedAt: new Date().toISOString()
     }), 'application/json; charset=utf-8');
     return;

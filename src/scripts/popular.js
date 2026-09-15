@@ -28,17 +28,21 @@ function clearLegacySpaceFilter() {
 
 async function initialize() {
   try {
-    const [siteData, eventMetrics] = await Promise.all([
-      fetch('/site-data.json').then((response) => {
-        if (!response.ok) throw new Error(`site data ${response.status}`);
-        return response.json();
-      }),
-      loadEventMetrics()
-    ]);
+    // Las métricas de Matomo/NocoDB pueden tardar varios segundos. El dataset
+    // de la lista es pequeño y permite mostrar contenido útil inmediatamente;
+    // la popularidad se aplica en cuanto llega la respuesta de métricas.
+    const siteDataPromise = fetch('/popular-site-data.json').then((response) => {
+      if (!response.ok) throw new Error(`site data ${response.status}`);
+      return response.json();
+    });
+    const metricsPromise = loadEventMetrics();
+    const siteData = await siteDataPromise;
     events = Array.isArray(siteData?.events) ? siteData.events : [];
-    metrics = eventMetrics;
+    render({ preview: true });
+
+    metrics = await metricsPromise;
     if (!metrics) {
-      showState('No se han podido cargar las métricas. Inténtalo de nuevo más tarde.');
+      summary.textContent = 'Mostrando próximos eventos mientras se actualiza la popularidad.';
       return;
     }
     render();
@@ -47,12 +51,19 @@ async function initialize() {
   }
 }
 
-function render() {
-  if (!list || !metrics) return;
+function render({ preview = false } = {}) {
+  if (!list) return;
   modeButtons.forEach((button) => {
     button.setAttribute('aria-pressed', String(button.dataset.popularMode === mode));
   });
-  const ranked = rankPopularEvents(events, metrics.activities, mode, '', new Date());
+  const ranked = rankPopularEvents(
+    events,
+    preview ? [] : metrics?.activities,
+    mode,
+    '',
+    new Date(),
+    preview ? [] : metrics?.visitRankIds
+  );
   if (!ranked.length) {
     list.replaceChildren();
     summary.textContent = '';
@@ -61,7 +72,9 @@ function render() {
   }
 
   list.innerHTML = ranked.map((event) => renderEvent(event)).join('');
-  summary.textContent = `${ranked.length} ${ranked.length === 1 ? 'evento vigente' : 'eventos vigentes'} · ${mode === 'saves' ? 'ordenados por guardados' : 'ordenados por visitas'}`;
+  summary.textContent = preview
+    ? 'Cargando popularidad…'
+    : `${ranked.length} ${ranked.length === 1 ? 'evento vigente' : 'eventos vigentes'} · ${mode === 'saves' ? 'ordenados por guardados' : 'ordenados por visitas'}`;
   if (state) state.hidden = true;
   syncSavedButtons();
 }
@@ -72,11 +85,7 @@ function renderEvent(event) {
   const time = event.timeLabel === '00:00' ? '' : event.timeLabel || '';
   const location = event.location || event.venueLabel || '';
   const saveCount = toCount(event.metrics?.saveCount);
-  const visitCount = toCount(event.metrics?.visitCount);
   const eventUrl = safeEventPath(event.urlPath, event.id, event.slug);
-  const visitCountMarkup = mode === 'visits' && visitCount > 0
-    ? `<span class="popular-event-ranking-count"><i class="fa-solid fa-eye" aria-hidden="true"></i>${escapeHtml(formatCount(visitCount))} visitas</span>`
-    : '';
   return `
     <li class="popular-event-item">
       <article class="popular-event-row ${time ? 'has-time' : 'no-time'}">
@@ -87,7 +96,6 @@ function renderEvent(event) {
             <span class="popular-event-date">${escapeHtml(date)}</span>
             <span class="popular-event-title">${escapeHtml(event.title || 'Evento')}</span>
             ${location ? `<span class="popular-event-location"><i class="fa-solid fa-location-dot" aria-hidden="true"></i><span>${escapeHtml(location)}</span></span>` : ''}
-            ${visitCountMarkup}
           </span>
         </a>
         <div class="popular-event-actions">

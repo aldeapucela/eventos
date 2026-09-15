@@ -92,3 +92,17 @@ test('el mínimo de visitas usa el 0,5 % del total y nunca baja de tres', () => 
   assert.deepEqual(getPopularThresholds([{ visitCount: 1000 }, { visitCount: 600 }]), { minSaves: 10, minVisits: 8 });
   assert.deepEqual(getPopularThresholds([{ visitCount: 20 }]), { minSaves: 10, minVisits: 3 });
 });
+
+test('ordena por visitas usando un orden opaco sin exponer las cifras', () => {
+  const now = new Date('2026-09-14T12:00:00Z');
+  const events = [
+    { id: '1', startsAtIso: '2026-09-15T18:00:00Z', endsAtIso: '2026-09-15T20:00:00Z' },
+    { id: '2', startsAtIso: '2026-09-16T18:00:00Z', endsAtIso: '2026-09-16T20:00:00Z' }
+  ];
+  const activities = [{ id: '1', saveCount: 1 }, { id: '2', saveCount: 2 }];
+
+  assert.deepEqual(
+    rankPopularEvents(events, activities, 'visits', '', now, ['2', '1']).map((event) => event.id),
+    ['2', '1']
+  );
+});

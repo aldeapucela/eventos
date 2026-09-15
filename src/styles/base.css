@@ -3094,20 +3094,6 @@ html.dark .site-footer-copy a {
     display: none;
   }
 
-  .popular-event-ranking-count {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.3rem;
-    color: #73579f;
-    font-size: 0.72rem;
-    font-weight: 800;
-    line-height: 1.1;
-  }
-
-  .popular-event-ranking-count > i {
-    font-size: 0.68rem;
-  }
-
   .day-weather {
     @apply inline-flex items-center gap-2 rounded-full border border-line/70 bg-white/80 px-3 py-1.5 text-xs font-medium text-slate-600;
   }
@@ -3238,10 +3224,6 @@ html.dark .site-footer-copy a {
   html.dark .popular-event-row {
     border-color: var(--border-light);
     background: var(--bg-card);
-  }
-
-  html.dark .popular-event-ranking-count {
-    color: #c8b3e5;
   }
 
   html.dark .popular-event-title {

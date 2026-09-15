@@ -1,5 +1,9 @@
 {% extends "layout.njk" %}
 
+{% block extraHead %}
+<link rel="preload" href="/popular-site-data.json" as="fetch" crossorigin="same-origin" />
+{% endblock %}
+
 {% block header %}
 {% include "partials/topbar.njk" %}
 {% endblock %}

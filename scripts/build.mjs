@@ -507,6 +507,29 @@ function siteDataPayload(events, filters = deriveFilters(events), options = {}) 
   });
 }
 
+// La página de populares solo necesita los datos visibles de los eventos
+// vigentes. No debe descargar el histórico completo (ni descripciones, mapas o
+// metadatos de cada ficha) antes de poder pintar la lista.
+function buildPopularSiteDataPayload(events) {
+  return JSON.stringify({
+    events: events.map((event) => ({
+      id: event.id,
+      slug: event.slug,
+      urlPath: event.urlPath,
+      title: event.title,
+      image: event.image,
+      compactDateLabel: event.compactDateLabel,
+      scheduleLabel: event.scheduleLabel,
+      detailScheduleLabel: event.detailScheduleLabel,
+      timeLabel: event.timeLabel,
+      location: event.location,
+      venueLabel: event.venueLabel,
+      startsAtIso: event.startsAt,
+      endsAtIso: event.endsAt
+    }))
+  });
+}
+
 // Índice de búsqueda ligero para el buscador global (src/scripts/search.js).
 // Solo eventos vigentes/próximos (no archivo), más el catálogo de espacios y
 // tipos. Se sirve como /search-index.json y se descarga de forma perezosa.
@@ -715,6 +738,7 @@ async function buildSite(events) {
     deriveFilters(searchableEvents),
     { spaces, spaceNameByVenueKey }
   );
+  const popularSiteDataPayload = buildPopularSiteDataPayload(searchableEvents);
   // Solo las fichas vigentes/próximas son indexables: las pasadas viven en /archivo/
   // y llevan noindex (ver el bucle de fichas más abajo).
   const indexableEventIds = new Set(searchableEvents.map((event) => event.id));
@@ -1198,6 +1222,7 @@ async function buildSite(events) {
   mark('feeds');
   await writeFile('site-data.json', eventsPayload);
   await writeFile('upcoming-site-data.json', upcomingSiteDataPayload);
+  await writeFile('popular-site-data.json', popularSiteDataPayload);
   const renderedVenueSlugs = new Set(renderedVenuePages.map((page) => page.slug));
   await writeFile('search-index.json', buildSearchIndex({
     events: searchableEvents,

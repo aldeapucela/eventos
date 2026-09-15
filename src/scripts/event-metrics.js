@@ -104,16 +104,21 @@ async function fetchMetrics() {
   if (!response.ok) throw new Error(`Metrics request failed: ${response.status}`);
   const payload = await response.json();
   if (!payload?.ok || !Array.isArray(payload.activities)) throw new Error('Invalid event metrics response');
+  const visitRankIds = Array.isArray(payload.visitRankIds)
+    ? payload.visitRankIds.map(normalizeId).filter(Boolean)
+    : [];
   return {
     ok: true,
     activities: payload.activities
       .map((activity) => ({
         id: normalizeId(activity?.id),
         saveCount: toNonNegativeInteger(activity?.saveCount),
-        visitCount: toNonNegativeInteger(activity?.visitCount)
+        // Las visitas solo se usan para construir el orden en el endpoint;
+        // no se descargan como cifras públicas.
+        visitCount: 0
       }))
       .filter((activity) => activity.id),
-    totalVisits: toNonNegativeInteger(payload.totalVisits),
+    visitRankIds,
     generatedAt: String(payload.generatedAt || '')
   };
 }

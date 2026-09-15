@@ -2,9 +2,11 @@ const MAX_RESULTS = 30;
 const FALLBACK_RESULTS = 5;
 const MIN_SAVES = 10;
 
-export function rankPopularEvents(events, activities, mode = 'saves', spaceKey = '', now = new Date()) {
+export function rankPopularEvents(events, activities, mode = 'saves', spaceKey = '', now = new Date(), visitRankIds = []) {
   const metricById = new Map((activities || []).map((activity) => [String(activity.id), activity]));
   const validMode = mode === 'visits' ? 'visits' : 'saves';
+  const visitOrder = new Map((visitRankIds || []).map((id, index) => [String(id), index]));
+  const hasVisitOrder = validMode === 'visits' && visitOrder.size > 0;
   const currentTime = now instanceof Date ? now.getTime() : new Date(now).getTime();
   const candidates = (events || [])
     .filter((event) => !hasEnded(event, currentTime))
@@ -13,16 +15,25 @@ export function rankPopularEvents(events, activities, mode = 'saves', spaceKey =
       ...event,
       metrics: metricById.get(String(event.id)) || { saveCount: 0, visitCount: 0 }
     }))
-    .sort((left, right) => comparePopularity(left, right, validMode));
+    .sort((left, right) => hasVisitOrder
+      ? compareVisitOrder(left, right, visitOrder)
+      : comparePopularity(left, right, validMode));
 
   const totalVisits = (activities || []).reduce((total, activity) => total + toCount(activity.visitCount), 0);
   const minVisitCount = Math.max(3, Math.ceil(totalVisits * 0.005));
-  const qualified = candidates.filter((event) => validMode === 'saves'
-    ? toCount(event.metrics.saveCount) >= MIN_SAVES
-    : toCount(event.metrics.visitCount) >= minVisitCount
-  );
+  const qualified = hasVisitOrder
+    ? candidates.filter((event) => visitOrder.has(String(event.id)))
+    : candidates.filter((event) => validMode === 'saves'
+      ? toCount(event.metrics.saveCount) >= MIN_SAVES
+      : toCount(event.metrics.visitCount) >= minVisitCount
+    );
 
   return (qualified.length ? qualified : candidates.slice(0, FALLBACK_RESULTS)).slice(0, MAX_RESULTS);
+}
+
+function compareVisitOrder(left, right, visitOrder) {
+  return (visitOrder.get(String(left.id)) ?? Number.MAX_SAFE_INTEGER)
+    - (visitOrder.get(String(right.id)) ?? Number.MAX_SAFE_INTEGER);
 }
 
 export function hasEnded(event, now = Date.now()) {
