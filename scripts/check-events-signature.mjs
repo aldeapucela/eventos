@@ -25,7 +25,7 @@ function topicSignature(topic) {
   return [
     topic.id,
     topic.slug,
-    topic.last_posted_at,
+    topic.updated_at || topic.last_posted_at,
     topic.image_url || '',
     topic.event_starts_at || '',
     topic.event_ends_at || '',

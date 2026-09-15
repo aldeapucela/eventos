@@ -87,6 +87,41 @@ test('no expone URLs inseguras y descarta coordenadas incompletas o fuera de ran
   assert.equal(outOfRange.longitude, null);
 });
 
+test('no importa el enlace del título a la ficha web como descripción ni como resumen', () => {
+  const event = normalize({}, [
+    '<p><a href="https://eventos.aldeapucela.org/e/9001/concierto-en-valladolid/">Concierto en Valladolid en eventos.aldeapucela.org</a></p>',
+    '<details><summary>Descripción completa</summary>',
+    '<p>Una descripción real y suficientemente larga del concierto para la ficha web.</p>',
+    '</details>'
+  ].join(''));
+
+  assert.equal(event.summary, 'Una descripción real y suficientemente larga del concierto para la ficha web.');
+  assert.doesNotMatch(event.descriptionHtml, /eventos\.aldeapucela\.org\/e\/9001/);
+});
+
+test('descarta también como resumen nativo una descripción que solo repite el enlace propio', () => {
+  const topic = {
+    id: 9001,
+    slug: 'concierto-en-valladolid',
+    title: 'Concierto en Valladolid',
+    event_starts_at: '2026-09-20T18:00:00Z'
+  };
+  const detail = {
+    post_stream: {
+      posts: [{
+        cooked: '<p>Una descripción real y suficientemente larga del concierto para la ficha web.</p>',
+        event: {
+          name: topic.title,
+          starts_at: topic.event_starts_at,
+          description: 'Concierto en Valladolid en eventos.aldeapucela.org'
+        }
+      }]
+    }
+  };
+  const event = normalizeDiscourseTopic(topic, detail);
+  assert.equal(event.summary, 'Una descripción real y suficientemente larga del concierto para la ficha web.');
+});
+
 test('el JSON-LD prefiere dirección y coordenadas del evento frente al registro general del local', () => {
   const jsonLd = buildEventJsonLd({
     id: 9001,

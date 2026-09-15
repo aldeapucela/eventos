@@ -251,7 +251,8 @@ export function cleanDescriptionHtml(html = '', title = '', eventUrl = '') {
     .replace(/<p>\s*<img[^>]*alt=":round_pushpin:"[^>]*>\s*([^<]+)\s*<\/p>/gi, '')
     .replace(/<p>\s*(Categor[ií]a|Organizador|Notas|Lugar|Ubicaci[oó]n|Precio)\s*:[\s\S]*?<\/p>/gi, '')
     .replace(/<p>\s*<em>\s*Evento importado desde[\s\S]*?<\/em>\s*<\/p>/gi, '')
-    // El enlace al título de esta misma ficha se conserva en el foro, pero no en la web.
+    // El importador del foro enlaza el título con la ficha web. Ese enlace debe
+    // seguir en el post del foro, pero no formar parte de la descripción de la web.
     .replace(/<p\b[^>]*>\s*<a\b([^>]*)>([\s\S]*?)<\/a>\s*<\/p>/gi, (paragraph, attributes, labelHtml) => {
       const href = attributes.match(/\bhref=["']([^"']+)["']/i)?.[1] || '';
       const normalizedHref = normalizeComparableUrl(href);
@@ -266,7 +267,7 @@ export function cleanDescriptionHtml(html = '', title = '', eventUrl = '') {
         : ownEventPage && (
           label === 'ver el evento en la web' ||
           label === normalizedTitle ||
-          label === normalizedTitle + ' en eventos.aldeapucela.org'
+          label === `${normalizedTitle} en eventos.aldeapucela.org`
         );
       return selfLink ? '' : paragraph;
     })
@@ -284,7 +285,7 @@ function normalizeComparableUrl(value = '') {
     const url = new URL(decodeHtmlEntities(String(value)).trim());
     url.search = '';
     url.hash = '';
-    return (url.origin.toLowerCase() + url.pathname.replace(/\/+$/, '')).toLowerCase();
+    return `${url.origin.toLowerCase()}${url.pathname.replace(/\/+$/, '')}`.toLowerCase();
   } catch {
     return '';
   }
@@ -304,10 +305,10 @@ export function cleanEventSummary(value = '', title = '', eventId = '') {
   const normalized = normalizeComparableText(text);
   const normalizedTitle = normalizeComparableText(title);
   const labelIsSelfLink = normalized === normalizedTitle ||
-    normalized === normalizedTitle + ' en eventos.aldeapucela.org' ||
+    normalized === `${normalizedTitle} en eventos.aldeapucela.org` ||
     normalized === 'ver el evento en la web';
   const urlIsSelfLink = eventId && new RegExp(
-    'https?:\\\\/\\\\/eventos\\\\.aldeapucela\\\\.org\\\\/e\\\\/' + String(eventId) + '(?:\\\\/|\\\\b)',
+    `https?:\\/\\/eventos\\.aldeapucela\\.org\\/e\\/${String(eventId)}(?:\\/|\\b)`,
     'i'
   ).test(original);
   return labelIsSelfLink || urlIsSelfLink ? '' : text;

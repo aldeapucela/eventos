@@ -122,7 +122,10 @@ export function topicSignature(topic) {
   return [
     topic.id,
     topic.slug,
-    topic.last_posted_at,
+    // Las ediciones del primer post pueden no cambiar last_posted_at. Algunas
+    // instalaciones/proyecciones de Discourse sí exponen updated_at; cuando
+    // no lo hacen conservamos el campo anterior como fallback.
+    topic.updated_at || topic.last_posted_at,
     topic.image_url || '',
     topic.event_starts_at || '',
     topic.event_ends_at || ''
@@ -141,7 +144,7 @@ export function normalizeDiscourseTopic(topic, detail) {
   const startsAt = event.starts_at || topic.event_starts_at || null;
   const endsAt = event.ends_at || topic.event_ends_at || null;
   const lines = extractParagraphLines(rawHtml);
-  const ownEventUrl = 'https://eventos.aldeapucela.org/e/' + topic.id + '/' + slug + '/';
+  const ownEventUrl = `https://eventos.aldeapucela.org/e/${topic.id}/${slug}/`;
   const eventDescriptionText = normalizeEventDescriptionText(event.description, title, ownEventUrl);
   const summary = normalizeEventSummary(eventDescriptionText || extractSummary(lines, title));
   const descriptionHtml = resolveDescriptionHtml(rawHtml, title, event.description_html, event.description, ownEventUrl);
@@ -232,6 +235,22 @@ function normalizeEventSummary(value = '') {
   return String(value || '').replace(/\s+/g, ' ').trim();
 }
 
+function normalizeEventDescriptionText(value = '', title = '', eventUrl = '') {
+  const candidate = String(value || '').trim();
+  if (!candidate) return '';
+  const html = /<[^>]+>/.test(candidate) ? candidate : buildTextParagraphHtml(candidate);
+  const text = extractParagraphLines(cleanDescriptionHtml(html, title, eventUrl)).join(' ').trim();
+  const normalized = normalizeComparableText(text);
+  const normalizedTitle = normalizeComparableText(title);
+  if (
+    !normalized ||
+    normalized === normalizedTitle ||
+    normalized === `${normalizedTitle} en eventos.aldeapucela.org` ||
+    normalized === 'ver el evento en la web'
+  ) return '';
+  return text;
+}
+
 function resolveDescriptionHtml(rawHtml, title, eventDescriptionHtml = '', eventDescription = '', eventUrl = '') {
   const cleanedEventHtml = String(eventDescriptionHtml || '').trim();
   if (cleanedEventHtml) {
@@ -246,23 +265,6 @@ function resolveDescriptionHtml(rawHtml, title, eventDescriptionHtml = '', event
 
   return cleanDescriptionHtml(rawHtml, title, eventUrl);
 }
-
-function normalizeEventDescriptionText(value = '', title = '', eventUrl = '') {
-  const candidate = String(value || '').trim();
-  if (!candidate) return '';
-  const html = /<[^>]+>/.test(candidate) ? candidate : buildTextParagraphHtml(candidate);
-  const text = extractParagraphLines(cleanDescriptionHtml(html, title, eventUrl)).join(' ').trim();
-  const normalized = normalizeComparableText(text);
-  const normalizedTitle = normalizeComparableText(title);
-  if (
-    !normalized ||
-    normalized === normalizedTitle ||
-    normalized === normalizedTitle + ' en eventos.aldeapucela.org' ||
-    normalized === 'ver el evento en la web'
-  ) return '';
-  return text;
-}
-
 
 export function normalizeDetailToRecord(topic, detail) {
   const normalized = normalizeDiscourseTopic(topic, detail);
@@ -280,7 +282,7 @@ function extractSummary(lines, title) {
     const lower = normalizeComparableText(line);
     if (lower === normalizedTitle) return [];
     if (lower === 'ver el evento en la web') return [];
-    if (lower === normalizedTitle + ' en eventos.aldeapucela.org') return [];
+    if (lower === `${normalizedTitle} en eventos.aldeapucela.org`) return [];
     if (lower.startsWith('categoría:') || lower.startsWith('organizador:') || lower.startsWith('notas:')) return [];
     if (line.length < 24) return [];
     return [line];

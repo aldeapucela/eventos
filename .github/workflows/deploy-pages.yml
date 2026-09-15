@@ -7,6 +7,11 @@ on:
   schedule:
     - cron: '*/15 * * * *'
   workflow_dispatch:
+    inputs:
+      refresh_event_id:
+        description: 'ID del tema de Discourse que se debe releer'
+        required: false
+        type: string
 
 permissions:
   contents: read
@@ -84,6 +89,8 @@ jobs:
         run: npm ci
 
       - name: Build static site
+        env:
+          EVENT_REFRESH_IDS: ${{ inputs.refresh_event_id }}
         run: npm run build
 
       - name: Validate cache health

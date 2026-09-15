@@ -6,33 +6,23 @@ import { ensureCacheDirs, readIndex, writeCachedTopic, writeIndex } from '../src
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const CACHE_SCHEMA_VERSION = 3;
-// El listado de la categoría no cambia (last_posted_at, bumped_at...) cuando se
-// edita el post de un evento, así que la firma no detecta ediciones: hay que
-// volver a pedir el detalle cada cierto tiempo.
-// ponytail: TTL sobre los eventos próximos en vez de detectar ediciones de
-// verdad; Discourse no expone la fecha de edición en el listado y refrescar los
-// ~1.400 eventos de la categoría en cada build no cabe en el límite del foro.
-const REVALIDATE_AFTER_MS = 6 * 60 * 60 * 1000;
-const REVALIDATE_WINDOW_MS = 14 * 24 * 60 * 60 * 1000;
-const PAST_EVENT_GRACE_MS = 24 * 60 * 60 * 1000;
 const FETCH_PAUSE_MS = 400;
 const cacheDataDir = path.join(root, 'cache', 'data');
 const cacheRawDir = path.join(root, 'cache', 'raw');
 
-export function needsRevalidation(cached, topic, now = Date.now()) {
-  const startsAt = Date.parse(topic?.event_starts_at ?? '');
-  const rawEndsAt = Date.parse(topic?.event_ends_at ?? '');
-  const endsAt = Number.isFinite(rawEndsAt) ? rawEndsAt : startsAt;
+export function normalizeRefreshTopicIds(value = []) {
+  const values = value instanceof Set
+    ? [...value]
+    : Array.isArray(value)
+      ? value
+      : String(value || '').split(/[\s,]+/);
+  return new Set(values
+    .map((id) => String(id ?? '').trim())
+    .filter((id) => /^\d+$/.test(id)));
+}
 
-  // Los eventos ya celebrados no vuelven a cambiar: se quedan cacheados.
-  if (Number.isFinite(endsAt) && endsAt < now - PAST_EVENT_GRACE_MS) return false;
-  // Los muy lejanos se refrescan al entrar en la ventana, no antes.
-  if (Number.isFinite(startsAt) && startsAt > now + REVALIDATE_WINDOW_MS) return false;
-
-  const fetchedAt = Date.parse(cached?.fetchedAt ?? '');
-  if (!Number.isFinite(fetchedAt)) return true;
-
-  return now - fetchedAt > REVALIDATE_AFTER_MS;
+export function shouldRefreshTopic(topicId, refreshTopicIds) {
+  return normalizeRefreshTopicIds(refreshTopicIds).has(String(topicId));
 }
 
 async function removeOrphanedCacheFiles(knownTopicIds) {
@@ -53,10 +43,11 @@ async function removeOrphanedCacheFiles(knownTopicIds) {
   }
 }
 
-export async function syncEvents({ rebuild = false } = {}) {
+export async function syncEvents({ rebuild = false, refreshTopicIds = [] } = {}) {
   await ensureCacheDirs();
   const index = await readIndex();
   const topics = await fetchCategoryTopics();
+  const forcedRefreshIds = normalizeRefreshTopicIds(refreshTopicIds);
   const nextIndex = { topics: {} };
   const normalized = [];
   const seenIds = new Set();
@@ -68,10 +59,10 @@ export async function syncEvents({ rebuild = false } = {}) {
     const signature = topicSignature(topic);
     const cached = index.topics?.[topic.id];
     const unchanged = !rebuild &&
+      !forcedRefreshIds.has(String(topic.id)) &&
       cached &&
       cached.signature === signature &&
-      cached.schemaVersion === CACHE_SCHEMA_VERSION &&
-      !needsRevalidation(cached, topic);
+      cached.schemaVersion === CACHE_SCHEMA_VERSION;
 
     if (unchanged) {
       const cachedPath = path.join(root, 'cache', 'data', `${topic.id}.json`);

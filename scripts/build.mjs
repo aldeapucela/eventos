@@ -17,7 +17,7 @@ import { getHorizonWindow, getOpenEndedWindow, getTimePages, isWeekendDayKey, re
 import { getCategoryPages, mappedCategoryLabels } from '../src/data/category-pages.mjs';
 import { getVenuePages } from '../src/data/venue-pages.mjs';
 import { canonicalizeCategory } from '../src/data/category-aliases.mjs';
-import { syncEvents } from './sync-lib.mjs';
+import { normalizeRefreshTopicIds, syncEvents } from './sync-lib.mjs';
 
 // Días que lista "Próximos eventos" en la portada. home.js lo lee de
 // data-horizon-days para no duplicar el número.
@@ -414,11 +414,17 @@ function enrichEvent(event) {
 // del cartel y de las líneas de metadatos, y solo se re-normalizan si cambia su
 // firma en el foro. Es idempotente.
 function resolveEventDescriptionHtml(event) {
-  const eventUrl = new URL(event.urlPath || ('/e/' + event.id + '/' + event.slug + '/'), publicBaseUrl).href;
+  const eventUrl = toAbsoluteUrl(event.urlPath || `/e/${event.id}/${event.slug}/`);
   const cleaned = cleanDescriptionHtml(event.descriptionHtml || '', event.title || '', eventUrl);
   if (cleaned) return cleaned;
   const fallback = String(event.summary || event.excerpt || '').trim();
   return fallback ? buildTextParagraphHtml(fallback) : '';
+}
+
+function resolveEventSummary(event, descriptionHtml) {
+  return cleanEventSummary(event.summary, event.title, event.id) ||
+    cleanEventSummary(event.excerpt, event.title, event.id) ||
+    buildExcerpt(descriptionHtml, 240);
 }
 
 // `priceStatus` también se recalcula aquí, con el precio y la descripción ya
@@ -429,12 +435,6 @@ function resolveEventDescriptionHtml(event) {
 // Los registros cacheados antes de que `price` existiera todavía llevan la
 // línea "Precio:" dentro de descriptionHtml: se rescata de ahí en vez de
 // refetchear el foro entero.
-function resolveEventSummary(event, descriptionHtml) {
-  return cleanEventSummary(event.summary, event.title, event.id) ||
-    cleanEventSummary(event.excerpt, event.title, event.id) ||
-    buildExcerpt(descriptionHtml, 240);
-}
-
 function resolveEventPrice(event) {
   const stored = normalizePriceLabel(event.price || '');
   if (stored) return stored;
@@ -1284,7 +1284,12 @@ async function buildSite(events) {
 
 async function main() {
   await ensureDirs();
-  const events = args.has('--rebuild') ? (await loadCachedEvents()).events : await syncEvents({ rebuild: false });
+  const events = args.has('--rebuild')
+    ? (await loadCachedEvents()).events
+    : await syncEvents({
+      rebuild: false,
+      refreshTopicIds: normalizeRefreshTopicIds(process.env.EVENT_REFRESH_IDS)
+    });
   await buildSite(events);
 }
 
