@@ -1,7 +1,7 @@
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { fetchCategoryTopics, fetchTopicDetail, normalizeDetailToRecord, shouldSkipTopic, sleep, topicSignature } from '../src/data/discourse.mjs';
+import { fetchCategoryTopics, fetchTopicDetail, firstPostUpdatedAt, normalizeDetailToRecord, shouldSkipTopic, sleep, topicSignature } from '../src/data/discourse.mjs';
 import { ensureCacheDirs, readIndex, writeCachedTopic, writeIndex } from '../src/data/store.mjs';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
@@ -87,6 +87,7 @@ export async function syncEvents({ rebuild = false, refreshTopicIds = [] } = {})
       signature,
       schemaVersion: CACHE_SCHEMA_VERSION,
       fetchedAt: new Date().toISOString(),
+      postUpdatedAt: firstPostUpdatedAt(detail),
       detailPath: `/t/${topic.slug}/${topic.id}.json`,
       normalizedPath: `/cache/data/${topic.id}.json`
     };

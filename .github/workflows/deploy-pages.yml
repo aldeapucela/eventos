@@ -29,6 +29,8 @@ jobs:
     outputs:
       changed: ${{ steps.detect.outputs.changed }}
       digest: ${{ steps.detect.outputs.digest }}
+      refresh_ids: ${{ steps.detect.outputs.refresh_ids }}
+      recent_post_state: ${{ steps.detect.outputs.recent_post_state }}
 
     steps:
       - name: Checkout repository
@@ -38,6 +40,16 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 20
+
+      # El detector usa esta caché solo para comparar el updated_at guardado
+      # con una muestra acotada de primeros posts. No reconstruye los eventos.
+      - name: Restore events data cache for edit detection
+        uses: actions/cache/restore@v4
+        with:
+          path: cache
+          key: events-data-${{ runner.os }}-${{ github.run_id }}
+          restore-keys: |
+            events-data-${{ runner.os }}-
 
       - name: Restore previous signature state
         id: restore-state
@@ -90,7 +102,7 @@ jobs:
 
       - name: Build static site
         env:
-          EVENT_REFRESH_IDS: ${{ inputs.refresh_event_id }}
+          EVENT_REFRESH_IDS: "${{ inputs.refresh_event_id }} ${{ needs.detect-changes.outputs.refresh_ids }}"
         run: npm run build
 
       - name: Validate cache health
@@ -115,9 +127,14 @@ jobs:
         uses: actions/deploy-pages@v4
 
       - name: Confirm deployed signature state
+        env:
+          RECENT_POST_STATE: ${{ needs.detect-changes.outputs.recent_post_state }}
         run: |
           mkdir -p .ci-state
           printf '%s\n' '${{ needs.detect-changes.outputs.digest }}' > .ci-state/events-signature.txt
+          if [ -n "$RECENT_POST_STATE" ]; then
+            printf '%s' "$RECENT_POST_STATE" | base64 --decode > .ci-state/recent-post-signatures.json
+          fi
 
       - name: Save deployed signature state
         uses: actions/cache/save@v4

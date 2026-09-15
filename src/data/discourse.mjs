@@ -132,6 +132,12 @@ export function topicSignature(topic) {
   ].join('|');
 }
 
+export function firstPostUpdatedAt(detail) {
+  const posts = detail?.post_stream?.posts ?? [];
+  const firstPost = posts.find((post) => post?.post_number === 1) || posts[0];
+  return firstPost?.updated_at || firstPost?.created_at || '';
+}
+
 export function normalizeDiscourseTopic(topic, detail) {
   const detailPost = detail?.post_stream?.posts?.[0];
   const event = detailPost?.event || {};
@@ -197,7 +203,7 @@ export function normalizeDiscourseTopic(topic, detail) {
     isFree: priceStatus === 'free',
     isPaid: priceStatus === 'paid',
     publishedAt: topic.created_at || detailPost?.created_at || detail?.created_at || '',
-    updatedAt: topic.last_posted_at || detailPost?.updated_at || topic.created_at || ''
+    updatedAt: detailPost?.updated_at || topic.updated_at || topic.last_posted_at || topic.created_at || ''
   };
 }
 

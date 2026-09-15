@@ -1,72 +1,151 @@
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import crypto from 'node:crypto';
+import { pathToFileURL } from 'node:url';
+import {
+  fetchCategoryTopics,
+  fetchJson,
+  fetchTopicDetail,
+  firstPostUpdatedAt,
+  FORUM_BASE,
+  shouldSkipTopic,
+  sleep,
+  topicSignature as dataTopicSignature
+} from '../src/data/discourse.mjs';
+import { readIndex } from '../src/data/store.mjs';
 
-const CATEGORY_URL = 'https://foro.aldeapucela.org/c/eventos/6.json';
-const FORUM_BASE = 'https://foro.aldeapucela.org';
 const STATE_DIR = path.resolve('.ci-state');
 const STATE_FILE = path.join(STATE_DIR, 'events-signature.txt');
-
-async function fetchJson(url) {
-  const response = await fetch(url, {
-    headers: {
-      'User-Agent': 'AldeaPucelaEventosCheck/1.0'
-    }
-  });
-
-  if (!response.ok) {
-    throw new Error(`Failed to fetch ${url}: ${response.status} ${response.statusText}`);
-  }
-
-  return response.json();
-}
+const RECENT_POST_STATE_FILE = path.join(STATE_DIR, 'recent-post-signatures.json');
+const RAW_CACHE_DIR = path.resolve('cache', 'raw');
+const PROBE_INTERVAL_MS = 15 * 60 * 1000;
+const PROBE_BATCH_SIZE = Math.max(1, Number(process.env.EVENT_EDIT_PROBE_BATCH_SIZE || 20));
+const PROBE_PAUSE_MS = 300;
+const PAST_EVENT_GRACE_MS = 24 * 60 * 60 * 1000;
+const RECENT_POST_SEARCH_URL = `${FORUM_BASE}/search.json?q=${encodeURIComponent('category:eventos in:first order:latest')}`;
 
 function topicSignature(topic) {
   return [
-    topic.id,
-    topic.slug,
-    topic.updated_at || topic.last_posted_at,
-    topic.image_url || '',
-    topic.event_starts_at || '',
-    topic.event_ends_at || '',
+    dataTopicSignature(topic),
     topic.visible ? '1' : '0',
     topic.pinned ? '1' : '0'
   ].join('|');
 }
 
-function shouldSkipTopic(topic) {
-  return !topic?.event_starts_at || !topic?.visible || topic?.pinned || topic?.title === 'Acerca de esta categoría y cómo añadir eventos';
+export function isCurrentOrFutureEvent(topic, now = Date.now()) {
+  if (shouldSkipTopic(topic)) return false;
+  const startsAt = Date.parse(topic?.event_starts_at || '');
+  const rawEndsAt = Date.parse(topic?.event_ends_at || '');
+  const endsAt = Number.isFinite(rawEndsAt) ? rawEndsAt : startsAt;
+  return Number.isFinite(endsAt) && endsAt >= now - PAST_EVENT_GRACE_MS;
 }
 
-function toJsonUrl(url) {
-  const parsed = new URL(url);
-  if (!parsed.pathname.endsWith('.json')) {
-    parsed.pathname = `${parsed.pathname.replace(/\/$/, '')}.json`;
+export function selectEditProbeBatch(topics, now = Date.now(), limit = PROBE_BATCH_SIZE) {
+  const candidates = topics
+    .filter((topic) => isCurrentOrFutureEvent(topic, now))
+    .sort((left, right) => Number(left.id) - Number(right.id));
+
+  if (candidates.length <= limit) return candidates;
+
+  const batchCount = Math.ceil(candidates.length / limit);
+  const timeBucket = Math.floor(now / PROBE_INTERVAL_MS);
+  const batchIndex = ((timeBucket % batchCount) + batchCount) % batchCount;
+  return candidates.slice(batchIndex * limit, (batchIndex + 1) * limit);
+}
+
+async function readCachedPostUpdatedAt(topicId, index) {
+  const indexedValue = index.topics?.[topicId]?.postUpdatedAt;
+  if (indexedValue) return indexedValue;
+
+  try {
+    const raw = JSON.parse(await fs.readFile(path.join(RAW_CACHE_DIR, `${topicId}.json`), 'utf8'));
+    return firstPostUpdatedAt(raw);
+  } catch {
+    return '';
   }
-  return parsed.toString();
 }
 
-async function fetchAllTopics() {
-  const topics = [];
-  const seen = new Set();
-  let nextUrl = CATEGORY_URL;
+async function findEditedTopicIds(topics, now = Date.now()) {
+  const index = await readIndex();
+  const selected = selectEditProbeBatch(topics, now);
+  const editedIds = [];
+  let fetched = 0;
 
-  while (nextUrl) {
-    const json = await fetchJson(nextUrl);
-    const pageTopics = json.topic_list?.topics ?? [];
-
-    for (const topic of pageTopics) {
-      if (!seen.has(topic.id)) {
-        seen.add(topic.id);
-        topics.push(topic);
-      }
+  for (const topic of selected) {
+    const cachedUpdatedAt = await readCachedPostUpdatedAt(topic.id, index);
+    // Una entrada incompleta también se repara de forma selectiva.
+    if (!cachedUpdatedAt) {
+      editedIds.push(String(topic.id));
+      continue;
     }
 
-    const moreTopicsUrl = json.topic_list?.more_topics_url || null;
-    nextUrl = moreTopicsUrl ? toJsonUrl(`${FORUM_BASE}${moreTopicsUrl}`) : null;
+    if (fetched > 0) await sleep(PROBE_PAUSE_MS);
+    fetched += 1;
+    const detail = await fetchTopicDetail(topic.slug, topic.id);
+    const currentUpdatedAt = firstPostUpdatedAt(detail);
+    if (currentUpdatedAt && currentUpdatedAt !== cachedUpdatedAt) {
+      editedIds.push(String(topic.id));
+    }
   }
 
-  return topics;
+  return { candidateCount: topics.filter((topic) => isCurrentOrFutureEvent(topic, now)).length, editedIds, fetched, selected };
+}
+
+function recentPostSignature(post) {
+  return crypto.createHash('sha256').update([
+    post.id,
+    post.topic_id,
+    post.blurb || ''
+  ].join('|')).digest('hex');
+}
+
+async function readRecentPostState() {
+  try {
+    return JSON.parse(await fs.readFile(RECENT_POST_STATE_FILE, 'utf8'));
+  } catch {
+    return { posts: {} };
+  }
+}
+
+export function diffRecentPostSignatures(previousState, posts, cachedTopicIds = new Set()) {
+  const previous = previousState?.posts || {};
+  const current = {};
+  const editedIds = [];
+  const hasBaseline = Object.keys(previous).length > 0;
+
+  for (const post of posts) {
+    if (post?.post_number !== 1 || !post?.topic_id) continue;
+    const topicId = String(post.topic_id);
+    const signature = recentPostSignature(post);
+    current[topicId] = signature;
+
+    if (hasBaseline) {
+      if (previous[topicId] && previous[topicId] !== signature) editedIds.push(topicId);
+    } else if (cachedTopicIds.has(topicId)) {
+      // Primera ejecución tras desplegar el detector: refresca una sola vez los
+      // 50 eventos más recientes para corregir ediciones que ya estaban ocultas
+      // por la caché anterior (incluido Vecivall), no los 1.500 temas.
+      editedIds.push(topicId);
+    }
+  }
+
+  return {
+    currentState: { posts: current },
+    editedIds,
+    stateChanged: JSON.stringify(previous) !== JSON.stringify(current)
+  };
+}
+
+async function findRecentlyEditedTopicIds(index) {
+  const [search, previousState] = await Promise.all([
+    fetchJson(RECENT_POST_SEARCH_URL),
+    readRecentPostState()
+  ]);
+  return diffRecentPostSignatures(
+    previousState,
+    search.posts || [],
+    new Set(Object.keys(index.topics || {}))
+  );
 }
 
 function madridDateKey() {
@@ -105,10 +184,14 @@ async function writeCurrentDigest(digest) {
 }
 
 async function main() {
-  const topics = await fetchAllTopics();
+  const topics = await fetchCategoryTopics();
   const digest = computeDigest(topics);
   const previous = await readPreviousDigest();
-  const changed = previous !== digest;
+  const index = await readIndex();
+  const recent = await findRecentlyEditedTopicIds(index);
+  const probe = await findEditedTopicIds(topics);
+  const editedIds = [...new Set([...recent.editedIds, ...probe.editedIds])];
+  const changed = previous !== digest || recent.stateChanged || editedIds.length > 0;
 
   await writeCurrentDigest(digest);
 
@@ -116,13 +199,21 @@ async function main() {
   if (outputPath) {
     await fs.appendFile(outputPath, `changed=${changed}\n`);
     await fs.appendFile(outputPath, `digest=${digest}\n`);
+    await fs.appendFile(outputPath, `refresh_ids=${editedIds.join(',')}\n`);
+    await fs.appendFile(outputPath, `recent_post_state=${Buffer.from(JSON.stringify(recent.currentState)).toString('base64')}\n`);
   }
 
   console.log(`topics=${topics.length}`);
+  console.log(`current-or-future-topics=${probe.candidateCount}`);
+  console.log(`edit-probes=${probe.fetched}/${probe.selected.length}`);
+  console.log(`recent-post-signatures=${Object.keys(recent.currentState.posts).length}`);
+  console.log(`edited-topics=${editedIds.join(',') || 'none'}`);
   console.log(`changed=${changed}`);
 }
 
-main().catch((error) => {
-  console.error(error);
-  process.exit(1);
-});
+if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
+  main().catch((error) => {
+    console.error(error);
+    process.exit(1);
+  });
+}
