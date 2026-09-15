@@ -1,7 +1,9 @@
 const API_URL = 'https://api.aldeapucela.org/eventos/saves';
 const DEV_API_URL = '/__mock_api/eventos/saves';
 const METRICS_CACHE_KEY = 'aldeapucela_event_metrics_v1';
-const METRICS_CACHE_TTL_MS = 5 * 60 * 1000;
+// Keep the browser cache aligned with the 15-minute Nginx cache used by the
+// public metrics endpoint. Warm clients can render without another API call.
+const METRICS_CACHE_TTL_MS = 15 * 60 * 1000;
 const SAVED_EVENTS_KEY = 'aldeapucela_saved_events';
 const COUNTED_SAVES_KEY = 'aldeapucela_counted_saves_v1';
 const MIGRATION_KEY = 'aldeapucela_counted_saves_migrated_v1';
