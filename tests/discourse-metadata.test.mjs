@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { normalizeDiscourseTopic } from '../src/data/discourse.mjs';
 import { buildEventJsonLd } from '../src/data/structured-data.mjs';
 
-function normalize(customFields = {}, cooked = '', eventLocation = 'Sala Porta Caeli, Calle Mariano de los Cobos 1') {
+function normalize(customFields = {}, cooked = '', eventLocation = 'Sala Porta Caeli, Calle Mariano de los Cobos 1', eventName = 'Concierto en Valladolid') {
   const topic = {
     id: 9001,
     slug: 'concierto-en-valladolid',
@@ -16,7 +16,7 @@ function normalize(customFields = {}, cooked = '', eventLocation = 'Sala Porta C
       posts: [{
         cooked,
         event: {
-          name: topic.title,
+          name: eventName,
           starts_at: topic.event_starts_at,
           location: eventLocation,
           custom_fields: customFields
@@ -26,6 +26,12 @@ function normalize(customFields = {}, cooked = '', eventLocation = 'Sala Porta C
   };
   return normalizeDiscourseTopic(topic, detail);
 }
+
+test('decodifica entidades HTML del nombre estructurado de Discourse', () => {
+  const event = normalize({}, '', 'Sala Porta Caeli', 'Kenny &quot;Blues Boss&quot; Wayne (Concierto)');
+
+  assert.equal(event.title, 'Kenny "Blues Boss" Wayne (Concierto)');
+});
 
 test('prefiere los metadatos del evento de Discourse y valida coordenadas y URL de entradas', () => {
   const event = normalize({

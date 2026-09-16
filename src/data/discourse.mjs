@@ -145,7 +145,10 @@ export function normalizeDiscourseTopic(topic, detail) {
   const rawHtml = detailPost?.cooked || '';
   const meta = parseEventMetaFromHtml(rawHtml);
   const image = normalizeImage(topic.image_url || detail?.image_url || detail?.thumbnails?.[0]?.url || null);
-  const title = event.name || topic.title || detail?.title || '';
+  // Discourse devuelve a veces los atributos del bloque [event] con entidades
+  // HTML (por ejemplo, &quot;). Decodificamos antes de renderizar: las plantillas
+  // ya escapan el texto una sola vez y así no aparece &amp;quot; en la ficha.
+  const title = decodeHtmlEntities(event.name || topic.title || detail?.title || '');
   const slug = topic.slug || toSlug(title);
   const startsAt = event.starts_at || topic.event_starts_at || null;
   const endsAt = event.ends_at || topic.event_ends_at || null;
