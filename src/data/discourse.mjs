@@ -198,6 +198,7 @@ export function normalizeDiscourseTopic(topic, detail) {
     venue,
     address,
     displayLocation,
+    listLocation: buildListLocation(venue, address, location),
     latitude,
     longitude,
     categoryLabel,
@@ -240,6 +241,14 @@ export function buildDisplayLocation(venue, address, fallback = '') {
     return `${cleanVenue} · ${cleanAddress}`;
   }
   return cleanVenue || cleanAddress || String(fallback || '').replace(/\s+/g, ' ').trim();
+}
+
+// Las tarjetas y listados necesitan una etiqueta corta: si conocemos el
+// recinto, la dirección completa se reserva para la ficha individual.
+export function buildListLocation(venue, address, fallback = '') {
+  const cleanVenue = String(venue || '').replace(/\s+/g, ' ').trim();
+  if (cleanVenue) return cleanVenue;
+  return String(address || fallback || '').replace(/\s+/g, ' ').trim();
 }
 
 function readEventCustomField(fields, name) {

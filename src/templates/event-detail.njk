@@ -225,7 +225,7 @@
               <div class="event-compact-copy">
                 <p class="event-compact-topline"><span>{{ related.scheduleLabel }}</span></p>
                 <h4 class="event-compact-title"><a href="{{ related.urlPath }}">{{ related.title }}</a></h4>
-                <p class="event-compact-meta">{{ related.displayLocation or related.location }}</p>
+                <p class="event-compact-meta">{{ related.listLocation or related.location or related.address }}</p>
                 <div class="event-compact-badges">
                   <span class="compact-badge">{{ related.categoryLabel or 'Evento' }}</span>
                   {% if related.isFree %}<span class="compact-badge compact-badge-success">Gratis</span>{% endif %}
@@ -262,7 +262,7 @@
               <div class="event-compact-copy">
                 <p class="event-compact-topline"><span>{{ related.scheduleLabel }}</span></p>
                 <h4 class="event-compact-title"><a href="{{ related.urlPath }}">{{ related.title }}</a></h4>
-                <p class="event-compact-meta">{{ related.displayLocation or related.location }}</p>
+                <p class="event-compact-meta">{{ related.listLocation or related.location or related.address }}</p>
                 <div class="event-compact-badges">
                   <span class="compact-badge">{{ related.categoryLabel or 'Evento' }}</span>
                   {% if related.isFree %}<span class="compact-badge compact-badge-success">Gratis</span>{% endif %}

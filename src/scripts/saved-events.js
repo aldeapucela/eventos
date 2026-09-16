@@ -140,7 +140,7 @@ function renderCard(event) {
             <span>${schedule}</span>
           </div>
           <h3 class="event-compact-title"><a href="${event.urlPath}">${event.title || ''}</a></h3>
-          <p class="event-compact-meta">${event.displayLocation || event.location || event.address || ''}</p>
+          <p class="event-compact-meta">${event.listLocation || event.location || event.address || ''}</p>
           <div class="event-compact-badges">
             <span class="compact-badge">${event.categoryLabel || 'Evento'}</span>
             ${event.isFree ? '<span class="compact-badge compact-badge-success">Gratis</span>' : ''}

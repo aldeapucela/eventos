@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { normalizeDiscourseTopic } from '../src/data/discourse.mjs';
+import { buildListLocation, normalizeDiscourseTopic } from '../src/data/discourse.mjs';
 import { buildEventJsonLd } from '../src/data/structured-data.mjs';
 
 function normalize(customFields = {}, cooked = '', eventLocation = 'Sala Porta Caeli, Calle Mariano de los Cobos 1', eventName = 'Concierto en Valladolid') {
@@ -65,6 +65,12 @@ test('mantiene nombre y dirección separados y solo los combina para mostrar', (
   assert.equal(event.venue, 'Sala Porta Caeli');
   assert.equal(event.address, 'Calle Mariano de los Cobos 1');
   assert.equal(event.displayLocation, 'Sala Porta Caeli · Calle Mariano de los Cobos 1');
+});
+
+test('usa solo el recinto en listados y la dirección si no hay recinto', () => {
+  assert.equal(buildListLocation('Sala Porta Caeli', 'Calle Mariano de los Cobos 1'), 'Sala Porta Caeli');
+  assert.equal(buildListLocation('', 'Calle Mariano de los Cobos 1'), 'Calle Mariano de los Cobos 1');
+  assert.equal(buildListLocation('', '', 'Lugar pendiente'), 'Lugar pendiente');
 });
 
 test('corrige la dirección histórica que repetía la ubicación completa', () => {

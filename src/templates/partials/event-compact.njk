@@ -8,7 +8,7 @@
       <span>{% if cardWithYear and event.detailScheduleLabel %}{{ event.detailScheduleLabel }}{% elif event.scheduleLabel %}{{ event.scheduleLabel }}{% else %}{{ event.compactDateLabel or '' }}{% if event.timeLabel %} · {{ event.timeLabel }}{% endif %}{% endif %}</span>
     </div>
     <h4 class="event-compact-title"><a href="{{ event.urlPath }}">{{ event.title or '' }}</a></h4>
-    <p class="event-compact-meta">{{ event.displayLocation or event.location or '' }}</p>
+    <p class="event-compact-meta">{{ event.listLocation or event.location or event.address or '' }}</p>
     <div class="event-compact-badges">
       <span class="compact-badge">{{ event.categoryLabel or 'Evento' }}</span>
       {% if event.isFree %}<span class="compact-badge compact-badge-success">Gratis</span>{% endif %}

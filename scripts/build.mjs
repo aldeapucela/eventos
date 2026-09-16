@@ -7,7 +7,7 @@ import tailwindcss from 'tailwindcss';
 import autoprefixer from 'autoprefixer';
 import { fileURLToPath } from 'node:url';
 import { loadCachedEvents } from '../src/data/store.mjs';
-import { buildDisplayLocation, parseLocationParts } from '../src/data/discourse.mjs';
+import { buildDisplayLocation, buildListLocation, parseLocationParts } from '../src/data/discourse.mjs';
 import { deriveFilters, sortEvents, splitFeatured, getPastEvents, groupEventsByMonth, groupFutureEventsByVenue, rotateBySeed } from '../src/data/site.mjs';
 import { DISPLAY_TIMEZONE, buildExcerpt, buildTextParagraphHtml, cleanDescriptionHtml, cleanEventSummary, detectPriceStatus, escapeHtml, formatDateRange, formatDateTime, isSameMadridDay, normalizeComparableText, normalizePriceLabel, parseDateLike, parseEventMetaFromHtml, stripTags, toMadridDateKey } from '../src/data/format.mjs';
 import { areAddressesCompatible, enrichVenueCatalog, mergeSpacesWithVenueCatalog } from '../src/data/venues.mjs';
@@ -330,6 +330,7 @@ function enrichEvent(event) {
       : rawAddress)
     : parsedLocation.venueAddress;
   const displayLocation = buildDisplayLocation(venue, address, rawLocation);
+  const listLocation = buildListLocation(venue, address, rawLocation);
   const descriptionHtml = resolveEventDescriptionHtml(event);
   const summary = resolveEventSummary(event, descriptionHtml);
   const price = resolveEventPrice(event);
@@ -369,6 +370,7 @@ function enrichEvent(event) {
     venue,
     address,
     displayLocation,
+    listLocation,
     startsAtLabel: formatDateTime(event.startsAt),
     endsAtLabel: event.endsAt ? formatDateTime(event.endsAt) : '',
     endsAtDayLabel: event.endsAt
@@ -546,6 +548,7 @@ function buildPopularSiteDataPayload(events) {
       timeLabel: event.timeLabel,
       location: event.location,
       displayLocation: event.displayLocation,
+      listLocation: event.listLocation,
       venueLabel: event.venueLabel,
       startsAtIso: event.startsAt,
       endsAtIso: event.endsAt

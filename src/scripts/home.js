@@ -1198,7 +1198,7 @@ function renderWeekItem(event) {
             <span>${event.scheduleLabel || `${event.compactDateLabel || ''}${event.timeLabel ? ` · ${event.timeLabel}` : ''}`}</span>
           </div>
           <h4 class="event-compact-title"><a href="${event.urlPath}">${event.title || ''}</a></h4>
-          <p class="event-compact-meta">${event.displayLocation || event.location || event.address || ''}</p>
+          <p class="event-compact-meta">${event.listLocation || event.location || event.address || ''}</p>
           <div class="event-compact-badges">
             <span class="compact-badge">${event.categoryLabel || 'Evento'}</span>
             ${event.isFree ? '<span class="compact-badge compact-badge-success">Gratis</span>' : ''}

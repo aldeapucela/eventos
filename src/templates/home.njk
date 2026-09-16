@@ -49,7 +49,7 @@
             <p class="featured-mobile-summary">{{ featured.summary or featured.excerpt }}</p>
             <div class="featured-mobile-meta">
               <span>{% if featured.scheduleLabel %}{{ featured.scheduleLabel }}{% else %}{{ featured.dateRangeLabel }}{% endif %}</span>
-              {% if featured.displayLocation or featured.location %}<span>{{ featured.displayLocation or featured.location }}</span>{% endif %}
+            {% if featured.listLocation or featured.location or featured.address %}<span>{{ featured.listLocation or featured.location or featured.address }}</span>{% endif %}
             </div>
             {% if featured.isFree %}
             <span class="compact-badge compact-badge-success">Entrada libre</span>
@@ -81,7 +81,7 @@
               <div class="event-compact-copy">
                 <p class="event-compact-topline"><span>{% if event.endsAtDayLabel %}Hasta {{ event.endsAtDayLabel }}{% else %}{% if event.scheduleLabel %}{{ event.scheduleLabel }}{% else %}{{ event.compactDateLabel }}{% if event.timeLabel %} · {{ event.timeLabel }}{% endif %}{% endif %}{% endif %}</span></p>
                 <h4 class="event-compact-title"><a href="{{ event.urlPath }}">{{ event.title }}</a></h4>
-                <p class="event-compact-meta">{{ event.displayLocation or event.location }}</p>
+                <p class="event-compact-meta">{{ event.listLocation or event.location or event.address }}</p>
                 <div class="event-compact-badges">
                   <span class="compact-badge">{{ event.categoryLabel or 'Evento' }}</span>
                   {% if event.isFree %}<span class="compact-badge compact-badge-success">Gratis</span>{% endif %}
