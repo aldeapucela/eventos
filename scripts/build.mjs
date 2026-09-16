@@ -1149,6 +1149,7 @@ async function buildSite(events) {
       pageH1: page.h1,
       pageH2: page.h2,
       venue: { name: page.canonicalVenue, address: page.address },
+      hideEventLocation: true,
       ongoing: [],
       ongoingGrid,
       flatEvents: upcomingEvents,
