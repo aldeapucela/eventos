@@ -102,7 +102,7 @@ jobs:
 
       - name: Build static site
         env:
-          EVENT_REFRESH_IDS: "2373 ${{ inputs.refresh_event_id }} ${{ needs.detect-changes.outputs.refresh_ids }}"
+          EVENT_REFRESH_IDS: "${{ inputs.refresh_event_id }} ${{ needs.detect-changes.outputs.refresh_ids }}"
         run: npm run build
 
       - name: Validate cache health

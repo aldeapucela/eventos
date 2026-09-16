@@ -7,6 +7,7 @@ import { ensureCacheDirs, readIndex, writeCachedTopic, writeIndex } from '../src
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const CACHE_SCHEMA_VERSION = 3;
 const FETCH_PAUSE_MS = 400;
+const MISSING_CACHE_PROBE_LIMIT = 20;
 const cacheDataDir = path.join(root, 'cache', 'data');
 const cacheRawDir = path.join(root, 'cache', 'raw');
 
@@ -69,6 +70,37 @@ async function addForcedTopicsMissingFromCategory(topics, forcedRefreshIds) {
   return [...topics, ...recovered];
 }
 
+async function recoverCachedTopicsMissingFromCategory(topics, index) {
+  const listedIds = new Set(topics.map((topic) => String(topic.id)));
+  const missing = Object.entries(index.topics || {})
+    .filter(([topicId]) => !listedIds.has(String(topicId)));
+
+  if (missing.length > MISSING_CACHE_PROBE_LIMIT) {
+    throw new Error(`La categoría de Discourse omitió ${missing.length} temas que estaban en caché; se detiene el build para no borrar la caché en masa`);
+  }
+
+  const recovered = [];
+  for (const [topicId, cached] of missing) {
+    if (recovered.length > 0) await sleep(FETCH_PAUSE_MS);
+    let detail;
+    try {
+      detail = await fetchTopicDetail(cached.slug, topicId);
+    } catch (error) {
+      // Un 404 confirma que el tema ya no existe. Otros errores son
+      // transitorios o de red y deben detener el build, no borrar caché.
+      if (/\b404\b/.test(String(error?.message || error))) continue;
+      throw error;
+    }
+
+    const topic = topicFromDetail(detail);
+    if (topic.id && topic.category_id === 6 && !shouldSkipTopic(topic)) {
+      recovered.push(topic);
+    }
+  }
+
+  return [...topics, ...recovered];
+}
+
 async function removeOrphanedCacheFiles(knownTopicIds) {
   for (const dir of [cacheDataDir, cacheRawDir]) {
     let entries = [];
@@ -100,7 +132,8 @@ export async function syncEvents({ rebuild = false, refreshTopicIds = [] } = {})
   await ensureCacheDirs();
   const index = await readIndex();
   const forcedRefreshIds = normalizeRefreshTopicIds(refreshTopicIds);
-  const topics = await addForcedTopicsMissingFromCategory(await fetchCategoryTopics(), forcedRefreshIds);
+  const forcedTopics = await addForcedTopicsMissingFromCategory(await fetchCategoryTopics(), forcedRefreshIds);
+  const topics = await recoverCachedTopicsMissingFromCategory(forcedTopics, index);
   const nextIndex = { topics: {} };
   const normalized = [];
   const seenIds = new Set();
