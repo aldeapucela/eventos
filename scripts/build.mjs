@@ -10,7 +10,7 @@ import { loadCachedEvents } from '../src/data/store.mjs';
 import { buildDisplayLocation, parseLocationParts } from '../src/data/discourse.mjs';
 import { deriveFilters, sortEvents, splitFeatured, getPastEvents, groupEventsByMonth, groupFutureEventsByVenue, rotateBySeed } from '../src/data/site.mjs';
 import { DISPLAY_TIMEZONE, buildExcerpt, buildTextParagraphHtml, cleanDescriptionHtml, cleanEventSummary, detectPriceStatus, escapeHtml, formatDateRange, formatDateTime, isSameMadridDay, normalizeComparableText, normalizePriceLabel, parseDateLike, parseEventMetaFromHtml, stripTags, toMadridDateKey } from '../src/data/format.mjs';
-import { enrichVenueCatalog, mergeSpacesWithVenueCatalog } from '../src/data/venues.mjs';
+import { areAddressesCompatible, enrichVenueCatalog, mergeSpacesWithVenueCatalog } from '../src/data/venues.mjs';
 import { loadVallabusStops, nearbyVallabusStops } from '../src/data/vallabus.mjs';
 import { canonicalizeVenue, normalizeVenueKey } from '../src/data/venue-aliases.mjs';
 import { buildCollectionPageJsonLd, buildEventJsonLd, buildVenuePageJsonLd, serializeJsonLd } from '../src/data/structured-data.mjs';
@@ -482,6 +482,11 @@ function validCoordinatePair(latitude, longitude) {
 function resolveVenueCoordinates(event, venue = {}) {
   const eventCoordinates = validCoordinatePair(event.latitude, event.longitude);
   if (eventCoordinates) return { venueLat: eventCoordinates.latitude, venueLon: eventCoordinates.longitude };
+  const eventAddress = String(event.address || '').trim();
+  const catalogAddress = String(venue.address || '').trim();
+  if (eventAddress && (!catalogAddress || !areAddressesCompatible(eventAddress, catalogAddress))) {
+    return { venueLat: null, venueLon: null };
+  }
   const venueCoordinates = validCoordinatePair(venue.lat, venue.lon);
   return venueCoordinates
     ? { venueLat: venueCoordinates.latitude, venueLon: venueCoordinates.longitude }

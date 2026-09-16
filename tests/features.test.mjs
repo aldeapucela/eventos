@@ -7,6 +7,7 @@ import { loadVallabusStops, normalizeVallabusStops, nearbyVallabusStops } from '
 import { getPopularThresholds, rankPopularEvents } from '../src/scripts/popular-ranking.js';
 import { buildAndroidMapUrl, buildMapProviderHref, getLocationCoordinates } from '../src/scripts/location-link.js';
 import { groupFutureEventsByVenue } from '../src/data/site.mjs';
+import { areAddressesCompatible } from '../src/data/venues.mjs';
 
 test('el enlace Ver en mapa conserva coordenadas y ofrece proveedores en vez de fijar OpenStreetMap', () => {
   const coordinates = getLocationCoordinates({ dataset: { locationLat: '41.65', locationLon: '-4.72' } });
@@ -17,6 +18,12 @@ test('el enlace Ver en mapa conserva coordenadas y ofrece proveedores en vez de 
   assert.equal(buildMapProviderHref('apple', 'Teatro Zorrilla, Valladolid', coordinates), 'https://maps.apple.com/?ll=41.65,-4.72&q=Teatro%20Zorrilla%2C%20Valladolid');
   assert.equal(buildAndroidMapUrl('Teatro Zorrilla, Valladolid', coordinates), 'geo:41.65,-4.72?q=41.65,-4.72(Teatro%20Zorrilla%2C%20Valladolid)');
   assert.equal(buildAndroidMapUrl('Teatro Zorrilla, Valladolid'), 'geo:0,0?q=Teatro%20Zorrilla%2C%20Valladolid');
+});
+
+test('solo reutiliza coordenadas del recinto cuando la dirección es compatible', () => {
+  assert.equal(areAddressesCompatible('Calle Mariano de los Cobos, 1', 'C. Mariano de los Cobos, 1'), true);
+  assert.equal(areAddressesCompatible('Plaza Federico Wattenberg, 1', ''), false);
+  assert.equal(areAddressesCompatible('Plaza Federico Wattenberg, 1', 'Calle Parque Empresarial Monasterio del Prado, 12'), false);
 });
 
 test('normaliza paradas de VallaBus, descarta entradas incompletas y evita duplicados', () => {

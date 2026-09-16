@@ -1,5 +1,6 @@
 import fs from 'node:fs/promises';
 import path from 'node:path';
+import { normalizeComparableText } from './format.mjs';
 import { VENUE_GEO_OVERRIDES } from './venue-aliases.mjs';
 
 const cacheDir = path.resolve('cache');
@@ -117,6 +118,30 @@ export function mergeSpacesWithVenueCatalog(spaces, catalog) {
       geocodeStatus: entry.geocodeStatus || 'pending'
     };
   });
+}
+
+// A venue-level coordinate is only safe for an event when its catalog address
+// describes the same place. Some venues have several addresses or no address
+// in the catalog at all; in those cases an event-specific address must not
+// inherit a plausible-looking but unrelated generic point.
+export function areAddressesCompatible(left, right) {
+  const normalizedLeft = normalizeAddressForComparison(left);
+  const normalizedRight = normalizeAddressForComparison(right);
+  if (!normalizedLeft || !normalizedRight) return false;
+  return normalizedLeft === normalizedRight ||
+    normalizedLeft.includes(normalizedRight) ||
+    normalizedRight.includes(normalizedLeft);
+}
+
+function normalizeAddressForComparison(value) {
+  return normalizeComparableText(value)
+    .replace(/\bcalle\b|\bc\.(?=\s|$)|\bc\/(?=\s|[a-záéíóúñ])/gi, 'calle')
+    .replace(/\bavenida\b|\bavda?\.?\b/gi, 'avenida')
+    .replace(/\bplaza\s+(?:de|del)\s+/gi, 'plaza ')
+    .replace(/\bpza\.?\b/gi, 'plaza')
+    .replace(/[.,]/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
 }
 
 function buildVenueQuery(space) {
