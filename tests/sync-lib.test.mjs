@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { normalizeRefreshTopicIds, shouldRefreshTopic } from '../scripts/sync-lib.mjs';
+import { normalizeRefreshTopicIds, shouldRefreshTopic, topicFromDetail } from '../scripts/sync-lib.mjs';
 import { firstPostUpdatedAt } from '../src/data/discourse.mjs';
 import { diffRecentPostSignatures, isCurrentOrFutureEvent, selectEditProbeBatch } from '../scripts/check-events-signature.mjs';
 
@@ -15,6 +15,33 @@ test('solo fuerza la recarga del tema indicado', () => {
   const ids = normalizeRefreshTopicIds(['2592']);
   assert.equal(shouldRefreshTopic(2592, ids), true);
   assert.equal(shouldRefreshTopic(2600, ids), false);
+});
+
+test('reconstruye la proyección de un tema recuperado por ID', () => {
+  assert.deepEqual(topicFromDetail({
+    id: 2373,
+    slug: 'la-famiglia-se-sienta-a-la-mesa-sesiones-de-djs',
+    title: "La Famiglia se sienta a la mesa (Sesiones de DJ's)",
+    category_id: 6,
+    event_starts_at: '2026-09-04T19:00:00.000Z',
+    event_ends_at: '2026-09-13T14:00:00.000Z',
+    visible: true
+  }), {
+    id: 2373,
+    slug: 'la-famiglia-se-sienta-a-la-mesa-sesiones-de-djs',
+    title: "La Famiglia se sienta a la mesa (Sesiones de DJ's)",
+    category_id: 6,
+    created_at: undefined,
+    last_posted_at: undefined,
+    bumped_at: undefined,
+    updated_at: undefined,
+    image_url: undefined,
+    event_starts_at: '2026-09-04T19:00:00.000Z',
+    event_ends_at: '2026-09-13T14:00:00.000Z',
+    visible: true,
+    pinned: false,
+    featured_link: ''
+  });
 });
 
 test('lee updated_at del primer post aunque el stream no venga ordenado', () => {

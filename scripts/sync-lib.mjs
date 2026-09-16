@@ -1,7 +1,7 @@
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { fetchCategoryTopics, fetchTopicDetail, firstPostUpdatedAt, normalizeDetailToRecord, shouldSkipTopic, sleep, topicSignature } from '../src/data/discourse.mjs';
+import { fetchCategoryTopics, fetchJson, fetchTopicDetail, firstPostUpdatedAt, FORUM_BASE, normalizeDetailToRecord, shouldSkipTopic, sleep, topicSignature } from '../src/data/discourse.mjs';
 import { ensureCacheDirs, readIndex, writeCachedTopic, writeIndex } from '../src/data/store.mjs';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
@@ -23,6 +23,50 @@ export function normalizeRefreshTopicIds(value = []) {
 
 export function shouldRefreshTopic(topicId, refreshTopicIds) {
   return normalizeRefreshTopicIds(refreshTopicIds).has(String(topicId));
+}
+
+// Convierte el detalle directo de Discourse en la proyección mínima que
+// normalmente llega dentro de topic_list. Se usa solo para IDs forzados que
+// el índice/paginación de la categoría haya omitido; no amplía el listado
+// normal ni vuelve a descargar todos los eventos.
+export function topicFromDetail(detail) {
+  return {
+    id: detail?.id,
+    slug: detail?.slug,
+    title: detail?.title,
+    category_id: detail?.category_id,
+    created_at: detail?.created_at,
+    last_posted_at: detail?.last_posted_at,
+    bumped_at: detail?.bumped_at,
+    updated_at: detail?.updated_at,
+    image_url: detail?.image_url,
+    event_starts_at: detail?.event_starts_at,
+    event_ends_at: detail?.event_ends_at,
+    visible: detail?.visible !== false,
+    pinned: Boolean(detail?.pinned || detail?.pinned_globally),
+    featured_link: detail?.featured_link || ''
+  };
+}
+
+async function addForcedTopicsMissingFromCategory(topics, forcedRefreshIds) {
+  const knownIds = new Set(topics.map((topic) => String(topic.id)));
+  const recovered = [];
+
+  for (const topicId of forcedRefreshIds) {
+    const normalizedId = String(topicId);
+    if (knownIds.has(normalizedId)) continue;
+
+    // /t/:id.json resuelve el slug actual en Discourse y evita depender de
+    // una entrada de caché que puede haber sido retirada en un deploy previo.
+    const detail = await fetchJson(`${FORUM_BASE}/t/${normalizedId}.json`);
+    const topic = topicFromDetail(detail);
+    if (topic.id && topic.category_id === 6 && !shouldSkipTopic(topic)) {
+      recovered.push(topic);
+      knownIds.add(normalizedId);
+    }
+  }
+
+  return [...topics, ...recovered];
 }
 
 async function removeOrphanedCacheFiles(knownTopicIds) {
@@ -55,8 +99,8 @@ async function removeOrphanedCacheFiles(knownTopicIds) {
 export async function syncEvents({ rebuild = false, refreshTopicIds = [] } = {}) {
   await ensureCacheDirs();
   const index = await readIndex();
-  const topics = await fetchCategoryTopics();
   const forcedRefreshIds = normalizeRefreshTopicIds(refreshTopicIds);
+  const topics = await addForcedTopicsMissingFromCategory(await fetchCategoryTopics(), forcedRefreshIds);
   const nextIndex = { topics: {} };
   const normalized = [];
   const seenIds = new Set();
