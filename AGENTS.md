@@ -47,6 +47,10 @@ de edición de Discourse.
   fallback entre `updated_at` y `last_posted_at` sin una prueba equivalente.
 - Mantén la comprobación selectiva acotada y con pausas. No añadas un bucle
   que descargue el detalle de todos los eventos en cada cron de 15 minutos.
+- En los bloques `[event]`, `location` es el nombre del recinto y `address` la
+  dirección postal. La agrupación debe usar solo `location`; la interfaz puede
+  mostrar ambos mediante `displayLocation`. No vuelvas a guardar recinto y
+  calle juntos en `location`.
 - No hagas que un fallo puntual de la caché borre silenciosamente todos los
   registros existentes. Conserva la validación de salud de caché del workflow.
 - `cache/`, `dist/` y `.ci-state/` son artefactos generados y están ignorados

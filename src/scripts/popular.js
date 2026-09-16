@@ -83,7 +83,7 @@ function renderEvent(event) {
   const image = safeImageUrl(event.image);
   const date = event.compactDateLabel || event.scheduleLabel || event.detailScheduleLabel || '';
   const time = event.timeLabel === '00:00' ? '' : event.timeLabel || '';
-  const location = event.location || event.venueLabel || '';
+  const location = event.displayLocation || event.location || event.venueLabel || '';
   const saveCount = toCount(event.metrics?.saveCount);
   const eventUrl = safeEventPath(event.urlPath, event.id, event.slug);
   return `

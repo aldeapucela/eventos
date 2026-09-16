@@ -7,8 +7,9 @@ import tailwindcss from 'tailwindcss';
 import autoprefixer from 'autoprefixer';
 import { fileURLToPath } from 'node:url';
 import { loadCachedEvents } from '../src/data/store.mjs';
+import { buildDisplayLocation, parseLocationParts } from '../src/data/discourse.mjs';
 import { deriveFilters, sortEvents, splitFeatured, getPastEvents, groupEventsByMonth, groupFutureEventsByVenue, rotateBySeed } from '../src/data/site.mjs';
-import { DISPLAY_TIMEZONE, buildExcerpt, buildTextParagraphHtml, cleanDescriptionHtml, cleanEventSummary, detectPriceStatus, escapeHtml, formatDateRange, formatDateTime, isSameMadridDay, normalizePriceLabel, parseDateLike, parseEventMetaFromHtml, stripTags, toMadridDateKey } from '../src/data/format.mjs';
+import { DISPLAY_TIMEZONE, buildExcerpt, buildTextParagraphHtml, cleanDescriptionHtml, cleanEventSummary, detectPriceStatus, escapeHtml, formatDateRange, formatDateTime, isSameMadridDay, normalizeComparableText, normalizePriceLabel, parseDateLike, parseEventMetaFromHtml, stripTags, toMadridDateKey } from '../src/data/format.mjs';
 import { enrichVenueCatalog, mergeSpacesWithVenueCatalog } from '../src/data/venues.mjs';
 import { loadVallabusStops, nearbyVallabusStops } from '../src/data/vallabus.mjs';
 import { canonicalizeVenue, normalizeVenueKey } from '../src/data/venue-aliases.mjs';
@@ -221,7 +222,7 @@ function buildRssXml(events) {
 
 function buildRssItemDescription(event, eventUrl) {
   const dateLabel = event.startsAt ? formatDateTime(event.startsAt) : '';
-  const location = String(event.location || '').trim();
+  const location = String(event.displayLocation || event.location || '').trim();
   const summary = String(event.summary || event.excerpt || '').trim();
   const image = event.image ? toAbsoluteUrl(event.image) : '';
   const parts = [];
@@ -304,7 +305,7 @@ function buildCalendarIcs(events, options = {}) {
       `DTEND:${formatUtcIcsDate(endDate)}`,
       `SUMMARY:${escapeIcs(event.title || 'Evento')}`,
       `DESCRIPTION:${escapeIcs(description)}`,
-      `LOCATION:${escapeIcs(event.location || '')}`,
+      `LOCATION:${escapeIcs(event.displayLocation || event.location || '')}`,
       `URL:${escapeIcs(eventUrl)}`,
       ...(attachment ? [attachment] : []),
       'END:VEVENT'
@@ -316,6 +317,19 @@ function buildCalendarIcs(events, options = {}) {
 }
 
 function enrichEvent(event) {
+  const rawLocation = String(event.location || '').replace(/\s+/g, ' ').trim();
+  const parsedLocation = parseLocationParts(rawLocation, event.title || '');
+  const rawVenue = String(event.venue || '').replace(/\s+/g, ' ').trim();
+  const venue = rawVenue && normalizeComparableText(rawVenue) !== normalizeComparableText(rawLocation)
+    ? rawVenue
+    : parsedLocation.venueName || rawVenue;
+  const rawAddress = String(event.address || '').replace(/\s+/g, ' ').trim();
+  const address = rawAddress && normalizeComparableText(rawAddress) !== normalizeComparableText(rawLocation)
+    ? (parsedLocation.venueAddress && normalizeComparableText(rawAddress).includes(normalizeComparableText(parsedLocation.venueAddress))
+      ? parsedLocation.venueAddress
+      : rawAddress)
+    : parsedLocation.venueAddress;
+  const displayLocation = buildDisplayLocation(venue, address, rawLocation);
   const descriptionHtml = resolveEventDescriptionHtml(event);
   const summary = resolveEventSummary(event, descriptionHtml);
   const price = resolveEventPrice(event);
@@ -352,6 +366,9 @@ function enrichEvent(event) {
     : '';
   return {
     ...event,
+    venue,
+    address,
+    displayLocation,
     startsAtLabel: formatDateTime(event.startsAt),
     endsAtLabel: event.endsAt ? formatDateTime(event.endsAt) : '',
     endsAtDayLabel: event.endsAt
@@ -491,7 +508,7 @@ function siteDataPayload(events, filters = deriveFilters(events), options = {}) 
       lon: Number.isFinite(space.lon) ? space.lon : null
     })),
     events: enriched.map((event) => {
-      const venueKey = normalizeVenueKey(canonicalizeVenue(event.venue || event.location || ''));
+      const venueKey = normalizeVenueKey(canonicalizeVenue(event.venue || ''));
       const venue = spaceByVenueKey.get(venueKey) || {};
       const coordinates = resolveVenueCoordinates(event, venue);
       return {
@@ -523,6 +540,7 @@ function buildPopularSiteDataPayload(events) {
       detailScheduleLabel: event.detailScheduleLabel,
       timeLabel: event.timeLabel,
       location: event.location,
+      displayLocation: event.displayLocation,
       venueLabel: event.venueLabel,
       startsAtIso: event.startsAt,
       endsAtIso: event.endsAt
@@ -702,7 +720,7 @@ async function buildSite(events) {
   // siteDataPayload, para que las tarjetas server-rendered filtren por el
   // espacio canónico (no por el texto de ubicación en crudo).
   const withVenueKeys = (event) => {
-    const venueKey = normalizeVenueKey(canonicalizeVenue(event.venue || event.location || ''));
+    const venueKey = normalizeVenueKey(canonicalizeVenue(event.venue || ''));
     const venue = spaceByVenueKey.get(venueKey) || {};
     const coordinates = resolveVenueCoordinates(event, venue);
     return {
@@ -1180,7 +1198,9 @@ async function buildSite(events) {
         title: event.title,
         summary: event.summary || event.excerpt,
         location: event.location,
+        displayLocation: event.displayLocation,
         address: event.address,
+        venue: event.venue,
         sourceUrl: event.sourceUrl,
         startsAtIso: event.startsAt,
         endsAtIso: event.endsAt,

@@ -53,6 +53,26 @@ test('prefiere los metadatos del evento de Discourse y valida coordenadas y URL 
   assert.equal(event.ticketUrl, 'https://tickets.example.org/event?id=7&ref=web');
 });
 
+test('mantiene nombre y dirección separados y solo los combina para mostrar', () => {
+  const event = normalize({ address: 'Calle Mariano de los Cobos 1' }, '', 'Sala Porta Caeli');
+
+  assert.equal(event.venue, 'Sala Porta Caeli');
+  assert.equal(event.address, 'Calle Mariano de los Cobos 1');
+  assert.equal(event.displayLocation, 'Sala Porta Caeli · Calle Mariano de los Cobos 1');
+});
+
+test('corrige la dirección histórica que repetía la ubicación completa', () => {
+  const event = normalize(
+    { address: 'ZVMO C/ Calixto Fernández de la Torre esquina C/ Reina' },
+    '',
+    'ZVMO C/ Calixto Fernández de la Torre esquina C/ Reina'
+  );
+
+  assert.equal(event.venue, 'ZVMO');
+  assert.equal(event.address, 'C/ Calixto Fernández de la Torre esquina C/ Reina');
+  assert.equal(event.displayLocation, 'ZVMO · C/ Calixto Fernández de la Torre esquina C/ Reina');
+});
+
 test('mantiene el texto libre como respaldo cuando todavía no hay metadatos estructurados', () => {
   const event = normalize({}, [
     '<p>Descripción larga y suficiente de una actividad para probar los datos antiguos.</p>',

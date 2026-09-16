@@ -1,6 +1,6 @@
 {# Espejo del markup de renderWeekItem() en src/scripts/home.js: si cambias
    este partial, cambia también esa función (y viceversa). #}
-<article class="event-compact" data-category="{{ event.categoryLabel or '' }}" data-free="{{ 'true' if event.isFree else 'false' }}" data-venue="{{ event.venueLabel or event.location or '' }}" data-venue-key="{{ event.venueKey or '' }}" data-starts-at="{{ event.startsAt or '' }}" data-ends-at="{{ event.endsAt or '' }}">
+<article class="event-compact" data-category="{{ event.categoryLabel or '' }}" data-free="{{ 'true' if event.isFree else 'false' }}" data-venue="{{ event.venueLabel or event.venue or event.location or '' }}" data-venue-key="{{ event.venueKey or '' }}" data-starts-at="{{ event.startsAt or '' }}" data-ends-at="{{ event.endsAt or '' }}">
   <div class="event-compact-link">
     <img class="event-compact-image" src="/assets/placeholder-event.svg"{% if event.image %} data-src="{{ event.image }}"{% endif %} alt="" width="400" height="500" loading="lazy" decoding="async" />
     <div class="event-compact-copy">
@@ -8,7 +8,7 @@
       <span>{% if cardWithYear and event.detailScheduleLabel %}{{ event.detailScheduleLabel }}{% elif event.scheduleLabel %}{{ event.scheduleLabel }}{% else %}{{ event.compactDateLabel or '' }}{% if event.timeLabel %} · {{ event.timeLabel }}{% endif %}{% endif %}</span>
     </div>
     <h4 class="event-compact-title"><a href="{{ event.urlPath }}">{{ event.title or '' }}</a></h4>
-    <p class="event-compact-meta">{{ event.location or '' }}</p>
+    <p class="event-compact-meta">{{ event.displayLocation or event.location or '' }}</p>
     <div class="event-compact-badges">
       <span class="compact-badge">{{ event.categoryLabel or 'Evento' }}</span>
       {% if event.isFree %}<span class="compact-badge compact-badge-success">Gratis</span>{% endif %}

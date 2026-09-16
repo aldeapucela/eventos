@@ -49,7 +49,7 @@
             <p class="featured-mobile-summary">{{ featured.summary or featured.excerpt }}</p>
             <div class="featured-mobile-meta">
               <span>{% if featured.scheduleLabel %}{{ featured.scheduleLabel }}{% else %}{{ featured.dateRangeLabel }}{% endif %}</span>
-              {% if featured.location %}<span>{{ featured.location }}</span>{% endif %}
+              {% if featured.displayLocation or featured.location %}<span>{{ featured.displayLocation or featured.location }}</span>{% endif %}
             </div>
             {% if featured.isFree %}
             <span class="compact-badge compact-badge-success">Entrada libre</span>
@@ -75,13 +75,13 @@
         </div>
         <div id="ongoing-carousel" class="flex items-stretch overflow-x-auto gap-4 snap-x pb-4 -mx-4 px-4 sm:mx-0 sm:px-0" style="scrollbar-width: none;">
           {% for event in ongoing %}
-          <article class="event-compact event-compact-featured event-compact-ongoing flex-none w-[43%] md:w-[23%] snap-start" data-category="{{ event.categoryLabel }}" data-free="{{ 'true' if event.isFree else 'false' }}" data-venue="{{ event.venueLabel or event.location or '' }}" data-venue-key="{{ event.venueKey or '' }}" data-starts-at="{{ event.startsAt }}" data-ends-at="{{ event.endsAt }}">
+          <article class="event-compact event-compact-featured event-compact-ongoing flex-none w-[43%] md:w-[23%] snap-start" data-category="{{ event.categoryLabel }}" data-free="{{ 'true' if event.isFree else 'false' }}" data-venue="{{ event.venueLabel or event.venue or event.location or '' }}" data-venue-key="{{ event.venueKey or '' }}" data-starts-at="{{ event.startsAt }}" data-ends-at="{{ event.endsAt }}">
             <div class="event-compact-link">
               <img class="event-compact-image" src="/assets/placeholder-event.svg"{% if event.image %} data-src="{{ event.image }}"{% endif %} alt="" width="400" height="500" loading="lazy" decoding="async" />
               <div class="event-compact-copy">
                 <p class="event-compact-topline"><span>{% if event.endsAtDayLabel %}Hasta {{ event.endsAtDayLabel }}{% else %}{% if event.scheduleLabel %}{{ event.scheduleLabel }}{% else %}{{ event.compactDateLabel }}{% if event.timeLabel %} · {{ event.timeLabel }}{% endif %}{% endif %}{% endif %}</span></p>
                 <h4 class="event-compact-title"><a href="{{ event.urlPath }}">{{ event.title }}</a></h4>
-                <p class="event-compact-meta">{{ event.location }}</p>
+                <p class="event-compact-meta">{{ event.displayLocation or event.location }}</p>
                 <div class="event-compact-badges">
                   <span class="compact-badge">{{ event.categoryLabel or 'Evento' }}</span>
                   {% if event.isFree %}<span class="compact-badge compact-badge-success">Gratis</span>{% endif %}

@@ -6,6 +6,7 @@ import path from 'node:path';
 import { loadVallabusStops, normalizeVallabusStops, nearbyVallabusStops } from '../src/data/vallabus.mjs';
 import { getPopularThresholds, rankPopularEvents } from '../src/scripts/popular-ranking.js';
 import { buildAndroidMapUrl, buildMapProviderHref, getLocationCoordinates } from '../src/scripts/location-link.js';
+import { groupFutureEventsByVenue } from '../src/data/site.mjs';
 
 test('el enlace Ver en mapa conserva coordenadas y ofrece proveedores en vez de fijar OpenStreetMap', () => {
   const coordinates = getLocationCoordinates({ dataset: { locationLat: '41.65', locationLon: '-4.72' } });
@@ -91,6 +92,17 @@ test('ranking popular filtra finalizados, ordena por métrica y cae a cinco si n
 test('el mínimo de visitas usa el 0,5 % del total y nunca baja de tres', () => {
   assert.deepEqual(getPopularThresholds([{ visitCount: 1000 }, { visitCount: 600 }]), { minSaves: 10, minVisits: 8 });
   assert.deepEqual(getPopularThresholds([{ visitCount: 20 }]), { minSaves: 10, minVisits: 3 });
+});
+
+test('agrupa por recinto aunque cambie la dirección concreta del evento', () => {
+  const groups = groupFutureEventsByVenue([
+    { id: 1, venue: 'Sala de pruebas', address: 'Calle A 1', startsAt: '2027-01-10T18:00:00Z' },
+    { id: 2, venue: 'Sala de pruebas', address: 'Calle B 2', startsAt: '2027-01-11T18:00:00Z' }
+  ], { openEnded: true });
+
+  assert.equal(groups.length, 1);
+  assert.equal(groups[0].count, 2);
+  assert.deepEqual(groups[0].addressHints, ['Calle A 1', 'Calle B 2']);
 });
 
 test('ordena por visitas usando un orden opaco sin exponer las cifras', () => {

@@ -77,7 +77,7 @@
                 </div>
                 <h4 class="event-compact-title"><a href="{{ event.urlPath }}">{{ event.title }}</a></h4>
                 <p class="event-compact-meta">
-                  {% if event.location and event.location != space.name %}{{ event.location }}{% elseif event.address %}{{ event.address }}{% else %}{{ event.location }}{% endif %}
+                  {{ event.displayLocation or event.location or event.address }}
                 </p>
                 <div class="event-compact-badges">
                   <span class="compact-badge">{{ event.categoryLabel or 'Evento' }}</span>

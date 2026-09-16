@@ -208,8 +208,7 @@ function goToChatGPTTicketSearch() {
   const title = cleanField(eventData?.title || document.title, 'Evento sin título');
   const dateLabel = cleanField(extractDateLabel(), 'Fecha no disponible');
   const timeLabel = cleanField(extractBestTimeLabel(), '');
-  const locationParts = parseLocationParts(eventData?.location || '');
-  const venue = cleanField(locationParts.venue, 'Lugar no disponible');
+  const venue = cleanField(eventData?.venue || eventData?.location, 'Lugar no disponible');
   const city = cleanField(locationParts.city, 'Valladolid');
   const country = cleanField(locationParts.country, 'España');
   const dateLine = timeLabel ? `${dateLabel} a las ${timeLabel}` : dateLabel;
@@ -348,7 +347,7 @@ function populateCalendarLinks(calendarModal) {
   const calendarOutlookLink = calendarModal.querySelector('[data-calendar-outlook]');
   const title = eventData.title || document.title;
   const description = eventData.summary || '';
-  const location = eventData.location || '';
+  const location = eventData.displayLocation || eventData.address || eventData.location || '';
   const start = eventData.startsAtIso ? parseDateLike(eventData.startsAtIso) : null;
   const end = eventData.endsAtIso ? parseDateLike(eventData.endsAtIso) : null;
   const startDate = start || new Date();

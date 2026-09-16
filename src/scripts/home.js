@@ -1094,7 +1094,7 @@ function hasMoreEventsForCurrentFilters() {
     const isFree = event.isFree === true || event.isFree === 'true';
     const typeVisible = activeTypeFilters.length === 0 || activeTypeFilters.includes(event.categoryLabel || '');
     const freeVisible = !activeFreeFilter || isFree;
-    const venue = normalizeVenueKey(event.venueKey || event.venueLabel || event.location || '');
+    const venue = normalizeVenueKey(event.venueKey || event.venueLabel || event.venue || event.location || '');
     const venueVisible = activeVenueFilter === 'all' || venue === activeVenueFilter;
     return typeVisible && freeVisible && venueVisible;
   });
@@ -1190,7 +1190,7 @@ function closeAddEventModal() {
 function renderWeekItem(event) {
     const image = event.image ? `data-src="${escapeHtmlAttribute(event.image)}"` : '';
     return `
-      <article class="event-compact" data-category="${event.categoryLabel || ''}" data-free="${event.isFree ? 'true' : 'false'}" data-venue="${event.venueLabel || event.location || ''}" data-venue-key="${event.venueKey || ''}" data-starts-at="${event.startsAtIso || ''}" data-ends-at="${event.endsAtIso || ''}">
+      <article class="event-compact" data-category="${event.categoryLabel || ''}" data-free="${event.isFree ? 'true' : 'false'}" data-venue="${event.venueLabel || event.venue || event.location || ''}" data-venue-key="${event.venueKey || ''}" data-starts-at="${event.startsAtIso || ''}" data-ends-at="${event.endsAtIso || ''}">
         <div class="event-compact-link">
           <img class="event-compact-image" src="/assets/placeholder-event.svg" ${image} alt="" width="400" height="500" loading="lazy" decoding="async" />
           <div class="event-compact-copy">
@@ -1198,7 +1198,7 @@ function renderWeekItem(event) {
             <span>${event.scheduleLabel || `${event.compactDateLabel || ''}${event.timeLabel ? ` · ${event.timeLabel}` : ''}`}</span>
           </div>
           <h4 class="event-compact-title"><a href="${event.urlPath}">${event.title || ''}</a></h4>
-          <p class="event-compact-meta">${event.location || ''}</p>
+          <p class="event-compact-meta">${event.displayLocation || event.location || event.address || ''}</p>
           <div class="event-compact-badges">
             <span class="compact-badge">${event.categoryLabel || 'Evento'}</span>
             ${event.isFree ? '<span class="compact-badge compact-badge-success">Gratis</span>' : ''}

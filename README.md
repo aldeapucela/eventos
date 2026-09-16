@@ -161,6 +161,17 @@ necesita forzar un tema concreto, se puede pasar su ID mediante
 `workflow_dispatch`/`EVENT_REFRESH_IDS`. No se utiliza un webhook: la
 detección sucede durante el propio deploy leyendo Discourse por HTTP.
 
+### Metadatos de ubicación
+
+En el bloque `[event]` de Discourse, `location` contiene únicamente el nombre
+del recinto o lugar y `address` únicamente la calle y número (si se conoce).
+La web usa `location` para agrupar eventos por espacio y compone
+`displayLocation` como `location · address` para mostrar ambos datos juntos,
+en mapas, calendarios, RSS y datos estructurados. Los registros históricos que
+todavía tengan ambos valores mezclados se interpretan con el parser
+determinista como compatibilidad, pero los nuevos eventos y reintentos deben
+escribirlos separados desde n8n.
+
 Reglas importantes para mantenimiento:
 
 - No usar `--rebuild` en el deploy normal. La reconstrucción integral está

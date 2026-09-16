@@ -56,7 +56,7 @@
 
       <section class="detail-clean-facts" aria-label="Información del evento">
         {% if event.detailScheduleLabel %}<div class="detail-clean-meta-row"><i class="fa-regular fa-calendar" aria-hidden="true"></i><span>{{ event.detailScheduleLabel }}</span></div>{% elif event.detailDateRangeLabel %}<div class="detail-clean-meta-row"><i class="fa-regular fa-calendar" aria-hidden="true"></i><span>{{ event.detailDateRangeLabel }}</span></div>{% endif %}
-        {% if event.location %}<a class="detail-clean-meta-row detail-clean-meta-row-location detail-clean-meta-row-button" data-location-open data-location="{{ event.location }}" href="#"><i class="fa-solid fa-location-dot detail-clean-meta-row-icon" aria-hidden="true"></i><span>{{ event.location }}</span></a>{% endif %}
+        {% if event.displayLocation or event.location or event.address %}<a class="detail-clean-meta-row detail-clean-meta-row-location detail-clean-meta-row-button" data-location-open data-location="{{ event.displayLocation or event.location or event.address }}" href="#"><i class="fa-solid fa-location-dot detail-clean-meta-row-icon" aria-hidden="true"></i><span>{{ event.displayLocation or event.location or event.address }}</span></a>{% endif %}
         <div class="detail-clean-meta-row detail-clean-weather" data-detail-weather data-weather-date="{{ event.startsAtDayKey }}" data-weather-time="{{ event.timeLabel }}" hidden aria-live="polite">
           <i class="fa-solid" data-detail-weather-icon aria-hidden="true"></i>
           <span class="detail-clean-weather-copy"><span class="detail-clean-weather-label">Previsión</span><span data-detail-weather-copy></span></span>
@@ -132,20 +132,20 @@
         </button>
       </div>
 
-      {% if event.location or (event.venueLat != null and event.venueLon != null) %}
+      {% if event.displayLocation or event.location or event.address or (event.venueLat != null and event.venueLon != null) %}
       <section class="detail-map-card" aria-label="Mapa y cómo llegar">
         {% if event.venueLat != null and event.venueLon != null %}
-        <div class="detail-map" data-event-map data-lat="{{ event.venueLat }}" data-lon="{{ event.venueLon }}" data-title="{{ event.location or event.title }}" role="application" aria-label="Mapa de {{ event.location or event.title }}"></div>
+        <div class="detail-map" data-event-map data-lat="{{ event.venueLat }}" data-lon="{{ event.venueLon }}" data-title="{{ event.displayLocation or event.location or event.title }}" role="application" aria-label="Mapa de {{ event.displayLocation or event.location or event.title }}"></div>
         <div class="detail-map-error" data-event-map-error hidden role="status"></div>
         {% else %}
         <div class="detail-map-empty">
           <i class="fa-solid fa-map-location-dot" aria-hidden="true"></i>
           <p>Ubicación en el mapa no disponible.</p>
-          <span>{{ event.location or event.address or 'Lugar por confirmar' }}</span>
+          <span>{{ event.displayLocation or event.location or event.address or 'Lugar por confirmar' }}</span>
         </div>
         {% endif %}
         <div class="detail-map-actions">
-          <a class="detail-map-action" data-location-open data-location="{{ event.address or event.location or event.title }}" {% if event.venueLat != null and event.venueLon != null %}data-location-lat="{{ event.venueLat }}" data-location-lon="{{ event.venueLon }}"{% endif %} href="#">
+          <a class="detail-map-action" data-location-open data-location="{{ event.displayLocation or event.address or event.location or event.title }}" {% if event.venueLat != null and event.venueLon != null %}data-location-lat="{{ event.venueLat }}" data-location-lon="{{ event.venueLon }}"{% endif %} href="#">
             <i class="fa-regular fa-map" aria-hidden="true"></i><span>Ver en mapa</span>
           </a>
           {% if event.venueLat != null and event.venueLon != null %}
@@ -153,7 +153,7 @@
             <i class="fa-solid fa-route" aria-hidden="true"></i><span>Cómo llegar</span>
           </button>
           {% else %}
-          <a class="detail-map-action" href="https://www.google.com/maps/dir/?api=1&amp;destination={{ (event.address or event.location) | urlencode }}" target="_blank" rel="noopener noreferrer">
+          <a class="detail-map-action" href="https://www.google.com/maps/dir/?api=1&amp;destination={{ (event.displayLocation or event.address or event.location or event.title) | urlencode }}" target="_blank" rel="noopener noreferrer">
             <i class="fa-solid fa-route" aria-hidden="true"></i><span>Cómo llegar</span>
           </a>
           {% endif %}
@@ -161,13 +161,13 @@
         {% if event.venueLat != null and event.venueLon != null %}
         <section class="detail-directions-options" id="event-directions-options-{{ event.id }}" data-directions-options hidden aria-label="Opciones para llegar">
           <div class="detail-directions-grid">
-            <a class="detail-directions-option" href="https://vallabus.com/#/rutas?origen=eventosaldea" target="_blank" rel="noopener noreferrer" data-vallabus-route data-destination-name="{{ event.location or event.title }}" data-destination-lat="{{ event.venueLat }}" data-destination-lon="{{ event.venueLon }}" data-arrival-date="{{ event.startsAtDayKey }}" data-arrival-time="{{ event.timeLabel }}">
+            <a class="detail-directions-option" href="https://vallabus.com/#/rutas?origen=eventosaldea" target="_blank" rel="noopener noreferrer" data-vallabus-route data-destination-name="{{ event.displayLocation or event.location or event.title }}" data-destination-lat="{{ event.venueLat }}" data-destination-lon="{{ event.venueLon }}" data-arrival-date="{{ event.startsAtDayKey }}" data-arrival-time="{{ event.timeLabel }}">
               <i class="fa-solid fa-bus" aria-hidden="true"></i><span>Bus</span>
             </a>
-            <a class="detail-directions-option" href="https://vallabus.com/#/rutas?origen=eventosaldea" target="_blank" rel="noopener noreferrer" data-vallabus-route data-route-mode="bike" data-destination-name="{{ event.location or event.title }}" data-destination-lat="{{ event.venueLat }}" data-destination-lon="{{ event.venueLon }}" data-arrival-date="{{ event.startsAtDayKey }}" data-arrival-time="{{ event.timeLabel }}">
+            <a class="detail-directions-option" href="https://vallabus.com/#/rutas?origen=eventosaldea" target="_blank" rel="noopener noreferrer" data-vallabus-route data-route-mode="bike" data-destination-name="{{ event.displayLocation or event.location or event.title }}" data-destination-lat="{{ event.venueLat }}" data-destination-lon="{{ event.venueLon }}" data-arrival-date="{{ event.startsAtDayKey }}" data-arrival-time="{{ event.timeLabel }}">
               <i class="fa-solid fa-bicycle" aria-hidden="true"></i><span>Bici/BIKI</span>
             </a>
-            <a class="detail-directions-option" href="https://www.google.com/maps/dir/?api=1&amp;destination={{ event.venueLat }},{{ event.venueLon }}" target="_blank" rel="noopener noreferrer" data-native-map data-lat="{{ event.venueLat }}" data-lon="{{ event.venueLon }}" data-title="{{ event.location or event.title }}">
+            <a class="detail-directions-option" href="https://www.google.com/maps/dir/?api=1&amp;destination={{ event.venueLat }},{{ event.venueLon }}" target="_blank" rel="noopener noreferrer" data-native-map data-lat="{{ event.venueLat }}" data-lon="{{ event.venueLon }}" data-title="{{ event.displayLocation or event.location or event.title }}">
               <i class="fa-solid fa-map-location-dot" aria-hidden="true"></i><span>Tu App</span>
             </a>
           </div>
@@ -186,7 +186,7 @@
           <div class="detail-transit-details" id="event-transit-stops-{{ event.id }}" data-transit-details hidden>
             <p class="detail-transit-summary" data-transit-summary></p>
             <ul class="detail-transit-stop-list" data-transit-stop-list></ul>
-            <a class="detail-transit-planner" href="https://vallabus.com/#/rutas?origen=eventosaldea" target="_blank" rel="noopener noreferrer" data-vallabus-route data-destination-name="{{ event.location or event.title }}" data-destination-lat="{{ event.venueLat }}" data-destination-lon="{{ event.venueLon }}" data-arrival-date="{{ event.startsAtDayKey }}" data-arrival-time="{{ event.timeLabel }}">
+            <a class="detail-transit-planner" href="https://vallabus.com/#/rutas?origen=eventosaldea" target="_blank" rel="noopener noreferrer" data-vallabus-route data-destination-name="{{ event.displayLocation or event.location or event.title }}" data-destination-lat="{{ event.venueLat }}" data-destination-lon="{{ event.venueLon }}" data-arrival-date="{{ event.startsAtDayKey }}" data-arrival-time="{{ event.timeLabel }}">
               <i class="fa-solid fa-route" aria-hidden="true"></i><span>Planificar ruta en VallaBus</span>
             </a>
           </div>
@@ -225,7 +225,7 @@
               <div class="event-compact-copy">
                 <p class="event-compact-topline"><span>{{ related.scheduleLabel }}</span></p>
                 <h4 class="event-compact-title"><a href="{{ related.urlPath }}">{{ related.title }}</a></h4>
-                <p class="event-compact-meta">{{ related.location }}</p>
+                <p class="event-compact-meta">{{ related.displayLocation or related.location }}</p>
                 <div class="event-compact-badges">
                   <span class="compact-badge">{{ related.categoryLabel or 'Evento' }}</span>
                   {% if related.isFree %}<span class="compact-badge compact-badge-success">Gratis</span>{% endif %}
@@ -262,7 +262,7 @@
               <div class="event-compact-copy">
                 <p class="event-compact-topline"><span>{{ related.scheduleLabel }}</span></p>
                 <h4 class="event-compact-title"><a href="{{ related.urlPath }}">{{ related.title }}</a></h4>
-                <p class="event-compact-meta">{{ related.location }}</p>
+                <p class="event-compact-meta">{{ related.displayLocation or related.location }}</p>
                 <div class="event-compact-badges">
                   <span class="compact-badge">{{ related.categoryLabel or 'Evento' }}</span>
                   {% if related.isFree %}<span class="compact-badge compact-badge-success">Gratis</span>{% endif %}

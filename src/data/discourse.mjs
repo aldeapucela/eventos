@@ -160,7 +160,13 @@ export function normalizeDiscourseTopic(topic, detail) {
   const organizer = readEventCustomField(customFields, 'organizer') || meta.organizer || '';
   const notes = meta.notes || '';
   const price = normalizePriceLabel(readEventCustomField(customFields, 'price') || meta.price || '');
-  const address = readEventCustomField(customFields, 'address') || parsedLocation.venueAddress;
+  const address = resolveVenueAddress(
+    readEventCustomField(customFields, 'address'),
+    parsedLocation,
+    location
+  );
+  const venue = parsedLocation.venueName;
+  const displayLocation = buildDisplayLocation(venue, address, location);
   const { latitude, longitude } = parseEventCoordinates(
     readEventCustomField(customFields, 'latitude'),
     readEventCustomField(customFields, 'longitude')
@@ -186,8 +192,9 @@ export function normalizeDiscourseTopic(topic, detail) {
     endsAt,
     timezone: event.timezone || 'Europe/Madrid',
     location,
-    venue: parsedLocation.venueName,
+    venue,
     address,
+    displayLocation,
     latitude,
     longitude,
     categoryLabel,
@@ -205,6 +212,31 @@ export function normalizeDiscourseTopic(topic, detail) {
     publishedAt: topic.created_at || detailPost?.created_at || detail?.created_at || '',
     updatedAt: detailPost?.updated_at || topic.updated_at || topic.last_posted_at || topic.created_at || ''
   };
+}
+
+function resolveVenueAddress(customAddress, parsedLocation, rawLocation) {
+  const explicit = String(customAddress || '').trim();
+  const parsed = String(parsedLocation?.venueAddress || '').trim();
+  if (!explicit) return parsed;
+  if (!parsed) return explicit;
+
+  // Durante una etapa del importador se guardó el valor completo (local + calle)
+  // tanto en location como en address. En ese caso el parser fiable de la
+  // ubicación debe prevalecer para no volver a duplicar el local en la dirección.
+  const comparableExplicit = normalizeComparableText(explicit);
+  const comparableRaw = normalizeComparableText(rawLocation);
+  const comparableParsed = normalizeComparableText(parsed);
+  if (comparableExplicit === comparableRaw || comparableExplicit.includes(comparableParsed)) return parsed;
+  return explicit;
+}
+
+export function buildDisplayLocation(venue, address, fallback = '') {
+  const cleanVenue = String(venue || '').replace(/\s+/g, ' ').trim();
+  const cleanAddress = String(address || '').replace(/\s+/g, ' ').trim();
+  if (cleanVenue && cleanAddress && normalizeComparableText(cleanVenue) !== normalizeComparableText(cleanAddress)) {
+    return `${cleanVenue} · ${cleanAddress}`;
+  }
+  return cleanVenue || cleanAddress || String(fallback || '').replace(/\s+/g, ' ').trim();
 }
 
 function readEventCustomField(fields, name) {
@@ -322,7 +354,7 @@ function normalizeLocation(value, title) {
   return cleaned;
 }
 
-function parseLocationParts(raw = '', eventTitle = '') {
+export function parseLocationParts(raw = '', eventTitle = '') {
   const value = String(raw).replace(/\s+/g, ' ').trim();
   if (!value) return { venueName: '', venueAddress: '', tag: 'empty' };
 
