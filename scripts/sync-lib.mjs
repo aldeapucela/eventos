@@ -98,7 +98,10 @@ async function recoverCachedTopicsMissingFromCategory(topics, index) {
     }
   }
 
-  return [...topics, ...recovered];
+  return {
+    topics: [...topics, ...recovered],
+    recoveredIds: new Set(recovered.map((topic) => String(topic.id)))
+  };
 }
 
 async function removeOrphanedCacheFiles(knownTopicIds) {
@@ -133,7 +136,7 @@ export async function syncEvents({ rebuild = false, refreshTopicIds = [] } = {})
   const index = await readIndex();
   const forcedRefreshIds = normalizeRefreshTopicIds(refreshTopicIds);
   const forcedTopics = await addForcedTopicsMissingFromCategory(await fetchCategoryTopics(), forcedRefreshIds);
-  const topics = await recoverCachedTopicsMissingFromCategory(forcedTopics, index);
+  const { topics, recoveredIds } = await recoverCachedTopicsMissingFromCategory(forcedTopics, index);
   const nextIndex = { topics: {} };
   const normalized = [];
   const seenIds = new Set();
@@ -146,6 +149,7 @@ export async function syncEvents({ rebuild = false, refreshTopicIds = [] } = {})
     const cached = index.topics?.[topic.id];
     const unchanged = !rebuild &&
       !forcedRefreshIds.has(String(topic.id)) &&
+      !recoveredIds.has(String(topic.id)) &&
       cached &&
       cached.signature === signature &&
       cached.schemaVersion === CACHE_SCHEMA_VERSION;
