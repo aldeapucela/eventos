@@ -1,6 +1,14 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { cleanDescriptionHtml, cleanEventSummary } from '../src/data/format.mjs';
+import { cleanDescriptionHtml, cleanEventSummary, parseEventMetaFromHtml } from '../src/data/format.mjs';
+
+test('no muestra atribución de origen para propuestas del formulario web', () => {
+  const meta = parseEventMetaFromHtml(
+    '<p><em>Evento importado desde <a href="https://t.me/c/2671330741/26290">formulario web</a></em></p>'
+  );
+
+  assert.equal(meta.importedFromChatUrl, '');
+});
 
 test('muestra en la web el contenido de details y elimina el enlace a la propia ficha', () => {
   const cooked = [
