@@ -5,11 +5,19 @@ import { spawn } from 'node:child_process';
 
 const root = path.resolve(path.dirname(new URL(import.meta.url).pathname), '..');
 const dist = path.join(root, 'dist');
-const port = 8000;
+const port = Number(process.env.PORT || 8000);
 
 function runBuild() {
   return new Promise((resolve, reject) => {
-    const child = spawn(process.execPath, ['scripts/build.mjs', '--rebuild'], { cwd: root, stdio: 'inherit' });
+    const child = spawn(process.execPath, ['scripts/build.mjs', '--rebuild'], {
+      cwd: root,
+      stdio: 'inherit',
+      env: {
+        ...process.env,
+        EVENT_FORM_TURNSTILE_SITEKEY: process.env.EVENT_FORM_TURNSTILE_SITEKEY || '1x00000000000000000000AA',
+        EVENT_FORM_SUBMISSION_URL: process.env.EVENT_FORM_SUBMISSION_URL || '/__mock_api/eventos/submissions'
+      }
+    });
     child.on('exit', (code) => (code === 0 ? resolve() : reject(new Error(`build failed with ${code}`))));
   });
 }
@@ -83,10 +91,42 @@ async function handleDevMetrics(req, res) {
   send(res, 200, JSON.stringify({ ok: true, id, saveCount: activity.saveCount }), 'application/json; charset=utf-8');
 }
 
+async function handleDevSubmission(req, res) {
+  const maxBytes = 10 * 1024 * 1024;
+  let receivedBytes = 0;
+  for await (const chunk of req) {
+    receivedBytes += chunk.length;
+    if (receivedBytes > maxBytes) {
+      send(res, 413, JSON.stringify({ ok: false, error: 'payload_too_large' }), 'application/json; charset=utf-8');
+      return;
+    }
+  }
+  // The local mock does not call Cloudflare, but it still checks that the
+  // browser integration included a Turnstile response field.
+  if (!receivedBytes) {
+    send(res, 400, JSON.stringify({ ok: false, error: 'empty_submission' }), 'application/json; charset=utf-8');
+    return;
+  }
+  send(res, 202, JSON.stringify({
+    ok: true,
+    accepted: true,
+    simulated: true,
+    message: 'Solicitud recibida para revisión.'
+  }), 'application/json; charset=utf-8');
+}
+
 const server = http.createServer(async (req, res) => {
   const urlPath = new URL(req.url, `http://${req.headers.host}`).pathname;
   if (urlPath === '/__mock_api/eventos/saves') {
     await handleDevMetrics(req, res);
+    return;
+  }
+  if (urlPath === '/__mock_api/eventos/submissions') {
+    if (req.method !== 'POST') {
+      send(res, 405, JSON.stringify({ ok: false, error: 'method_not_allowed' }), 'application/json; charset=utf-8');
+      return;
+    }
+    await handleDevSubmission(req, res);
     return;
   }
   let filePath = path.join(dist, urlPath === '/' ? 'index.html' : urlPath.slice(1));

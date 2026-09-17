@@ -32,6 +32,10 @@ const postersDir = path.join(dist, 'posters');
 const cssDir = path.join(assetsDir, 'css');
 const jsDir = path.join(assetsDir, 'js');
 const publicBaseUrl = 'https://eventos.aldeapucela.org';
+// Turnstile sitekey is public and is embedded only on the submission page.
+// Keep the local test override in scripts/dev.mjs so production builds use the
+// configured production widget without requiring a secret in GitHub Pages.
+const eventFormTurnstileSiteKey = process.env.EVENT_FORM_TURNSTILE_SITEKEY || '0x4AAAAAAE6lX4HN_uYahPvL';
 // Imagen de previsualización en redes (og:image). El nombre va versionado a
 // propósito: al sustituir los bytes manteniendo la misma URL, las redes
 // sociales siguen sirviendo la copia cacheada (así reaparecía el isotipo
@@ -124,6 +128,9 @@ async function copyJs() {
   await fs.copyFile(path.join(root, 'src', 'scripts', 'install-app.js'), path.join(jsDir, 'install-app.js'));
   await fs.copyFile(path.join(root, 'src', 'scripts', 'search.js'), path.join(jsDir, 'search.js'));
   await fs.copyFile(path.join(root, 'src', 'scripts', 'modals.js'), path.join(jsDir, 'modals.js'));
+  await fs.copyFile(path.join(root, 'src', 'scripts', 'event-form-matching.js'), path.join(jsDir, 'event-form-matching.js'));
+  await fs.copyFile(path.join(root, 'src', 'scripts', 'event-form-autocomplete.js'), path.join(jsDir, 'event-form-autocomplete.js'));
+  await fs.copyFile(path.join(root, 'src', 'scripts', 'submit-event.js'), path.join(jsDir, 'submit-event.js'));
 }
 
 function slugify(value = '') {
@@ -510,6 +517,7 @@ function siteDataPayload(events, filters = deriveFilters(events), options = {}) 
       slug: space.slug,
       name: space.name,
       canonicalVenue: space.canonicalVenue,
+      address: space.address || '',
       venueKey: normalizeVenueKey(canonicalizeVenue(space.canonicalVenue)),
       lat: Number.isFinite(space.lat) ? space.lat : null,
       lon: Number.isFinite(space.lon) ? space.lon : null
@@ -642,6 +650,7 @@ async function computeAssetVersion() {
     path.join(root, 'src', 'styles', 'base.css'),
     path.join(root, 'src', 'styles', 'home.css'),
     path.join(root, 'src', 'styles', 'event-detail.css'),
+    path.join(root, 'src', 'styles', 'submit-event.css'),
     path.join(root, 'src', 'scripts', 'home.js'),
     path.join(root, 'src', 'scripts', 'location-link.js'),
     path.join(root, 'src', 'scripts', 'subscribe.js'),
@@ -656,6 +665,9 @@ async function computeAssetVersion() {
     path.join(root, 'src', 'scripts', 'search.js'),
     // Los modales viven aquí, no en partials, desde que salieron del HTML servido.
     path.join(root, 'src', 'scripts', 'modals.js'),
+    path.join(root, 'src', 'scripts', 'event-form-matching.js'),
+    path.join(root, 'src', 'scripts', 'event-form-autocomplete.js'),
+    path.join(root, 'src', 'scripts', 'submit-event.js'),
     path.join(root, 'src', 'scripts', 'event-metrics.js'),
     path.join(root, 'src', 'scripts', 'weather.js'),
     path.join(root, 'src', 'scripts', 'directions.js'),
@@ -688,6 +700,7 @@ async function buildSite(events) {
   await copyFontAwesome();
   await compileCss(path.join(root, 'src', 'styles', 'home.css'), path.join(cssDir, 'home.css'));
   await compileCss(path.join(root, 'src', 'styles', 'event-detail.css'), path.join(cssDir, 'event-detail.css'));
+  await compileCss(path.join(root, 'src', 'styles', 'submit-event.css'), path.join(cssDir, 'submit-event.css'));
   await copyJs();
   console.log(`build: assets ${elapsedMs('assets').toFixed(1)}ms`);
 
@@ -845,6 +858,23 @@ async function buildSite(events) {
     todayCount: today.length,
     categories: filters,
     includeSiteData: true,
+    ...sharedContext
+  }));
+
+  await writeFile('enviar/index.html', render('submit-event.njk', {
+    title: 'Enviar un evento | Aldea Pucela Eventos',
+    meta: { description: 'Envía un cartel y los datos básicos de un evento para que lo revisemos.' },
+    robotsMeta: 'noindex,follow',
+    // Production goes through the public API facade; local development keeps
+    // the mock unless EVENT_FORM_SUBMISSION_URL is explicitly overridden.
+    submissionEndpoint: process.env.EVENT_FORM_SUBMISSION_URL || 'https://api.aldeapucela.org/eventos/submissions',
+    turnstileSiteKey: eventFormTurnstileSiteKey,
+    turnstileAction: eventFormTurnstileSiteKey.startsWith('1x') || eventFormTurnstileSiteKey.startsWith('2x') || eventFormTurnstileSiteKey.startsWith('3x')
+      ? 'test'
+      : 'event_submission',
+    pageCss: 'submit-event.css',
+    pageJs: 'submit-event.js',
+    includeSiteData: false,
     ...sharedContext
   }));
 

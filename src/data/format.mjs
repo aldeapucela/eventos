@@ -389,6 +389,10 @@ function extractImportedFromChatUrl(html = '') {
   const content = String(html);
   const importBlockMatch = content.match(/<p>\s*<em>\s*Evento importado desde[\s\S]*?<\/em>\s*<\/p>/i);
   if (!importBlockMatch) return '';
+  // Las propuestas del formulario llevan un enlace técnico al mensaje de
+  // Telegram que reciben los administradores, pero no deben mostrar una
+  // atribución de origen en la ficha pública. Esa atribución solo tiene
+  // sentido para los eventos llegados desde el chat.
   if (/formulario\s+web/i.test(importBlockMatch[0])) return '';
   const hrefMatch = importBlockMatch[0].match(/href="([^"]+)"/i);
   if (!hrefMatch?.[1]) return '';

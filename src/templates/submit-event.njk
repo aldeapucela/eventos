@@ -1,0 +1,136 @@
+{% extends "layout.njk" %}
+
+{% block header %}
+{% include "partials/topbar.njk" %}
+{% endblock %}
+
+{% block extraHead %}
+<script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
+{% endblock %}
+
+{% block body %}
+<main class="event-form-page page-shell py-8 sm:py-12 lg:py-16">
+  <section class="event-form-hero">
+    <h1 class="event-form-title">Enviar un evento a la agenda</h1>
+    <p class="event-form-intro">Será revisado antes de publicarse. Solo se aceptan eventos culturales.</p>
+  </section>
+
+  <form class="event-form-card" data-event-submission-form data-submission-endpoint="{{ submissionEndpoint }}" novalidate>
+    <div class="event-form-grid event-form-grid-two">
+      <label class="event-form-field">
+        <span class="event-form-label">Tu nombre *</span>
+        <input class="event-form-input" type="text" name="name" autocomplete="name" maxlength="100" required />
+      </label>
+
+      <label class="event-form-field">
+        <span class="event-form-label">Tu email *</span>
+        <input class="event-form-input" type="email" name="email" autocomplete="email" maxlength="254" required />
+      </label>
+
+      <p class="event-form-contact-note event-form-field-full">
+        Tus datos no serán públicos. Los usaremos solo para contactarte si necesitamos aclarar algo.
+      </p>
+
+      <label class="event-form-field event-form-field-full">
+        <span class="event-form-label">Título *</span>
+        <input class="event-form-input" type="text" name="title" maxlength="160" required />
+      </label>
+
+      <div class="event-form-schedule event-form-field-full">
+        <div class="event-form-schedule-row">
+          <label class="event-form-field">
+            <span class="event-form-label">Fecha de inicio *</span>
+            <input class="event-form-input" type="date" name="start_date" required />
+          </label>
+
+          <label class="event-form-field">
+            <span class="event-form-label">Hora de inicio</span>
+            <input class="event-form-input" type="time" name="start_time" />
+          </label>
+        </div>
+
+        <div class="event-form-schedule-row event-form-end-schedule">
+          <label class="event-form-field">
+            <span class="event-form-label">Fecha de finalización</span>
+            <input class="event-form-input" type="date" name="end_date" />
+          </label>
+
+          <label class="event-form-field">
+            <span class="event-form-label">Hora de finalización</span>
+            <input class="event-form-input" type="time" name="end_time" />
+          </label>
+        </div>
+      </div>
+
+      <label class="event-form-field event-form-field-full">
+        <span class="event-form-label">Dirección, plaza o zona *</span>
+        <div class="event-form-autocomplete">
+          <input class="event-form-input" type="text" name="address" maxlength="240" required autocomplete="street-address" aria-autocomplete="list" aria-controls="event-address-suggestions" aria-expanded="false" />
+          <div class="event-form-suggestions" id="event-address-suggestions" data-address-suggestions role="listbox" hidden></div>
+          <p class="event-form-lookup-status" data-address-lookup-status aria-live="polite" hidden></p>
+        </div>
+      </label>
+
+      <label class="event-form-field event-form-field-full">
+        <span class="event-form-label">Lugar o recinto</span>
+        <div class="event-form-autocomplete">
+          <input class="event-form-input" type="text" name="location" maxlength="180" autocomplete="off" aria-autocomplete="list" aria-controls="event-venue-suggestions" aria-expanded="false" />
+          <div class="event-form-suggestions" id="event-venue-suggestions" data-venue-suggestions role="listbox" hidden></div>
+        </div>
+      </label>
+
+      <div class="event-form-duplicate-panel event-form-field-full" data-duplicate-panel hidden>
+        <p class="event-form-duplicate-title">Hemos encontrado eventos parecidos</p>
+        <ul class="event-form-duplicate-results" data-duplicate-results></ul>
+        <label class="event-form-check">
+          <input type="checkbox" name="duplicate_acknowledgement" data-duplicate-acknowledgement value="true" />
+          <span>He comprobado los resultados: es un evento diferente y quiero enviarlo igualmente.</span>
+        </label>
+      </div>
+
+      <label class="event-form-field event-form-field-full">
+        <span class="event-form-label">Descripción</span>
+        <textarea class="event-form-input" name="description" maxlength="2000"></textarea>
+      </label>
+    </div>
+
+    <div class="event-form-upload-area">
+      <input class="event-form-file-input" type="file" name="image" data-event-image accept="image/jpeg,image/png,image/webp,image/gif" required hidden />
+      <button class="event-form-upload-button" type="button" data-event-image-trigger>
+        <i class="fa-regular fa-image" aria-hidden="true"></i>
+        <span>Adjuntar cartel o imagen</span>
+      </button>
+      <p class="event-form-image-status" data-image-status hidden></p>
+      <div class="event-form-image-preview" data-image-preview hidden>
+        <img data-image-preview-image alt="Vista previa del cartel seleccionado" />
+      </div>
+    </div>
+
+    <label class="event-form-check event-form-consent">
+      <input type="checkbox" name="privacy_consent" value="true" required />
+      <span>Acepto compartir mi nombre y email con los administradores de Aldea Pucela para recibir un aviso cuando el evento se publique o si necesitan alguna aclaración.</span>
+    </label>
+
+    <div class="event-form-turnstile" data-turnstile-widget>
+      <div class="cf-turnstile" data-sitekey="{{ turnstileSiteKey }}" data-action="{{ turnstileAction }}" data-theme="auto" data-size="flexible"></div>
+    </div>
+
+    <label class="event-form-check event-form-honeypot" aria-hidden="true">
+      <span>Deja este campo vacío.</span>
+      <input type="text" name="website" tabindex="-1" autocomplete="off" />
+    </label>
+
+    <div class="event-form-submit-row">
+      <button class="event-form-submit" type="submit" data-submit-event>Enviar para revisión</button>
+    </div>
+    <p class="event-form-status" data-form-status aria-live="polite" hidden></p>
+
+    <section class="event-form-success" data-submission-success hidden tabindex="-1" aria-live="polite">
+      <i class="fa-solid fa-circle-check" aria-hidden="true"></i>
+      <h2>Solicitud recibida para revisión</h2>
+      <p>La revisaremos y te avisaremos por email cuando el evento se publique.</p>
+      <button class="event-form-secondary-button" type="button" data-submit-another>Enviar otro evento</button>
+    </section>
+  </form>
+</main>
+{% endblock %}
