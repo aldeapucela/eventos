@@ -208,7 +208,8 @@ function goToChatGPTTicketSearch() {
   const title = cleanField(eventData?.title || document.title, 'Evento sin título');
   const dateLabel = cleanField(extractDateLabel(), 'Fecha no disponible');
   const timeLabel = cleanField(extractBestTimeLabel(), '');
-  const venue = cleanField(eventData?.venue || eventData?.location, 'Lugar no disponible');
+  const locationParts = parseLocationParts(eventData?.displayLocation || eventData?.location || eventData?.address || '');
+  const venue = cleanField(eventData?.venue || locationParts.venue || eventData?.location, 'Lugar no disponible');
   const city = cleanField(locationParts.city, 'Valladolid');
   const country = cleanField(locationParts.country, 'España');
   const dateLine = timeLabel ? `${dateLabel} a las ${timeLabel}` : dateLabel;
