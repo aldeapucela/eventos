@@ -389,6 +389,7 @@ function extractImportedFromChatUrl(html = '') {
   const content = String(html);
   const importBlockMatch = content.match(/<p>\s*<em>\s*Evento importado desde[\s\S]*?<\/em>\s*<\/p>/i);
   if (!importBlockMatch) return '';
+  if (/formulario\s+web/i.test(importBlockMatch[0])) return '';
   const hrefMatch = importBlockMatch[0].match(/href="([^"]+)"/i);
   if (!hrefMatch?.[1]) return '';
   return decodeHtmlEntities(hrefMatch[1]).trim();
