@@ -49,6 +49,8 @@ const scrollTopButton = document.querySelector('[data-scroll-top]');
 const shareSiteButton = document.querySelector('[data-share-site]');
 const addEventOpenButton = document.querySelector('[data-add-event-open]');
 const addEventModal = document.querySelector('[data-add-event-modal]');
+const addEventChatButton = document.querySelector('[data-add-event-chat]');
+const addEventChatDetails = document.querySelector('[data-add-event-chat-details]');
 let events = Array.isArray(window.__EVENTS__?.events) ? window.__EVENTS__.events : [];
 let availableFilters = Array.isArray(window.__FILTERS__) ? window.__FILTERS__.map(String) : [];
 let availableSpaces = Array.isArray(window.__EVENTS__?.spaces) ? window.__EVENTS__.spaces : [];
@@ -117,6 +119,7 @@ document.addEventListener('click', async (event) => {
   const shareSiteTrigger = event.target.closest('[data-share-site]');
   const addEventOpen = event.target.closest('[data-add-event-open]');
   const addEventClose = event.target.closest('[data-add-event-close]');
+  const addEventChat = event.target.closest('[data-add-event-chat]');
   const typeModalOpen = event.target.closest('[data-type-modal-open]');
   const typeModalClose = event.target.closest('[data-type-modal-close]');
   const dateModalOpen = event.target.closest('[data-date-modal-open]');
@@ -244,6 +247,11 @@ document.addEventListener('click', async (event) => {
   if (addEventOpen) {
     event.preventDefault();
     openAddEventModal();
+  }
+
+  if (addEventChat) {
+    event.preventDefault();
+    toggleAddEventChatDetails();
   }
 
   if (addEventClose) {
@@ -1124,8 +1132,19 @@ function closeMenu() {
 
 function openAddEventModal() {
   if (!addEventModal) return;
+  if (addEventChatDetails) addEventChatDetails.hidden = true;
+  addEventChatButton?.setAttribute('aria-expanded', 'false');
   addEventModal.hidden = false;
   document.body.style.overflow = 'hidden';
+}
+
+function toggleAddEventChatDetails() {
+  if (!addEventChatDetails) return;
+  const open = addEventChatDetails.hidden;
+  addEventChatDetails.hidden = !open;
+  addEventChatButton?.setAttribute('aria-expanded', String(open));
+  const icon = addEventChatButton?.querySelector('.add-event-choice-arrow');
+  if (icon) icon.className = `add-event-choice-arrow fa-solid ${open ? 'fa-chevron-up' : 'fa-chevron-down'}`;
 }
 
 function openFilterModal() {
@@ -1181,6 +1200,8 @@ function closeDateModal() {
 function closeAddEventModal() {
   if (!addEventModal) return;
   addEventModal.hidden = true;
+  if (addEventChatDetails) addEventChatDetails.hidden = true;
+  addEventChatButton?.setAttribute('aria-expanded', 'false');
   document.body.style.overflow = '';
   addEventOpenButton?.focus();
 }

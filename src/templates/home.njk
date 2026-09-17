@@ -171,16 +171,31 @@
       </span>
       <p class="add-event-modal-title" id="add-event-title">Añade un evento</p>
     </div>
-    <p class="add-event-modal-copy">Para publicarlo:</p>
-    <ol class="add-event-steps">
-      <li><span class="add-event-step-number">1</span><span>Entra al chat de eventos.</span></li>
-      <li><span class="add-event-step-number">2</span><span>Interactúa para poder enviar imágenes.</span></li>
-      <li><span class="add-event-step-number">3</span><span>Envía el cartel en el subtema de eventos.</span></li>
-      <li><span class="add-event-step-number">4</span><span>Lo revisaremos antes de publicarlo.</span></li>
-    </ol>
-    <a class="add-event-modal-cta" href="https://t.me/AldeaPucela/244/10712" target="_blank" rel="noopener noreferrer">
-      Entendido, ir al grupo de chat
-    </a>
+    <p class="add-event-modal-copy">Elige cómo enviarlo:</p>
+    <div class="add-event-options">
+      <button class="add-event-choice" type="button" data-add-event-chat aria-expanded="false" aria-controls="add-event-chat-details">
+        <i class="add-event-choice-icon fa-brands fa-telegram" aria-hidden="true"></i>
+        <span class="add-event-choice-copy">
+          <strong class="add-event-choice-title">Envío rápido desde el chat</strong>
+          <span class="add-event-choice-detail">Manda solo el cartel.</span>
+        </span>
+        <i class="add-event-choice-arrow fa-solid fa-chevron-down" aria-hidden="true"></i>
+      </button>
+      <a class="add-event-choice" href="/enviar/">
+        <i class="add-event-choice-icon fa-regular fa-clipboard" aria-hidden="true"></i>
+        <span class="add-event-choice-copy">
+          <strong class="add-event-choice-title">Rellenar formulario</strong>
+          <span class="add-event-choice-detail">Añade los datos y el cartel.</span>
+        </span>
+        <i class="add-event-choice-arrow fa-solid fa-chevron-right" aria-hidden="true"></i>
+      </a>
+    </div>
+    <div class="add-event-chat-details" id="add-event-chat-details" data-add-event-chat-details hidden>
+      <p class="add-event-modal-copy">Entra en el chat de eventos, interactúa para poder enviar imágenes y manda el cartel en el subtema de eventos. Lo revisaremos antes de publicarlo.</p>
+      <a class="add-event-modal-cta" href="https://t.me/AldeaPucela/244/10712" target="_blank" rel="noopener noreferrer">
+        Entendido, ir al grupo de chat
+      </a>
+    </div>
   </aside>
 </div>
 

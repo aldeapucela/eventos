@@ -311,6 +311,23 @@ if (form) {
     duplicateTimer = window.setTimeout(checkDuplicates, DEBOUNCE_MS);
   };
 
+  const serializeDuplicateCandidates = () => currentCandidates
+    .slice(0, 3)
+    .map(({ event }) => {
+      const rawUrl = event?.urlPath || `/e/${event?.id || ''}/${event?.slug || ''}/`;
+      const url = rawUrl.startsWith('http')
+        ? rawUrl
+        : `https://eventos.aldeapucela.org${rawUrl.startsWith('/') ? rawUrl : `/${rawUrl}`}`;
+      return {
+        id: String(event?.id || '').slice(0, 40),
+        title: String(event?.title || '').trim().slice(0, 180),
+        starts_at: String(event?.startsAtIso || event?.startsAt || '').slice(0, 80),
+        location: getLocation(event).slice(0, 180),
+        url,
+      };
+    })
+    .filter((candidate) => candidate.title && /^https:\/\/eventos\.aldeapucela\.org\/e\//i.test(candidate.url));
+
   const syncEndDate = () => {
     if (!startDate?.value) {
       if (endDateAutoSynced && endDate) endDate.value = '';
@@ -504,6 +521,7 @@ if (form) {
     data.delete('image');
     data.append('image', compressedImage, compressedImage.name);
     data.set('duplicate_acknowledged', currentCandidates.length ? 'true' : 'false');
+    data.set('duplicate_candidates', JSON.stringify(serializeDuplicateCandidates()));
     data.set('start_time_approximate', form.elements.start_time_approximate?.checked ? 'true' : 'false');
     data.set('submission_id', globalThis.crypto?.randomUUID ? globalThis.crypto.randomUUID() : `${Date.now()}-${Math.random()}`);
     data.delete('website');
