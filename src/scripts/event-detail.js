@@ -216,7 +216,7 @@ function goToChatGPTTicketSearch() {
   const category = cleanField(eventData?.categoryLabel, '');
   const organizer = cleanField(eventData?.organizer, '');
   const notes = cleanField(eventData?.notes, '');
-  const sourceUrl = cleanField(eventData?.sourceUrl, '');
+  const eventPageUrl = `${window.location.origin}${window.location.pathname}`;
 
   // Del evento solo sabemos que no ha declarado entrada libre. Cuando tampoco
   // sabemos que se cobra, la pregunta no es dónde comprar sino cómo se accede:
@@ -255,7 +255,7 @@ Lugar: ${venue}, ${city}, ${country}
 ${category ? `Tipo: ${category}` : ''}
 ${organizer ? `Organiza: ${organizer}` : ''}
 ${notes ? `Contexto adicional: ${notes}` : ''}
-${sourceUrl ? `Fuente original: ${sourceUrl}` : ''}
+Ficha pública en Eventos Aldea Pucela: ${eventPageUrl}
 
 Objetivo:
 ${objetivo}
