@@ -233,7 +233,6 @@ if (form) {
       const url = new URL(PHOTON_API_URL);
       url.searchParams.set('q', `${rawQuery} Valladolid`);
       url.searchParams.set('limit', '5');
-      url.searchParams.set('lang', 'es');
       url.searchParams.set('lat', String(VALLADOLID_LAT));
       url.searchParams.set('lon', String(VALLADOLID_LON));
       url.searchParams.set('bbox', VALLADOLID_BBOX);

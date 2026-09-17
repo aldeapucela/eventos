@@ -865,6 +865,13 @@ async function buildSite(events) {
     title: 'Enviar un evento | Aldea Pucela Eventos',
     meta: { description: 'Envía un cartel y los datos básicos de un evento para que lo revisemos.' },
     robotsMeta: 'noindex,follow',
+    social: {
+      type: 'website',
+      title: 'Enviar un evento | Aldea Pucela Eventos',
+      description: 'Envía un cartel y los datos básicos de un evento para que lo revisemos.',
+      ...socialPreview,
+      url: `${publicBaseUrl}/enviar/`
+    },
     // Production goes through the public API facade; local development keeps
     // the mock unless EVENT_FORM_SUBMISSION_URL is explicitly overridden.
     submissionEndpoint: process.env.EVENT_FORM_SUBMISSION_URL || 'https://api.aldeapucela.org/eventos/submissions',
