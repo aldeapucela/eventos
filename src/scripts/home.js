@@ -1011,11 +1011,20 @@ function renderWeekGroups() {
     day: 'numeric',
     month: 'short'
   });
+  const monthSelection = parseDateMonthFilter(activeTimeFilter);
+  const monthStart = monthSelection
+    ? new Date(monthSelection.year, monthSelection.monthIndex, 1, 0, 0, 0, 0)
+    : null;
+  const ongoingMonthEvents = [];
 
   const grouped = events
     .filter((event) => isWithinListingWindow(event))
     .sort((a, b) => new Date(a.startsAtIso) - new Date(b.startsAtIso))
     .reduce((acc, event) => {
+      if (monthStart && isOngoingAtMonthStart(event, monthStart)) {
+        ongoingMonthEvents.push(event);
+        return acc;
+      }
       const key = event.startsAtDayKey || toLocalDateKey(parseDateLike(event.startsAtIso));
       if (!acc[key]) acc[key] = [];
       acc[key].push(event);
@@ -1023,7 +1032,7 @@ function renderWeekGroups() {
     }, {});
 
   const keys = Object.keys(grouped);
-  if (!keys.length) {
+  if (!keys.length && !ongoingMonthEvents.length) {
     weekGroups.innerHTML = '<p class="text-sm leading-6 text-slate-500">No hay eventos en este periodo.</p>';
     setupLazyEventImages();
     updateCards();
@@ -1031,7 +1040,18 @@ function renderWeekGroups() {
     return;
   }
 
-  weekGroups.innerHTML = keys
+  const ongoingMarkup = ongoingMonthEvents.length
+    ? `
+        <section class="week-day-group week-month-ongoing-group" data-week-day-group data-month-ongoing-group>
+          <div class="week-day-header">
+            <div class="week-day-label">Eventos en curso</div>
+          </div>
+          <div class="event-row-list">${ongoingMonthEvents.map(renderWeekItem).join('')}</div>
+        </section>
+      `
+    : '';
+
+  weekGroups.innerHTML = ongoingMarkup + keys
     .map((key) => {
       const date = parseDateLike(key);
       const prefix = getRelativeDatePrefix(key);
@@ -1293,6 +1313,13 @@ function isWithinListingWindow(event) {
   if (shouldHideFromUpcomingList(event, startsAt)) return false;
   const windowEnd = getListingWindowEnd(activeTimeFilter, today);
   return startsAt <= windowEnd;
+}
+
+function isOngoingAtMonthStart(event, monthStart) {
+  const startsAt = event?.startsAtIso ? parseDateLike(event.startsAtIso) : null;
+  const endsAt = event?.endsAtIso ? parseDateLike(event.endsAtIso) : null;
+  if (!startsAt || !endsAt || Number.isNaN(startsAt.getTime()) || Number.isNaN(endsAt.getTime())) return false;
+  return startsAt < monthStart && endsAt >= monthStart;
 }
 
 function getListingWindowEnd(filterValue, date) {
