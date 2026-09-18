@@ -17,6 +17,7 @@ const PHOTON_API_URL = 'https://photon.komoot.io/api/';
 const VALLADOLID_LAT = 41.651972;
 const VALLADOLID_LON = -4.728606;
 const VALLADOLID_BBOX = '-4.82,41.58,-4.64,41.71';
+const CONTACT_STORAGE_KEY = 'aldea-pucela:event-form-contact:v1';
 
 initTheme();
 setupMenuDrawer();
@@ -42,6 +43,8 @@ if (form) {
   const startDate = form.elements.start_date;
   const startTime = form.elements.start_time;
   const title = form.elements.title;
+  const nameField = form.elements.name;
+  const emailField = form.elements.email;
   const location = form.elements.location;
   const address = form.elements.address;
   const venueSuggestions = form.querySelector('[data-venue-suggestions]');
@@ -67,6 +70,35 @@ if (form) {
     formStatus.dataset.status = kind;
     formStatus.hidden = !message;
   };
+
+  const restoreSavedContact = () => {
+    try {
+      const saved = JSON.parse(globalThis.localStorage?.getItem(CONTACT_STORAGE_KEY) || 'null');
+      if (!saved || typeof saved !== 'object') return;
+      if (nameField && !nameField.value) nameField.value = String(saved.name || '').slice(0, 100);
+      if (emailField && !emailField.value) emailField.value = String(saved.email || '').slice(0, 254);
+    } catch {
+      // localStorage may be unavailable in private browsing or with blocked storage.
+    }
+  };
+
+  const saveContact = () => {
+    try {
+      const contact = {
+        name: String(nameField?.value || '').trim().slice(0, 100),
+        email: String(emailField?.value || '').trim().slice(0, 254),
+      };
+      if (!contact.name && !contact.email) {
+        globalThis.localStorage?.removeItem(CONTACT_STORAGE_KEY);
+        return;
+      }
+      globalThis.localStorage?.setItem(CONTACT_STORAGE_KEY, JSON.stringify(contact));
+    } catch {
+      // localStorage may be unavailable in private browsing or with blocked storage.
+    }
+  };
+
+  restoreSavedContact();
 
   const escapeHtml = (value) => String(value ?? '')
     .replaceAll('&', '&amp;')
@@ -444,6 +476,8 @@ if (form) {
   };
 
   for (const field of [title, startTime, location]) field?.addEventListener('input', scheduleDuplicateCheck);
+  nameField?.addEventListener('input', saveContact);
+  emailField?.addEventListener('input', saveContact);
   location?.addEventListener('input', () => {
     renderVenueSuggestions();
     const queryAtRequest = location.value;
@@ -525,6 +559,7 @@ if (form) {
     data.set('start_time_approximate', form.elements.start_time_approximate?.checked ? 'true' : 'false');
     data.set('submission_id', globalThis.crypto?.randomUUID ? globalThis.crypto.randomUUID() : `${Date.now()}-${Math.random()}`);
     data.delete('website');
+    saveContact();
 
     submitButton.disabled = true;
     submitButton.setAttribute('aria-busy', 'true');
@@ -541,6 +576,7 @@ if (form) {
         throw new Error(`No se ha podido enviar la propuesta${detail ? `: ${detail}` : ` (${response.status})`}.`);
       }
       form.reset();
+      restoreSavedContact();
       renderDuplicates([]);
       hideVenueSuggestions();
       hideAddressSuggestions();
@@ -574,6 +610,7 @@ if (form) {
     form.classList.remove('is-complete');
     if (successPanel) successPanel.hidden = true;
     setStatus('');
+    restoreSavedContact();
     globalThis.turnstile?.reset?.();
     title?.focus({ preventScroll: false });
   });
