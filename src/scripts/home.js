@@ -841,12 +841,14 @@ function renderVenueOptions() {
 
 function renderDateMonthOptions() {
   if (!dateMonthSelect) return;
-  const monthValues = getAvailableEventMonthsThisYear();
+  const monthValues = getAvailableEventMonths();
+  const currentYear = new Date().getFullYear();
   dateMonthSelect.innerHTML = ['<option value="">Opciones</option>', ...monthValues
     .map((value) => {
       const parsed = parseDateMonthFilter(value);
       if (!parsed) return '';
-      const label = capitalize(new Intl.DateTimeFormat('es-ES', { month: 'long' }).format(new Date(parsed.year, parsed.monthIndex, 1)));
+      const monthLabel = capitalize(new Intl.DateTimeFormat('es-ES', { month: 'long' }).format(new Date(parsed.year, parsed.monthIndex, 1)));
+      const label = parsed.year === currentYear ? monthLabel : `${monthLabel} de ${parsed.year}`;
       return `<option value="${value}">${label}</option>`;
     })
     .join('')].join('');
@@ -936,22 +938,31 @@ async function loadSiteData() {
   return siteDataPromise;
 }
 
-function getAvailableEventMonthsThisYear() {
+function getAvailableEventMonths() {
   const now = new Date();
-  const currentYear = now.getFullYear();
-  const currentMonth = now.getMonth();
+  const todayStart = startOfToday(now);
   const months = new Set();
   events.forEach((event) => {
     const startsAt = event?.startsAtIso ? parseDateLike(event.startsAtIso) : null;
     if (!startsAt || Number.isNaN(startsAt.getTime())) return;
-    if (startsAt.getFullYear() !== currentYear) return;
-    const monthIndex = startsAt.getMonth();
-    if (monthIndex < currentMonth) return;
-    months.add(monthIndex);
+    const parsedEndsAt = event?.endsAtIso ? parseDateLike(event.endsAtIso) : null;
+    const endsAt = parsedEndsAt && !Number.isNaN(parsedEndsAt.getTime()) ? parsedEndsAt : startsAt;
+    if (endsAt < todayStart) return;
+
+    // Un evento de varios días puede ocupar meses distintos. Incluimos todos
+    // los meses que todavía intersectan su intervalo para que el selector no
+    // oculte, por ejemplo, un evento que continúa en enero del año siguiente.
+    const firstMonth = new Date(
+      Math.max(startsAt.getTime(), todayStart.getTime())
+    );
+    firstMonth.setDate(1);
+    firstMonth.setHours(0, 0, 0, 0);
+    const lastMonth = new Date(endsAt.getFullYear(), endsAt.getMonth(), 1);
+    for (const cursor = firstMonth; cursor <= lastMonth; cursor.setMonth(cursor.getMonth() + 1)) {
+      months.add(`${DATE_MONTH_PREFIX}${cursor.getFullYear()}-${String(cursor.getMonth() + 1).padStart(2, '0')}`);
+    }
   });
-  return Array.from(months)
-    .sort((a, b) => a - b)
-    .map((monthIndex) => `${DATE_MONTH_PREFIX}${currentYear}-${String(monthIndex + 1).padStart(2, '0')}`);
+  return Array.from(months).sort((a, b) => a.localeCompare(b));
 }
 
 function isDateMonthFilter(value) {
