@@ -221,11 +221,15 @@
   }
 
   .menu-drawer-section-title {
-    @apply mt-7 text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-400;
+    @apply mt-5 px-3 text-[10px] font-semibold uppercase tracking-[0.2em] text-slate-400;
+  }
+
+  .menu-drawer-section-title:first-child {
+    @apply mt-0;
   }
 
   .menu-drawer-actions {
-    @apply mt-3 grid gap-1;
+    @apply mt-1 grid gap-1;
   }
 
   .menu-drawer-pick {

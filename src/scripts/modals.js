@@ -286,8 +286,7 @@ ${categorySection}
         <span>${label}</span>
       </a>`;
     const filters = showFilters ? `
-    <p class="menu-drawer-section-title">Filtros</p>
-    <div class="menu-drawer-actions">
+    <div class="menu-drawer-actions" aria-label="Filtros">
       <a class="menu-drawer-pick" href="/hoy/" data-time-link>
         <i class="menu-drawer-pick-icon fa-regular fa-sun" aria-hidden="true"></i>
         <span>Hoy</span>
@@ -327,12 +326,29 @@ ${categorySection}
       </button>
     </div>
     <nav class="menu-drawer-nav" aria-label="Navegación">
+      <p class="menu-drawer-section-title">EXPLORA</p>
       ${link('home', '/', 'fa-solid fa-house', 'Inicio')}
       ${link('popular', '/populares/', 'fa-solid fa-arrow-trend-up', 'Populares')}
-      ${link('spaces', '/espacios/', 'fa-solid fa-location-dot', 'Espacios')}
-      ${link('types', '/tipos/', 'fa-solid fa-filter', 'Tipos')}
-      ${link('saved', '/guardados/', 'fa-regular fa-bookmark', 'Mis guardados')}
       ${link('archive', '/archivo/', 'fa-solid fa-box-archive', 'Archivo')}
+      ${filters}
+      <p class="menu-drawer-section-title">DESCUBRE</p>
+      ${link('spaces', '/espacios/', 'fa-solid fa-location-dot', 'Espacios')}
+      ${link('types', '/tipos/', 'fa-solid fa-filter', 'Categorías')}
+      <p class="menu-drawer-section-title">PARTICIPA</p>
+      <a class="menu-drawer-link" href="/enviar/">
+        <i class="menu-drawer-link-icon fa-solid fa-calendar-plus" aria-hidden="true"></i>
+        <span>Enviar un evento</span>
+      </a>
+      <a class="menu-drawer-link" href="https://aldeapucela.org" target="_blank" rel="noopener noreferrer">
+        <i class="menu-drawer-link-icon fa-solid fa-people-group" aria-hidden="true"></i>
+        <span>Comunidad</span>
+      </a>
+      <a class="menu-drawer-link" href="https://t.me/aldeapucela/244" target="_blank" rel="noopener noreferrer">
+        <i class="menu-drawer-link-icon fa-brands fa-telegram" aria-hidden="true"></i>
+        <span>Chat sobre eventos</span>
+      </a>
+      <p class="menu-drawer-section-title">PERSONAL</p>
+      ${link('saved', '/guardados/', 'fa-regular fa-bookmark', 'Mis guardados')}
       <button class="menu-drawer-link" type="button" data-subscribe-open="rss">
         <i class="menu-drawer-link-icon fa-solid fa-rss" aria-hidden="true"></i>
         <span>Suscribirse</span>
@@ -345,19 +361,12 @@ ${categorySection}
         <i class="menu-drawer-link-icon fa-solid fa-mobile-screen-button" aria-hidden="true"></i>
         <span data-install-app-label>Añadir al inicio</span>
       </button>
-      <a class="menu-drawer-link" href="https://aldeapucela.org" target="_blank" rel="noopener noreferrer">
-        <i class="menu-drawer-link-icon fa-solid fa-people-group" aria-hidden="true"></i>
-        <span>Comunidad</span>
-      </a>
-      <a class="menu-drawer-link" href="https://t.me/aldeapucela/244" target="_blank" rel="noopener noreferrer">
-        <i class="menu-drawer-link-icon fa-brands fa-telegram" aria-hidden="true"></i>
-        <span>Chat sobre eventos</span>
-      </a>
+      <p class="menu-drawer-section-title">PREFERENCIAS</p>
+      <button class="menu-drawer-link menu-drawer-theme-toggle" type="button" data-theme-toggle aria-label="Cambiar tema" aria-pressed="false">
+        <i class="menu-drawer-link-icon fa-regular fa-moon" aria-hidden="true"></i>
+        <span data-theme-toggle-label>Modo oscuro</span>
+      </button>
     </nav>
-    <button class="menu-drawer-link menu-drawer-theme-toggle" type="button" data-theme-toggle aria-label="Cambiar tema" aria-pressed="false">
-      <i class="menu-drawer-link-icon fa-regular fa-moon" aria-hidden="true"></i>
-      <span data-theme-toggle-label>Modo oscuro</span>
-    </button>${filters}
   </aside>
 </div>`;
   }
