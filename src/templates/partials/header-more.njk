@@ -10,14 +10,45 @@
     <i class="fa-solid fa-chevron-down" aria-hidden="true"></i>
   </button>
   <div class="header-more-menu" id="header-more-menu" data-header-more-menu hidden>
+    <p class="header-more-section-title">Explora</p>
     <a class="header-more-item{% if activeNav == 'archive' %} header-more-item-active{% endif %}" href="/archivo/" data-header-more-item {% if activeNav == 'archive' %}aria-current="page"{% endif %}>
       <i class="fa-solid fa-box-archive" aria-hidden="true"></i>
       <span>Archivo</span>
     </a>
-    <button class="header-more-item" type="button" data-subscribe-open data-header-more-item>
-      <i class="fa-solid fa-rss" aria-hidden="true"></i>
-      <span>Suscribirse</span>
+
+    {% if showFilters %}
+    <p class="header-more-section-title">Filtros</p>
+    <a class="header-more-item{% if timeFilterKey == 'Hoy' %} header-more-item-active{% endif %}" href="{% if timeFilterKey == 'Hoy' %}/{% else %}/hoy/{% endif %}" data-time-link data-header-more-item{% if timeFilterKey == 'Hoy' %} aria-current="page"{% endif %}>
+      <i class="fa-regular fa-sun" aria-hidden="true"></i>
+      <span>Hoy</span>
+    </a>
+    <a class="header-more-item{% if timeFilterKey == 'Esta semana' %} header-more-item-active{% endif %}" href="{% if timeFilterKey == 'Esta semana' %}/{% else %}/esta-semana/{% endif %}" data-time-link data-header-more-item{% if timeFilterKey == 'Esta semana' %} aria-current="page"{% endif %}>
+      <i class="fa-regular fa-calendar" aria-hidden="true"></i>
+      <span>Esta semana</span>
+    </a>
+    <a class="header-more-item{% if timeFilterKey == 'Próxima semana' %} header-more-item-active{% endif %}" href="{% if timeFilterKey == 'Próxima semana' %}/{% else %}/proxima-semana/{% endif %}" data-time-link data-header-more-item{% if timeFilterKey == 'Próxima semana' %} aria-current="page"{% endif %}>
+      <i class="fa-solid fa-calendar-plus" aria-hidden="true"></i>
+      <span>Próxima semana</span>
+    </a>
+    <a class="header-more-item{% if timeFilterKey == 'Este finde' %} header-more-item-active{% endif %}" href="{% if timeFilterKey == 'Este finde' %}/{% else %}/fin-de-semana/{% endif %}" data-time-link data-header-more-item{% if timeFilterKey == 'Este finde' %} aria-current="page"{% endif %}>
+      <i class="fa-solid fa-umbrella-beach" aria-hidden="true"></i>
+      <span>Este finde</span>
+    </a>
+    <button class="header-more-item{% if timeFilterKey == 'Este mes' or timeFilterKey == 'Próximos 3 meses' or timeFilterKey == 'Este año' %} header-more-item-active{% endif %}" type="button" data-date-modal-open data-header-more-item aria-label="Filtrar por fecha">
+      <i class="fa-regular fa-calendar-days" aria-hidden="true"></i>
+      <span data-header-more-date-label>Fecha</span>
     </button>
+    <button class="header-more-item" type="button" data-filter="free" data-header-more-item aria-pressed="false">
+      <i class="fa-solid fa-ticket" aria-hidden="true"></i>
+      <span>Gratis</span>
+    </button>
+    {% endif %}
+
+    <p class="header-more-section-title">Participa</p>
+    <a class="header-more-item" href="/enviar/" data-header-more-item>
+      <i class="fa-solid fa-calendar-plus" aria-hidden="true"></i>
+      <span>Enviar un evento</span>
+    </a>
     <a class="header-more-item" href="https://aldeapucela.org" target="_blank" rel="noopener noreferrer" data-header-more-item>
       <i class="fa-solid fa-people-group" aria-hidden="true"></i>
       <span>Comunidad</span>
@@ -28,7 +59,22 @@
       <span>Chat sobre eventos</span>
       <i class="fa-solid fa-arrow-up-right-from-square header-more-external" aria-hidden="true"></i>
     </a>
-    <div class="header-more-divider" aria-hidden="true"></div>
+
+    <p class="header-more-section-title">Personal</p>
+    <button class="header-more-item" type="button" data-subscribe-open="rss" data-header-more-item>
+      <i class="fa-solid fa-rss" aria-hidden="true"></i>
+      <span>Suscribirse</span>
+    </button>
+    <button class="header-more-item" type="button" data-subscribe-open="calendar" data-header-more-item>
+      <i class="fa-regular fa-calendar-plus" aria-hidden="true"></i>
+      <span>Calendario</span>
+    </button>
+    <button class="header-more-item hidden" type="button" data-install-app-open data-header-more-item>
+      <i class="fa-solid fa-mobile-screen-button" aria-hidden="true"></i>
+      <span data-install-app-label>Añadir al inicio</span>
+    </button>
+
+    <p class="header-more-section-title">Preferencias</p>
     <button class="header-more-item header-more-theme" type="button" data-theme-toggle aria-label="Cambiar tema" aria-pressed="false" data-header-more-item>
       <i class="fa-regular fa-moon" aria-hidden="true"></i>
       <span data-theme-toggle-label>Modo oscuro</span>
