@@ -2,6 +2,7 @@ const spaces = Array.isArray(window.__SPACES__) ? window.__SPACES__ : [];
 const mapNode = document.querySelector('[data-spaces-map]');
 const VALLADOLID_CENTER = [41.6523, -4.7245];
 const VALLADOLID_METRO_ZOOM = window.matchMedia('(max-width: 767px)').matches ? 12 : 13;
+const CARTO_KEY = 'cb1_27ug_1_19138f635d4f03358d12cb43';
 
 if (mapNode && window.L && spaces.length) {
   const points = spaces.filter((space) => Number.isFinite(space.lat) && Number.isFinite(space.lon));
@@ -66,8 +67,8 @@ function createBaseTileLayer() {
 function getTileLayerUrl() {
   const isDark = document.documentElement.classList.contains('dark');
   return isDark
-    ? 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png'
-    : 'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png';
+    ? `https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png?key=${CARTO_KEY}`
+    : `https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png?key=${CARTO_KEY}`;
 }
 
 function createVenueIcon() {
