@@ -21,8 +21,62 @@ export function setupMenuDrawer() {
     drawer.hidden = true;
     document.body.style.overflow = '';
   };
+  const openAddEvent = () => {
+    close();
+    const modal = mountModal('addEvent');
+    if (!modal) return;
+    const details = modal.querySelector('[data-add-event-chat-details]');
+    const chatButton = modal.querySelector('[data-add-event-chat]');
+    if (details) details.hidden = true;
+    chatButton?.setAttribute('aria-expanded', 'false');
+    const arrow = chatButton?.querySelector('.add-event-choice-arrow');
+    if (arrow) arrow.className = 'add-event-choice-arrow fa-solid fa-chevron-down';
+    modal.hidden = false;
+    document.body.style.overflow = 'hidden';
+    modal.querySelector('[data-add-event-chat]')?.focus();
+  };
+  const closeAddEvent = ({ restoreFocus = true } = {}) => {
+    const modal = getMountedModal('addEvent');
+    if (!modal) return;
+    modal.hidden = true;
+    const details = modal.querySelector('[data-add-event-chat-details]');
+    const chatButton = modal.querySelector('[data-add-event-chat]');
+    if (details) details.hidden = true;
+    chatButton?.setAttribute('aria-expanded', 'false');
+    const arrow = chatButton?.querySelector('.add-event-choice-arrow');
+    if (arrow) arrow.className = 'add-event-choice-arrow fa-solid fa-chevron-down';
+    document.body.style.overflow = '';
+    if (restoreFocus) document.querySelector('[data-add-event-open]')?.focus();
+  };
+  const toggleAddEventChat = () => {
+    const modal = getMountedModal('addEvent');
+    if (!modal || modal.hidden) return;
+    const details = modal.querySelector('[data-add-event-chat-details]');
+    const chatButton = modal.querySelector('[data-add-event-chat]');
+    if (!details || !chatButton) return;
+    const open = details.hidden;
+    details.hidden = !open;
+    chatButton.setAttribute('aria-expanded', String(open));
+    const arrow = chatButton.querySelector('.add-event-choice-arrow');
+    if (arrow) arrow.className = `add-event-choice-arrow fa-solid ${open ? 'fa-chevron-up' : 'fa-chevron-down'}`;
+  };
 
   document.addEventListener('click', (event) => {
+    if (event.target.closest('[data-add-event-open]')) {
+      event.preventDefault();
+      openAddEvent();
+      return;
+    }
+    if (event.target.closest('[data-add-event-close]')) {
+      event.preventDefault();
+      closeAddEvent();
+      return;
+    }
+    if (event.target.closest('[data-add-event-chat]')) {
+      event.preventDefault();
+      toggleAddEventChat();
+      return;
+    }
     if (event.target.closest('[data-menu-open]')) {
       event.preventDefault();
       open();
@@ -38,6 +92,11 @@ export function setupMenuDrawer() {
   });
 
   window.addEventListener('keydown', (event) => {
+    const addEvent = getMountedModal('addEvent');
+    if (event.key === 'Escape' && addEvent && !addEvent.hidden) {
+      closeAddEvent();
+      return;
+    }
     const drawer = getMountedModal('menuDrawer');
     if (event.key === 'Escape' && drawer && !drawer.hidden) close();
   });

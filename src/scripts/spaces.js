@@ -1,3 +1,7 @@
+import { setupMenuDrawer } from './menu-drawer.js';
+
+setupMenuDrawer();
+
 const spaces = Array.isArray(window.__SPACES__) ? window.__SPACES__ : [];
 const mapNode = document.querySelector('[data-spaces-map]');
 const VALLADOLID_CENTER = [41.6523, -4.7245];
