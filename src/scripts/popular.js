@@ -81,7 +81,9 @@ function render({ preview = false } = {}) {
 
 function renderEvent(event) {
   const image = safeImageUrl(event.image);
-  const date = event.compactDateLabel || event.scheduleLabel || event.detailScheduleLabel || '';
+  const date = event.isMultiDay
+    ? event.scheduleLabel || event.detailScheduleLabel || event.compactDateLabel || ''
+    : event.compactDateLabel || event.scheduleLabel || event.detailScheduleLabel || '';
   const time = event.timeLabel === '00:00' ? '' : event.timeLabel || '';
   const location = event.listLocation || event.location || event.address || event.venueLabel || '';
   const saveCount = toCount(event.metrics?.saveCount);

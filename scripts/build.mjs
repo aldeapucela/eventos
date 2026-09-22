@@ -386,6 +386,7 @@ function enrichEvent(event) {
           .replace(',', '')
           .replace(/\b\w/, (m) => m.toUpperCase())
       : '',
+    isMultiDay,
     dateRangeLabel: formatDateRange(event.startsAt, event.endsAt),
     scheduleLabel: isMultiDay
       ? formatDateRange(event.startsAt, event.endsAt)
@@ -553,6 +554,7 @@ function buildPopularSiteDataPayload(events) {
       compactDateLabel: event.compactDateLabel,
       scheduleLabel: event.scheduleLabel,
       detailScheduleLabel: event.detailScheduleLabel,
+      isMultiDay: event.isMultiDay,
       timeLabel: event.timeLabel,
       location: event.location,
       displayLocation: event.displayLocation,
