@@ -21,7 +21,8 @@ const CATEGORY_PAGES = {
   'Talleres': { slug: 'talleres', h1: 'Talleres en Valladolid', h2: 'Talleres y actividades formativas', description: 'Agenda de talleres en Valladolid: cursos y actividades formativas recopilados por la comunidad de Aldea Pucela.' },
   'Gastronomía': { slug: 'gastronomia-y-catas', h1: 'Gastronomía y catas en Valladolid', h2: 'Catas, degustaciones y eventos gastronómicos', description: 'Agenda gastronómica en Valladolid: catas, degustaciones y eventos de comida y vino recopilados por la comunidad de Aldea Pucela.' },
   'Recital': { slug: 'recitales', h1: 'Recitales en Valladolid', h2: 'Recitales y poesía', description: 'Agenda de recitales en Valladolid: poesía y lecturas recopiladas por la comunidad de Aldea Pucela.' },
-  'Deportes': { slug: 'deportes', h1: 'Eventos deportivos en Valladolid', h2: 'Deporte y actividades', description: 'Agenda deportiva en Valladolid: competiciones y actividades recopiladas por la comunidad de Aldea Pucela.' }
+  'Deportes': { slug: 'deportes', h1: 'Eventos deportivos en Valladolid', h2: 'Deporte y actividades', description: 'Agenda deportiva en Valladolid: competiciones y actividades recopiladas por la comunidad de Aldea Pucela.' },
+  'Ocio nocturno': { slug: 'ocio-nocturno', h1: 'Ocio nocturno en Valladolid', h2: 'Fiestas, sesiones y propuestas de ocio', description: 'Agenda de ocio nocturno en Valladolid: fiestas, sesiones, tardeos y otras propuestas seleccionadas por la comunidad de Aldea Pucela.' }
 };
 
 // Etiquetas del foro que apunta cada página (la clave + sus alias). Varias

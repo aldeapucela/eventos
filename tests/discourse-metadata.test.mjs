@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { buildListLocation, normalizeDiscourseTopic } from '../src/data/discourse.mjs';
+import { canonicalizeCategory } from '../src/data/category-aliases.mjs';
 import { buildEventJsonLd } from '../src/data/structured-data.mjs';
 
 function normalize(customFields = {}, cooked = '', eventLocation = 'Sala Porta Caeli, Calle Mariano de los Cobos 1', eventName = 'Concierto en Valladolid') {
@@ -57,6 +58,20 @@ test('prefiere los metadatos del evento de Discourse y valida coordenadas y URL 
   assert.equal(event.organizer, 'Asociación Cultural');
   assert.equal(event.categoryLabel, 'Musica');
   assert.equal(event.ticketUrl, 'https://tickets.example.org/event?id=7&ref=web');
+});
+
+test('normaliza ocio nocturno para el display público', () => {
+  const event = normalize({ event_category: 'ocio nocturno' });
+
+  assert.equal(event.categoryLabel, 'Ocio Nocturno');
+  assert.equal(canonicalizeCategory(event.categoryLabel), 'Ocio nocturno');
+});
+
+test('normaliza espectáculo sin tilde para la página existente', () => {
+  const event = normalize({ event_category: 'espectaculo' });
+
+  assert.equal(event.categoryLabel, 'Espectaculo');
+  assert.equal(canonicalizeCategory(event.categoryLabel), 'Espectáculo');
 });
 
 test('mantiene nombre y dirección separados y solo los combina para mostrar', () => {

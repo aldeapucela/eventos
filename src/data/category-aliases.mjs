@@ -18,6 +18,10 @@ export const CATEGORY_DISPLAY = {
   'Infantil': 'Infantil y familia',
   'Magia Circo': 'Magia y circo',
   'Feria Mercado': 'Ferias y mercados',
+  'Espectaculo': 'Espectáculo',
+  'Espectáculo': 'Espectáculo',
+  'Ocio Nocturno': 'Ocio nocturno',
+  'Ocio nocturno': 'Ocio nocturno',
   'Otro': 'Otros',
   'Otros': 'Otros'
 };
@@ -38,6 +42,8 @@ if (process.argv[1] && (await import('node:url')).fileURLToPath(import.meta.url)
   console.assert(canonicalizeCategory('Presentacion Libro') === 'Libros', 'Libros');
   console.assert(canonicalizeCategory('Gastronomia Cata') === 'Gastronomía', 'Gastronomía');
   console.assert(canonicalizeCategory('Infantil') === 'Infantil y familia' && canonicalizeCategory('Infantil Familiar') === 'Infantil y familia', 'Infantil no unifica');
+  console.assert(canonicalizeCategory('Ocio Nocturno') === 'Ocio nocturno' && canonicalizeCategory('Ocio nocturno') === 'Ocio nocturno', 'Ocio nocturno no unifica');
+  console.assert(canonicalizeCategory('Espectaculo') === 'Espectáculo' && canonicalizeCategory('Espectáculo') === 'Espectáculo', 'Espectáculo no unifica');
   console.assert(canonicalizeCategory('Teatro') === 'Teatro', 'identidad');
   console.log('ok: category-aliases');
 }
