@@ -17,6 +17,7 @@ import { readIndex } from '../src/data/store.mjs';
 const STATE_DIR = path.resolve('.ci-state');
 const STATE_FILE = path.join(STATE_DIR, 'events-signature.txt');
 const RECENT_POST_STATE_FILE = path.join(STATE_DIR, 'recent-post-signatures.json');
+const TOPICS_SNAPSHOT_FILE = path.join(STATE_DIR, 'category-topics.json');
 const RAW_CACHE_DIR = path.resolve('cache', 'raw');
 const PROBE_INTERVAL_MS = 15 * 60 * 1000;
 const PROBE_BATCH_SIZE = Math.max(1, Number(process.env.EVENT_EDIT_PROBE_BATCH_SIZE || 20));
@@ -116,7 +117,7 @@ async function readRecentPostState() {
   }
 }
 
-export function diffRecentPostSignatures(previousState, posts, cachedTopicIds = new Set()) {
+export function diffRecentPostSignatures(previousState, posts, cachedTopicIds = new Set(), eligibleTopicIds = null) {
   const previous = previousState?.posts || {};
   const current = {};
   const editedIds = [];
@@ -125,6 +126,7 @@ export function diffRecentPostSignatures(previousState, posts, cachedTopicIds = 
   for (const post of posts) {
     if (post?.post_number !== 1 || !post?.topic_id) continue;
     const topicId = String(post.topic_id);
+    if (eligibleTopicIds && !eligibleTopicIds.has(topicId)) continue;
     const signature = recentPostSignature(post);
     current[topicId] = signature;
 
@@ -145,7 +147,7 @@ export function diffRecentPostSignatures(previousState, posts, cachedTopicIds = 
   };
 }
 
-async function findRecentlyEditedTopicIds(index) {
+async function findRecentlyEditedTopicIds(index, eligibleTopicIds) {
   const [search, previousState] = await Promise.all([
     fetchJson(RECENT_POST_SEARCH_URL),
     readRecentPostState()
@@ -153,22 +155,23 @@ async function findRecentlyEditedTopicIds(index) {
   return diffRecentPostSignatures(
     previousState,
     search.posts || [],
-    new Set(Object.keys(index.topics || {}))
+    new Set(Object.keys(index.topics || {})),
+    eligibleTopicIds
   );
 }
 
-function madridDateKey() {
+function madridDateKey(now = Date.now()) {
   return new Intl.DateTimeFormat('en-CA', {
     timeZone: 'Europe/Madrid',
     year: 'numeric',
     month: '2-digit',
     day: '2-digit'
-  }).format(new Date());
+  }).format(new Date(now));
 }
 
-function computeDigest(topics) {
+export function computeDigest(topics, now = Date.now()) {
   const payload = topics
-    .filter((topic) => !shouldSkipTopic(topic))
+    .filter((topic) => isCurrentOrFutureEvent(topic, now))
     .map(topicSignature)
     .sort()
     .join('\n');
@@ -176,7 +179,7 @@ function computeDigest(topics) {
   // Las páginas temporales (/hoy/, /fin-de-semana/...) dependen de la fecha:
   // salamos el digest con el día de Madrid para forzar un rebuild en la
   // primera pasada del cron tras la medianoche aunque el foro no cambie.
-  return crypto.createHash('sha256').update(`${madridDateKey()}\n${payload}`).digest('hex');
+  return crypto.createHash('sha256').update(`${madridDateKey(now)}\n${payload}`).digest('hex');
 }
 
 async function readPreviousDigest() {
@@ -194,11 +197,14 @@ async function writeCurrentDigest(digest) {
 
 async function main() {
   const topics = await fetchCategoryTopics();
-  const digest = computeDigest(topics);
+  const now = Date.now();
+  const currentTopics = topics.filter((topic) => isCurrentOrFutureEvent(topic, now));
+  const eligibleTopicIds = new Set(currentTopics.map((topic) => String(topic.id)));
+  const digest = computeDigest(topics, now);
   const previous = await readPreviousDigest();
   const index = await readIndex();
-  const recent = await findRecentlyEditedTopicIds(index);
-  const probe = await findEditedTopicIds(topics);
+  const recent = await findRecentlyEditedTopicIds(index, eligibleTopicIds);
+  const probe = await findEditedTopicIds(currentTopics, now);
   const editedIds = [...new Set([...recent.editedIds, ...probe.editedIds])];
   // El build solo se omite cuando el cron no tiene nada que publicar. En un
   // push o ejecución manual el workflow sigue construyendo, pero conserva la
@@ -206,6 +212,9 @@ async function main() {
   const changed = previous !== digest || recent.stateChanged || editedIds.length > 0;
 
   await writeCurrentDigest(digest);
+  // El build reutiliza exactamente este listado para no volver a paginar la
+  // categoría completa de Discourse en un segundo job.
+  await fs.writeFile(TOPICS_SNAPSHOT_FILE, `${JSON.stringify(topics)}\n`);
 
   const outputPath = process.env.GITHUB_OUTPUT;
   if (outputPath) {
@@ -216,6 +225,7 @@ async function main() {
   }
 
   console.log(`topics=${topics.length}`);
+  console.log(`snapshot-topics=${topics.length}`);
   console.log(`current-or-future-topics=${probe.candidateCount}`);
   console.log(`edit-probes=${probe.fetched}/${probe.selected.length}`);
   console.log(`recent-post-signatures=${Object.keys(recent.currentState.posts).length}`);

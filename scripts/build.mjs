@@ -18,7 +18,7 @@ import { getHorizonWindow, getOpenEndedWindow, getTimePages, isWeekendDayKey, re
 import { getCategoryPages, mappedCategoryLabels } from '../src/data/category-pages.mjs';
 import { getVenuePages } from '../src/data/venue-pages.mjs';
 import { canonicalizeCategory } from '../src/data/category-aliases.mjs';
-import { normalizeRefreshTopicIds, syncEvents } from './sync-lib.mjs';
+import { normalizeRefreshTopicIds, syncEvents, validateCategoryTopicsSnapshot } from './sync-lib.mjs';
 
 // Días que lista "Próximos eventos" en la portada. home.js lo lee de
 // data-horizon-days para no duplicar el número.
@@ -1384,12 +1384,19 @@ async function main() {
   // El camino normal conserva la caché y refresca únicamente los temas que el
   // detector ha marcado. --rebuild solo reutiliza una caché ya resincronizada
   // por el workflow manual de recuperación; no lo uses en cada deploy.
+  const topicsSnapshotPath = process.env.EVENT_TOPICS_SNAPSHOT;
+  const categoryTopics = topicsSnapshotPath
+    ? validateCategoryTopicsSnapshot(JSON.parse(await fs.readFile(path.resolve(root, topicsSnapshotPath), 'utf8')))
+    : null;
+  const syncStartedAt = Date.now();
   const events = args.has('--rebuild')
     ? (await loadCachedEvents()).events
     : await syncEvents({
       rebuild: false,
-      refreshTopicIds: normalizeRefreshTopicIds(process.env.EVENT_REFRESH_IDS)
+      refreshTopicIds: normalizeRefreshTopicIds(process.env.EVENT_REFRESH_IDS),
+      categoryTopics
     });
+  console.log(`build: sync ${Date.now() - syncStartedAt}ms (${categoryTopics ? 'snapshot' : 'Discourse'})`);
   await buildSite(events);
 }
 

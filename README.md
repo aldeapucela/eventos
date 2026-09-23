@@ -144,13 +144,16 @@ vuelven a descargar los detalles de todos los temas.
 El flujo de `.github/workflows/deploy-pages.yml` es:
 
 1. Restaura `cache/` y el estado de `.ci-state/`.
-2. `scripts/check-events-signature.mjs` consulta el listado de Discourse y
-   compara su digest con el anterior. Además, detecta ediciones del primer
+2. `scripts/check-events-signature.mjs` consulta una sola vez el listado de
+   Discourse, guarda una instantánea para que el build la reutilice y compara
+   con el digest anterior únicamente los eventos vigentes o futuros. Además,
+   detecta ediciones del primer
    post mediante `updated_at` y firmas de contenido. Para no cargar el foro,
    solo sondea una tanda rotatoria de eventos vigentes o futuros (por defecto,
    20 por intervalo).
 3. Si encuentra cambios, publica sus IDs en `refresh_ids`.
-4. `scripts/build.mjs` llama al sincronizador con `rebuild: false`. Este
+4. `scripts/build.mjs` reutiliza la instantánea del detector y llama al
+   sincronizador con `rebuild: false`. Este
    conserva los registros cuyo `topicSignature` no ha cambiado y solo vuelve a
    leer los temas nuevos, editados o forzados mediante `EVENT_REFRESH_IDS`.
 5. Guarda la caché actualizada y publica `dist/` en GitHub Pages.
@@ -160,6 +163,8 @@ vigente o futuro, un deploy posterior reconstruye únicamente ese evento. Si se
 necesita forzar un tema concreto, se puede pasar su ID mediante
 `workflow_dispatch`/`EVENT_REFRESH_IDS`. No se utiliza un webhook: la
 detección sucede durante el propio deploy leyendo Discourse por HTTP.
+Los temas pasados permanecen en la caché y en el archivo público, pero ya no
+participan en el digest ni en las sondas de edición del cron.
 
 ### Metadatos de ubicación
 

@@ -131,11 +131,24 @@ async function removeOrphanedCacheFiles(knownTopicIds) {
  * del primer post. No convertir esta función en una resincronización completa:
  * --rebuild queda reservado al workflow manual de recuperación.
  */
-export async function syncEvents({ rebuild = false, refreshTopicIds = [] } = {}) {
+export function validateCategoryTopicsSnapshot(value) {
+  if (!Array.isArray(value) || value.length === 0) {
+    throw new Error('El snapshot de temas de Discourse está vacío o no es una lista');
+  }
+  if (value.some((topic) => !topic || !Number.isFinite(Number(topic.id)) || !topic.slug)) {
+    throw new Error('El snapshot de temas de Discourse contiene registros inválidos');
+  }
+  return value;
+}
+
+export async function syncEvents({ rebuild = false, refreshTopicIds = [], categoryTopics = null } = {}) {
   await ensureCacheDirs();
   const index = await readIndex();
   const forcedRefreshIds = normalizeRefreshTopicIds(refreshTopicIds);
-  const forcedTopics = await addForcedTopicsMissingFromCategory(await fetchCategoryTopics(), forcedRefreshIds);
+  const listedTopics = categoryTopics == null
+    ? await fetchCategoryTopics()
+    : validateCategoryTopicsSnapshot(categoryTopics);
+  const forcedTopics = await addForcedTopicsMissingFromCategory(listedTopics, forcedRefreshIds);
   const { topics, recoveredIds } = await recoverCachedTopicsMissingFromCategory(forcedTopics, index);
   const nextIndex = { topics: {} };
   const normalized = [];

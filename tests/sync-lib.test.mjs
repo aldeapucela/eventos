@@ -1,8 +1,8 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { normalizeRefreshTopicIds, shouldRefreshTopic, topicFromDetail } from '../scripts/sync-lib.mjs';
+import { normalizeRefreshTopicIds, shouldRefreshTopic, topicFromDetail, validateCategoryTopicsSnapshot } from '../scripts/sync-lib.mjs';
 import { firstPostUpdatedAt } from '../src/data/discourse.mjs';
-import { diffRecentPostSignatures, isCurrentOrFutureEvent, selectEditProbeBatch } from '../scripts/check-events-signature.mjs';
+import { computeDigest, diffRecentPostSignatures, isCurrentOrFutureEvent, selectEditProbeBatch } from '../scripts/check-events-signature.mjs';
 
 test('normaliza IDs de temas recibidos desde workflow_dispatch', () => {
   assert.deepEqual(
@@ -95,4 +95,33 @@ test('la búsqueda reciente identifica el tema cuyo extracto cambió', () => {
   );
   assert.deepEqual(unchanged.editedIds, []);
   assert.equal(unchanged.stateChanged, false);
+});
+
+test('el digest ignora cambios en eventos ya pasados', () => {
+  const now = Date.parse('2026-09-23T12:00:00Z');
+  const future = { id: 2, slug: 'futuro', visible: true, updated_at: '2026-09-20T10:00:00Z', event_starts_at: '2026-09-25T10:00:00Z' };
+  const past = { id: 1, slug: 'pasado', visible: true, updated_at: '2026-09-01T10:00:00Z', event_starts_at: '2026-09-01T10:00:00Z' };
+  assert.equal(computeDigest([future, past], now), computeDigest([future, { ...past, updated_at: '2026-09-22T10:00:00Z' }], now));
+  assert.notEqual(computeDigest([future, past], now), computeDigest([{ ...future, updated_at: '2026-09-22T10:00:00Z' }, past], now));
+});
+
+test('las firmas recientes ignoran temas que ya no son vigentes', () => {
+  const result = diffRecentPostSignatures(
+    { posts: { 1: 'anterior', 2: 'anterior' } },
+    [
+      { id: 10, topic_id: 1, post_number: 1, blurb: 'Pasado editado' },
+      { id: 20, topic_id: 2, post_number: 1, blurb: 'Futuro editado' }
+    ],
+    new Set(['1', '2']),
+    new Set(['2'])
+  );
+  assert.deepEqual(Object.keys(result.currentState.posts), ['2']);
+  assert.deepEqual(result.editedIds, ['2']);
+});
+
+test('valida la instantánea compartida entre detector y build', () => {
+  const topics = [{ id: 1, slug: 'evento' }];
+  assert.equal(validateCategoryTopicsSnapshot(topics), topics);
+  assert.throws(() => validateCategoryTopicsSnapshot([]), /vacío/);
+  assert.throws(() => validateCategoryTopicsSnapshot([{ id: 1 }]), /inválidos/);
 });

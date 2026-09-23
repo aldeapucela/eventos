@@ -64,6 +64,16 @@ jobs:
         id: detect
         run: node scripts/check-events-signature.mjs
 
+      - name: Upload category topics snapshot
+        if: github.event_name != 'schedule' || steps.detect.outputs.changed == 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: category-topics-${{ github.run_id }}
+          path: .ci-state/category-topics.json
+          retention-days: 1
+          if-no-files-found: error
+          include-hidden-files: true
+
   build:
     needs: detect-changes
     if: github.event_name != 'schedule' || needs.detect-changes.outputs.changed == 'true'
@@ -90,6 +100,12 @@ jobs:
           restore-keys: |
             events-data-${{ runner.os }}-
 
+      - name: Download category topics snapshot
+        uses: actions/download-artifact@v4
+        with:
+          name: category-topics-${{ github.run_id }}
+          path: .ci-state
+
       - name: Snapshot restored cache index
         run: |
           mkdir -p .ci-state
@@ -103,6 +119,7 @@ jobs:
       - name: Build static site
         env:
           EVENT_REFRESH_IDS: "${{ inputs.refresh_event_id }} ${{ needs.detect-changes.outputs.refresh_ids }}"
+          EVENT_TOPICS_SNAPSHOT: .ci-state/category-topics.json
         run: npm run build
 
       - name: Validate cache health
