@@ -77,6 +77,7 @@ async function findEditedTopicIds(topics, now = Date.now()) {
   const index = await readIndex();
   const selected = selectEditProbeBatch(topics, now);
   const editedIds = [];
+  const failedProbeIds = [];
   let fetched = 0;
 
   for (const topic of selected) {
@@ -89,7 +90,22 @@ async function findEditedTopicIds(topics, now = Date.now()) {
 
     if (fetched > 0) await sleep(PROBE_PAUSE_MS);
     fetched += 1;
-    const detail = await fetchTopicDetail(topic.slug, topic.id);
+    let detail;
+    try {
+      detail = await fetchTopicDetail(topic.slug, topic.id);
+    } catch (firstError) {
+      // Una sonda auxiliar no debe impedir publicar un evento nuevo porque
+      // Discourse responda puntualmente con 429/503. Reintentamos una vez y,
+      // si sigue fallando, dejamos ese tema para otra rotación.
+      await sleep(1500);
+      try {
+        detail = await fetchTopicDetail(topic.slug, topic.id);
+      } catch (retryError) {
+        failedProbeIds.push(String(topic.id));
+        console.warn(`edit-probe-skipped=${topic.id}: ${retryError.message || firstError.message}`);
+        continue;
+      }
+    }
     // updated_at del primer post es la señal que permite refrescar una edición
     // manual aunque el listado del tema no cambie su last_posted_at.
     const currentUpdatedAt = firstPostUpdatedAt(detail);
@@ -98,7 +114,7 @@ async function findEditedTopicIds(topics, now = Date.now()) {
     }
   }
 
-  return { candidateCount: topics.filter((topic) => isCurrentOrFutureEvent(topic, now)).length, editedIds, fetched, selected };
+  return { candidateCount: topics.filter((topic) => isCurrentOrFutureEvent(topic, now)).length, editedIds, failedProbeIds, fetched, selected };
 }
 
 function recentPostSignature(post) {
@@ -228,6 +244,7 @@ async function main() {
   console.log(`snapshot-topics=${topics.length}`);
   console.log(`current-or-future-topics=${probe.candidateCount}`);
   console.log(`edit-probes=${probe.fetched}/${probe.selected.length}`);
+  console.log(`failed-edit-probes=${probe.failedProbeIds.join(',') || 'none'}`);
   console.log(`recent-post-signatures=${Object.keys(recent.currentState.posts).length}`);
   console.log(`edited-topics=${editedIds.join(',') || 'none'}`);
   console.log(`changed=${changed}`);
