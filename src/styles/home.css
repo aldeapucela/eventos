@@ -792,3 +792,96 @@
     }
   }
 }
+
+  /* Portada compacta: deja más espacio a la agenda en la primera pantalla. */
+  .hero-mobile-visual,
+  .hero-mobile-overlay {
+    min-height: 180px;
+  }
+
+  .hero-mobile-overlay {
+    justify-content: center;
+    padding: 1.25rem 2rem;
+  }
+
+  .hero-mobile-title {
+    max-width: 22ch;
+    font-size: 2.5rem;
+    line-height: 1;
+  }
+
+  .hero-mobile-subtitle {
+    max-width: 36ch;
+    margin-top: 0.5rem;
+    font-size: 1rem;
+    line-height: 1.4;
+  }
+
+  .hero-mobile-accent {
+    margin-top: 0.625rem;
+  }
+
+  @media (max-width: 767px) {
+    .hero-mobile-copy {
+      padding-bottom: 0;
+    }
+
+    .event-compact-ongoing .event-compact-copy {
+      padding: 0.625rem;
+    }
+
+    .event-compact-ongoing .event-compact-title {
+      font-size: 0.8125rem;
+      line-height: 1.25;
+      -webkit-line-clamp: 2;
+    }
+
+    .event-compact-ongoing .event-compact-badges {
+      padding-top: 0.375rem;
+    }
+
+    .event-compact-ongoing .compact-badge {
+      max-width: 100%;
+      padding: 0;
+      border: 0;
+      border-radius: 0;
+      background: transparent;
+      font-size: 0.6875rem;
+      line-height: 1.25;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      display: block;
+    }
+
+    .event-compact-ongoing .compact-badge-success {
+      display: none;
+    }
+
+    html.dark .event-compact-ongoing .compact-badge {
+      background: transparent;
+    }
+
+    #ongoing-carousel {
+      padding-bottom: 0.5rem;
+    }
+
+    .hero-mobile-visual,
+    .hero-mobile-overlay {
+      min-height: 150px;
+    }
+
+    .hero-mobile-overlay {
+      padding: 1rem 1.5rem;
+    }
+
+    .hero-mobile-title {
+      max-width: 16ch;
+      font-size: 2rem;
+    }
+
+    .hero-mobile-subtitle {
+      max-width: 29ch;
+      font-size: 0.875rem;
+    }
+  }
