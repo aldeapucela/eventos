@@ -1350,12 +1350,19 @@ async function buildSite(events) {
     );
   }
   await writeFile('manifest.webmanifest', JSON.stringify({
+    id: '/',
     name: 'Eventos Valladolid',
     short_name: 'Eventos',
     description: 'Agenda cultural de Valladolid alimentada por la comunidad de Aldea Pucela.',
     start_url: '/',
     scope: '/',
     display: 'standalone',
+    prefer_related_applications: false,
+    related_applications: [{
+      platform: 'webapp',
+      url: '/manifest.webmanifest',
+      id: `${publicBaseUrl}/`
+    }],
     background_color: '#f5f1ea',
     theme_color: '#6f59a8',
     icons: [

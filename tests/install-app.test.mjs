@@ -5,7 +5,7 @@ import vm from 'node:vm';
 
 const source = (await fs.readFile(new URL('../src/scripts/install-app.js', import.meta.url), 'utf8')).replace(/^import .*\n/, '');
 
-function setup({ earlyPrompt = null, ios = false, standalone = false, mobile = true, legacy = false } = {}) {
+function setup({ earlyPrompt = null, ios = false, standalone = false, mobile = true, legacy = false, relatedApps } = {}) {
   const windowListeners = new Map();
   const documentListeners = new Map();
   const storage = new Map(legacy ? [['aldeapucela_install_app_dismissed_until', '9999999999999']] : []);
@@ -23,10 +23,13 @@ function setup({ earlyPrompt = null, ios = false, standalone = false, mobile = t
   const nodes = new Map();
   const context = {
     URLSearchParams,
+    URL,
     window: {
       __PWA_INSTALL_PROMPT__: earlyPrompt,
-      location: { hostname: 'eventos.aldeapucela.org', search: '' },
-      navigator: { userAgent: ios ? 'iPhone' : 'Chrome', standalone, platform: '', maxTouchPoints: 0 },
+      location: { hostname: 'eventos.aldeapucela.org', href: 'https://eventos.aldeapucela.org/', search: '' },
+      navigator: { userAgent: ios ? 'iPhone' : 'Chrome', standalone, platform: '', maxTouchPoints: 0, getInstalledRelatedApps: relatedApps },
+      setTimeout,
+      clearTimeout,
       scrollY: 300,
       localStorage: { getItem: (key) => storage.get(key), setItem: (key, value) => storage.set(key, value), removeItem: (key) => storage.delete(key) },
       matchMedia: (query) => ({ matches: query.includes('display-mode') ? standalone : mobile, addEventListener() {} }),
@@ -55,6 +58,34 @@ function setup({ earlyPrompt = null, ios = false, standalone = false, mobile = t
 function promptEvent(outcome = 'dismissed') {
   return { calls: 0, preventDefault() {}, async prompt() { this.calls++; }, userChoice: Promise.resolve({ outcome }) };
 }
+
+test('oculta instalación en una pestaña cuando Chrome detecta la PWA instalada', async () => {
+  const app = setup({ relatedApps: async () => [{ platform: 'webapp', url: 'https://eventos.aldeapucela.org/manifest.webmanifest' }] });
+  assert.equal(app.classes.has('hidden'), true);
+  await new Promise(setImmediate);
+  assert.equal(app.classes.has('hidden'), true);
+  assert.equal(app.menuClasses.has('hidden'), true);
+  await app.click();
+  assert.equal(app.modal(), null);
+});
+
+test('permite instalar si no está instalada o si falla la consulta', async () => {
+  for (const relatedApps of [async () => [], async () => { throw new Error('No disponible'); }]) {
+    const app = setup({ relatedApps });
+    await new Promise(setImmediate);
+    assert.equal(app.classes.has('hidden'), false);
+  }
+});
+
+test('no confunde otras aplicaciones con esta PWA y detecta desinstalación al volver', async () => {
+  let installed = true;
+  const app = setup({ relatedApps: async () => installed ? [{ platform: 'webapp', url: '/manifest.webmanifest' }] : [{ platform: 'webapp', url: 'https://otro.example/manifest.webmanifest' }] });
+  await new Promise(setImmediate);
+  assert.equal(app.classes.has('hidden'), true);
+  installed = false;
+  await app.emit('focus');
+  assert.equal(app.classes.has('hidden'), false);
+});
 
 test('usa el evento nativo capturado antes de cargar el módulo y permite reintentar', async () => {
   const first = promptEvent();

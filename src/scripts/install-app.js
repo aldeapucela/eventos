@@ -21,6 +21,8 @@ function updateDiagnostics(modal) {
     nativeReady: Boolean(deferredInstallPrompt),
     earlyCapture: Boolean(window.__PWA_INSTALL_PROMPT__),
     installed: isInstalled(),
+    relatedInstalled,
+    installCheckPending,
     ...diagnostics,
     worker: navigator.serviceWorker?.controller?.state || diagnostics.worker,
     workerError: window.__PWA_WORKER_ERROR__ || '',
@@ -71,6 +73,8 @@ const previewMode = (() => {
 let deferredInstallPrompt = window.__PWA_INSTALL_PROMPT__ || null;
 let nativeInstallSupported = Boolean(deferredInstallPrompt);
 let promptInProgress = false;
+let relatedInstalled = false;
+let installCheckPending = typeof window.navigator.getInstalledRelatedApps === 'function';
 let interacted = (() => {
   try {
     return Boolean(window.localStorage.getItem(INTERACTED_KEY) || window.localStorage.getItem(LEGACY_DISMISS_KEY));
@@ -94,6 +98,7 @@ const isMobileDevice = () => {
 };
 
 const isInstalled = () => (
+  relatedInstalled ||
   window.__PWA_INSTALLED__ === true ||
   window.matchMedia?.('(display-mode: standalone)').matches ||
   window.navigator.standalone === true
@@ -111,7 +116,28 @@ function markInteracted() {
 }
 
 function canOfferInstall() {
-  return (isMobileDevice() || nativeInstallSupported || hasNativeInstallPrompt()) && !isInstalled();
+  return !installCheckPending && (isMobileDevice() || nativeInstallSupported || hasNativeInstallPrompt()) && !isInstalled();
+}
+
+async function checkInstalledApps() {
+  if (typeof window.navigator.getInstalledRelatedApps !== 'function') return;
+  // Un fallo o una API lenta no deben borrar el acceso a las instrucciones.
+  const timeout = window.setTimeout(() => {
+    installCheckPending = false;
+    syncInstallUi();
+  }, 1500);
+  try {
+    const apps = await window.navigator.getInstalledRelatedApps();
+    const manifestUrl = new URL('/manifest.webmanifest', window.location.href).href;
+    relatedInstalled = apps.some((app) => app.platform === 'webapp' && app.url && new URL(app.url, window.location.href).href === manifestUrl);
+    if (relatedInstalled) closeInstallModal();
+  } catch (error) {
+    diagnostics.relatedAppsError = `${error.name}: ${error.message}`;
+  } finally {
+    window.clearTimeout(timeout);
+    installCheckPending = false;
+    syncInstallUi();
+  }
 }
 
 function hasScrolledEnough() {
@@ -227,6 +253,7 @@ window.addEventListener('beforeinstallprompt', (event) => {
   deferredInstallPrompt = event;
   nativeInstallSupported = true;
   window.__PWA_INSTALLED__ = false;
+  relatedInstalled = false;
   syncInstallUi();
 });
 
@@ -278,3 +305,5 @@ document.addEventListener('modal:mounted', (event) => {
 });
 
 syncInstallUi();
+checkInstalledApps();
+window.addEventListener('focus', checkInstalledApps);
