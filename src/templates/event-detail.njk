@@ -46,7 +46,7 @@
       type="button"
       data-lightbox-open
       aria-label="Ver imagen completa"
-      style="background-image:url('{{ event.image or '/assets/placeholder-event.svg' }}')"
+      style="background-image:{% if event.image %}url('{{ event.image }}'), {% endif %}url('{{ event.categoryLabel | eventPlaceholder }}')"
     ></button>
     <div class="detail-clean-body">
       <h1 class="detail-clean-title">{{ event.title }}</h1>
@@ -221,7 +221,7 @@
           {% for related in relatedEvents %}
           <article class="event-compact flex-none w-[46%] md:w-[23%] snap-start">
             <div class="event-compact-link">
-              <div class="event-compact-image" style="background-image:url('{{ related.image or '/assets/placeholder-event.svg' }}')"></div>
+              <div class="event-compact-image" style="background-image:{% if related.image %}url('{{ related.image }}'), {% endif %}url('{{ related.categoryLabel | eventPlaceholder }}')"></div>
               <div class="event-compact-copy">
                 <p class="event-compact-topline"><span>{{ related.scheduleLabel }}</span></p>
                 <h4 class="event-compact-title"><a href="{{ related.urlPath }}">{{ related.title }}</a></h4>
@@ -258,7 +258,7 @@
           {% for related in moreInVenueEvents %}
           <article class="event-compact flex-none w-[46%] md:w-[23%] snap-start">
             <div class="event-compact-link">
-              <div class="event-compact-image" style="background-image:url('{{ related.image or '/assets/placeholder-event.svg' }}')"></div>
+              <div class="event-compact-image" style="background-image:{% if related.image %}url('{{ related.image }}'), {% endif %}url('{{ related.categoryLabel | eventPlaceholder }}')"></div>
               <div class="event-compact-copy">
                 <p class="event-compact-topline"><span>{{ related.scheduleLabel }}</span></p>
                 <h4 class="event-compact-title"><a href="{{ related.urlPath }}">{{ related.title }}</a></h4>

@@ -1,3 +1,4 @@
+import { eventPlaceholder } from './event-placeholder.js';
 import { initTheme } from './theme.js';
 import { setupMenuDrawer } from './menu-drawer.js';
 import { setupSubscribe } from './subscribe.js';
@@ -76,11 +77,15 @@ function render({ preview = false } = {}) {
     ? 'Cargando popularidad…'
     : `${ranked.length} ${ranked.length === 1 ? 'evento vigente' : 'eventos vigentes'} · ${mode === 'saves' ? 'ordenados por guardados' : 'ordenados por visitas'}`;
   if (state) state.hidden = true;
+  list.querySelectorAll('img').forEach((image) => {
+    image.addEventListener('error', () => { image.src = image.dataset.placeholder; }, { once: true });
+  });
   syncSavedButtons();
 }
 
 function renderEvent(event) {
-  const image = safeImageUrl(event.image);
+  const placeholder = eventPlaceholder(event.categoryLabel);
+  const image = event.image ? safeImageUrl(event.image) : placeholder;
   const date = event.isMultiDay
     ? event.scheduleLabel || event.detailScheduleLabel || event.compactDateLabel || ''
     : event.compactDateLabel || event.scheduleLabel || event.detailScheduleLabel || '';
@@ -93,7 +98,7 @@ function renderEvent(event) {
       <article class="popular-event-row ${time ? 'has-time' : 'no-time'}">
         ${time ? `<time class="popular-event-time" datetime="${escapeAttribute(event.startsAtIso || event.startsAt || '')}">${escapeHtml(time)}</time>` : ''}
         <a class="popular-event-link" href="${escapeAttribute(eventUrl)}">
-          <img class="popular-event-image" src="${escapeAttribute(image)}" alt="" width="96" height="96" loading="lazy" decoding="async" />
+          <img class="popular-event-image" data-placeholder="${placeholder}" style="background-image:url('${placeholder}');background-size:cover;background-position:center" src="${escapeAttribute(image)}" alt="" width="96" height="96" loading="lazy" decoding="async" />
           <span class="popular-event-copy">
             <span class="popular-event-date">${escapeHtml(date)}</span>
             <span class="popular-event-title">${escapeHtml(event.title || 'Evento')}</span>
@@ -180,8 +185,8 @@ function safeEventPath(path, id, slug) {
 }
 
 function safeImageUrl(value) {
-  const candidate = String(value || '/assets/placeholder-event.svg');
-  return /^(https?:\/\/|\/)/i.test(candidate) && !candidate.startsWith('//') ? candidate : '/assets/placeholder-event.svg';
+  const candidate = String(value || eventPlaceholder());
+  return /^(https?:\/\/|\/)/i.test(candidate) && !candidate.startsWith('//') ? candidate : eventPlaceholder();
 }
 
 function escapeHtml(value) {

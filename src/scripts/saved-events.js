@@ -1,3 +1,4 @@
+import { eventPlaceholder } from './event-placeholder.js';
 import { initTheme } from './theme.js';
 import { setupSubscribe } from './subscribe.js';
 import { setupMenuDrawer } from './menu-drawer.js';
@@ -94,6 +95,23 @@ function renderSavedGroups() {
 
   emptyState.classList.add('hidden');
 
+  const wasOpen = groupsRoot.querySelector('[data-saved-ended]')?.open || false;
+  const now = Date.now();
+  const ended = savedEvents.filter((item) => isSavedEventEnded(item, now));
+  const upcoming = savedEvents.filter((item) => !isSavedEventEnded(item, now));
+  groupsRoot.innerHTML = `${ended.length ? `<details class="saved-ended" data-saved-ended ${wasOpen ? 'open' : ''}><summary>Mostrar eventos finalizados (${ended.length})</summary><div class="saved-day-groups">${renderDayGroups(ended)}</div></details>` : ''}${renderDayGroups(upcoming)}`;
+}
+
+function isSavedEventEnded(item, now) {
+  const value = item.endsAtIso || item.endsAt || item.startsAtIso || item.startsAt;
+  if (/^\d{4}-\d{2}-\d{2}$/.test(String(value || ''))) {
+    return String(value) < toLocalDateKey(new Date(now));
+  }
+  const end = Date.parse(value || '');
+  return Number.isFinite(end) && end < now;
+}
+
+function renderDayGroups(savedEvents) {
   const grouped = savedEvents.reduce((acc, item) => {
     const startsAt = parseDateLike(item.startsAtIso || item.startsAt);
     const key = item.startsAtDayKey || toLocalDateKey(startsAt);
@@ -108,7 +126,7 @@ function renderSavedGroups() {
     month: 'long'
   });
 
-  groupsRoot.innerHTML = Object.keys(grouped)
+  return Object.keys(grouped)
     .sort((a, b) => new Date(a) - new Date(b))
     .map((key) => {
       const date = parseDateLike(key);
@@ -128,13 +146,14 @@ function renderSavedGroups() {
 }
 
 function renderCard(event) {
-  const image = event.image || '/assets/placeholder-event.svg';
+  const image = eventPlaceholder(event.categoryLabel);
+  const photo = event.image ? `url('${String(event.image).replace(/'/g, '%27')}'), ` : '';
   const prefix = getRelativeDatePrefix(event.startsAtIso);
   const schedule = `${prefix ? `${prefix}, ` : ''}${event.scheduleLabel || `${event.compactDateLabel || ''}${event.timeLabel ? ` · ${event.timeLabel}` : ''}`}`;
   return `
     <article class="event-compact" data-starts-at="${event.startsAtIso || ''}">
       <div class="event-compact-link">
-        <div class="event-compact-image" style="background-image:url('${image}')"></div>
+        <div class="event-compact-image" style="background-image:${photo}url('${image}')"></div>
         <div class="event-compact-copy">
           <div class="event-compact-topline">
             <span>${schedule}</span>

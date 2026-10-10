@@ -1,3 +1,4 @@
+import { eventPlaceholder } from './event-placeholder.js';
 import { initTheme } from './theme.js';
 import { setupLocationLinks } from './location-link.js';
 import { setupSubscribe } from './subscribe.js';
@@ -1196,7 +1197,7 @@ function renderWeekItem(event) {
     return `
       <article class="event-compact" data-category="${event.categoryLabel || ''}" data-free="${event.isFree ? 'true' : 'false'}" data-venue="${event.venueLabel || event.venue || event.location || ''}" data-venue-key="${event.venueKey || ''}" data-starts-at="${event.startsAtIso || ''}" data-ends-at="${event.endsAtIso || ''}">
         <div class="event-compact-link">
-          <img class="event-compact-image" src="/assets/placeholder-event.svg" ${image} alt="" width="400" height="500" loading="lazy" decoding="async" />
+          <img class="event-compact-image" src="${eventPlaceholder(event.categoryLabel)}" ${image} alt="" width="400" height="500" loading="lazy" decoding="async" />
           <div class="event-compact-copy">
           <div class="event-compact-topline">
             <span>${event.scheduleLabel || `${event.compactDateLabel || ''}${event.timeLabel ? ` · ${event.timeLabel}` : ''}`}</span>
@@ -1244,7 +1245,9 @@ function loadLazyEventImage(image) {
   const source = image.dataset.src;
   if (!source) return;
   image.loading = 'eager';
-  image.src = source;
+  const loadedImage = new Image();
+  loadedImage.onload = () => { image.src = source; };
+  loadedImage.src = source;
   image.removeAttribute('data-src');
 }
 

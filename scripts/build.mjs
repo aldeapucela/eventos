@@ -1,3 +1,4 @@
+import { categoryPlaceholderIcons, eventPlaceholder } from '../src/scripts/event-placeholder.js';
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import { createHash } from 'node:crypto';
@@ -69,6 +70,8 @@ const env = nunjucks.configure(path.join(root, 'src', 'templates'), {
   noCache: true
 });
 
+env.addFilter('eventPlaceholder', eventPlaceholder);
+
 async function ensureDirs() {
   await fs.mkdir(cssDir, { recursive: true });
   await fs.mkdir(jsDir, { recursive: true });
@@ -78,6 +81,16 @@ async function ensureDirs() {
 
 async function copyStaticAssets() {
   await fs.cp(path.join(root, 'src', 'assets'), assetsDir, { recursive: true });
+  const placeholderDir = path.join(assetsDir, 'event-placeholders');
+  await fs.mkdir(placeholderDir, { recursive: true });
+  for (const icon of new Set([...Object.values(categoryPlaceholderIcons), 'calendar-days'])) {
+    const source = await fs.readFile(path.join(root, 'node_modules', '@fortawesome', 'fontawesome-free', 'svgs', 'solid', `${icon}.svg`), 'utf8');
+    const viewBox = source.match(/viewBox="([^"]+)"/)[1];
+    const content = source.slice(source.indexOf('>') + 1, source.lastIndexOf('</svg>'));
+    // El SVG anidado conserva las proporciones del icono y su aviso de licencia.
+    const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 500"><rect width="400" height="500" fill="#f5f1fb"/><svg x="140" y="190" width="120" height="120" viewBox="${viewBox}" fill="#6b4895" opacity="0.16">${content}</svg></svg>`;
+    await fs.writeFile(path.join(placeholderDir, `${icon}.svg`), svg);
+  }
 }
 
 async function copyVersionedPosters() {
@@ -110,6 +123,7 @@ async function compileCss(inputFile, outputFile) {
 }
 
 async function copyJs() {
+  await fs.copyFile(path.join(root, 'src', 'scripts', 'event-placeholder.js'), path.join(jsDir, 'event-placeholder.js'));
   await fs.copyFile(path.join(root, 'src', 'scripts', 'home.js'), path.join(jsDir, 'home.js'));
   await fs.copyFile(path.join(root, 'src', 'scripts', 'event-detail.js'), path.join(jsDir, 'event-detail.js'));
   await fs.copyFile(path.join(root, 'src', 'scripts', 'comments.js'), path.join(jsDir, 'comments.js'));

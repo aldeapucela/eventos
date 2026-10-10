@@ -779,6 +779,18 @@
     @apply gap-2;
   }
 
+  .saved-ended summary {
+    @apply cursor-pointer py-3 text-sm font-semibold text-slate-600;
+  }
+
+  .saved-ended[open] summary {
+    @apply mb-4;
+  }
+
+  html.dark .saved-ended summary {
+    @apply text-slate-300;
+  }
+
   .saved-day-groups {
     @apply space-y-8;
   }

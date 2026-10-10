@@ -31,7 +31,7 @@
           {% for event in group.events %}
           <article class="event-compact" data-category="{{ event.categoryLabel }}" data-free="{{ 'true' if event.isFree else 'false' }}" data-starts-at="{{ event.startsAt }}">
             <div class="event-compact-link">
-              <div class="event-compact-image" style="background-image:url('{{ event.image or '/assets/placeholder-event.svg' }}')"></div>
+              <div class="event-compact-image" style="background-image:{% if event.image %}url('{{ event.image }}'), {% endif %}url('{{ event.categoryLabel | eventPlaceholder }}')"></div>
               <div class="event-compact-copy">
                 <div class="event-compact-topline">
                   <span>{% if event.scheduleLabel %}{{ event.scheduleLabel }}{% else %}{{ event.compactDateLabel }}{% if event.timeLabel %} · {{ event.timeLabel }}{% endif %}{% endif %}</span>
