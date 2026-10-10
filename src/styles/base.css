@@ -2729,6 +2729,19 @@ html.dark .site-footer-copy a {
     @apply text-brand-300 decoration-brand-400 hover:text-brand-200;
   }
 
+  /* Los placeholders SVG son transparentes: el fondo sigue el tema de la web. */
+  .event-compact-image,
+  .popular-event-image,
+  .detail-clean-hero-button {
+    background-color: #f5f1fb;
+  }
+
+  html.dark .event-compact-image,
+  html.dark .popular-event-image,
+  html.dark .detail-clean-hero-button {
+    background-color: var(--bg-card);
+  }
+
   /* Reduce visual punch of imagery in dark mode */
   html.dark .event-compact-image,
   html.dark .event-row-image,

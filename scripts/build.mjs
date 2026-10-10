@@ -88,7 +88,7 @@ async function copyStaticAssets() {
     const viewBox = source.match(/viewBox="([^"]+)"/)[1];
     const content = source.slice(source.indexOf('>') + 1, source.lastIndexOf('</svg>'));
     // El SVG anidado conserva las proporciones del icono y su aviso de licencia.
-    const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 500"><rect width="400" height="500" fill="#f5f1fb"/><svg x="140" y="190" width="120" height="120" viewBox="${viewBox}" fill="#6b4895" opacity="0.16">${content}</svg></svg>`;
+    const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 500"><svg x="140" y="190" width="120" height="120" viewBox="${viewBox}" fill="#b09acb" opacity="0.28">${content}</svg></svg>`;
     await fs.writeFile(path.join(placeholderDir, `${icon}.svg`), svg);
   }
 }
