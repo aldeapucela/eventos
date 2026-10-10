@@ -4,11 +4,11 @@ import { buildListLocation, normalizeDiscourseTopic } from '../src/data/discours
 import { canonicalizeCategory } from '../src/data/category-aliases.mjs';
 import { buildEventJsonLd } from '../src/data/structured-data.mjs';
 
-function normalize(customFields = {}, cooked = '', eventLocation = 'Sala Porta Caeli, Calle Mariano de los Cobos 1', eventName = 'Concierto en Valladolid') {
+function normalize(customFields = {}, cooked = '', eventLocation = 'Sala Porta Caeli, Calle Mariano de los Cobos 1', eventName = 'Concierto en Valladolid', topicTitle = 'Concierto en Valladolid') {
   const topic = {
     id: 9001,
     slug: 'concierto-en-valladolid',
-    title: 'Concierto en Valladolid',
+    title: topicTitle,
     created_at: '2026-09-13T10:00:00Z',
     event_starts_at: '2026-09-20T18:00:00Z'
   };
@@ -29,9 +29,22 @@ function normalize(customFields = {}, cooked = '', eventLocation = 'Sala Porta C
 }
 
 test('decodifica entidades HTML del nombre estructurado de Discourse', () => {
-  const event = normalize({}, '', 'Sala Porta Caeli', 'Kenny &quot;Blues Boss&quot; Wayne (Concierto)');
+  const event = normalize({}, '', 'Sala Porta Caeli', 'Kenny &quot;Blues Boss&quot; Wayne (Concierto)', '');
 
   assert.equal(event.title, 'Kenny "Blues Boss" Wayne (Concierto)');
+});
+
+test('prefiere el título editado del tema sobre el nombre antiguo del evento', () => {
+  const event = normalize({}, '', 'Sala Porta Caeli', 'Un Viaje a los 90s', '[Suspendido] Un Viaje a los 90s');
+  assert.equal(event.title, '[Suspendido] Un Viaje a los 90s');
+});
+
+test('usa el título del detalle antes del nombre del bloque y decodifica entidades', () => {
+  const event = normalizeDiscourseTopic({ id: 1, slug: 'concierto' }, {
+    title: 'Kenny &quot;Blues Boss&quot; Wayne',
+    post_stream: { posts: [{ event: { name: 'Nombre antiguo' } }] }
+  });
+  assert.equal(event.title, 'Kenny "Blues Boss" Wayne');
 });
 
 test('prefiere los metadatos del evento de Discourse y valida coordenadas y URL de entradas', () => {

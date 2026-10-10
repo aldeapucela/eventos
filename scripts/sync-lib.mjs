@@ -3,6 +3,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { fetchCategoryTopics, fetchJson, fetchTopicDetail, firstPostUpdatedAt, FORUM_BASE, normalizeDetailToRecord, shouldSkipTopic, sleep, topicSignature } from '../src/data/discourse.mjs';
 import { ensureCacheDirs, readIndex, writeCachedTopic, writeIndex } from '../src/data/store.mjs';
+import { decodeHtmlEntities } from '../src/data/format.mjs';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const CACHE_SCHEMA_VERSION = 3;
@@ -24,6 +25,10 @@ export function normalizeRefreshTopicIds(value = []) {
 
 export function shouldRefreshTopic(topicId, refreshTopicIds) {
   return normalizeRefreshTopicIds(refreshTopicIds).has(String(topicId));
+}
+
+export function needsTitleRefresh(topic, cachedData) {
+  return Boolean(topic.title) && decodeHtmlEntities(topic.title) !== cachedData.title;
 }
 
 // Convierte el detalle directo de Discourse en la proyección mínima que
@@ -170,9 +175,13 @@ export async function syncEvents({ rebuild = false, refreshTopicIds = [], catego
     if (unchanged) {
       const cachedPath = path.join(root, 'cache', 'data', `${topic.id}.json`);
       const cachedData = JSON.parse(await fs.readFile(cachedPath, 'utf8'));
-      normalized.push(cachedData);
-      nextIndex.topics[topic.id] = cached;
-      continue;
+      if (!needsTitleRefresh(topic, cachedData)) {
+        normalized.push(cachedData);
+        nextIndex.topics[topic.id] = cached;
+        continue;
+      }
+      // Repara solo los títulos desactualizados, sin invalidar toda la caché.
+      console.log(`title-refresh=${topic.id}`);
     }
 
     // Pausa corta entre detalles para no chocar con el límite de peticiones

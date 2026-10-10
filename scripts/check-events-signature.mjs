@@ -35,6 +35,7 @@ const RECENT_POST_SEARCH_URL = `${FORUM_BASE}/search.json?q=${encodeURIComponent
 function topicSignature(topic) {
   return [
     dataTopicSignature(topic),
+    topic.title || '',
     topic.visible ? '1' : '0',
     topic.pinned ? '1' : '0'
   ].join('|');

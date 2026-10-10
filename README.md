@@ -158,6 +158,12 @@ El flujo de `.github/workflows/deploy-pages.yml` es:
    leer los temas nuevos, editados o forzados mediante `EVENT_REFRESH_IDS`.
 5. Guarda la caché actualizada y publica `dist/` en GitHub Pages.
 
+El título mostrado procede del tema de Discourse; el nombre del bloque
+`[event]` solo se usa como respaldo. El detector incluye el título en su
+digest y el sincronizador compara el título del listado con el registro
+cacheado: si difieren, relee solo ese tema, incluso si su slug y fechas no
+cambian. Esto también corrige los títulos antiguos sin invalidar toda la caché.
+
 Esto significa que si alguien edita manualmente el primer post de un evento
 vigente o futuro, un deploy posterior reconstruye únicamente ese evento. Si se
 necesita forzar un tema concreto, se puede pasar su ID mediante

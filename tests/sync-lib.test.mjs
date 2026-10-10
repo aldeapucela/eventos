@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { normalizeRefreshTopicIds, shouldRefreshTopic, topicFromDetail, validateCategoryTopicsSnapshot } from '../scripts/sync-lib.mjs';
+import { needsTitleRefresh, normalizeRefreshTopicIds, shouldRefreshTopic, topicFromDetail, validateCategoryTopicsSnapshot } from '../scripts/sync-lib.mjs';
 import { firstPostUpdatedAt } from '../src/data/discourse.mjs';
 import { computeDigest, diffRecentPostSignatures, isCurrentOrFutureEvent, selectEditProbeBatch } from '../scripts/check-events-signature.mjs';
 
@@ -15,6 +15,21 @@ test('solo fuerza la recarga del tema indicado', () => {
   const ids = normalizeRefreshTopicIds(['2592']);
   assert.equal(shouldRefreshTopic(2592, ids), true);
   assert.equal(shouldRefreshTopic(2600, ids), false);
+});
+
+test('refresca solo títulos distintos sin invalidar registros sin cambios', () => {
+  const cached = { title: 'Un Viaje a los 90s' };
+  assert.equal(needsTitleRefresh({ title: cached.title }, cached), false);
+  assert.equal(needsTitleRefresh({ title: '[Suspendido] Un Viaje a los 90s' }, cached), true);
+  assert.equal(needsTitleRefresh({ title: 'Kenny &quot;Blues Boss&quot;' }, { title: 'Kenny "Blues Boss"' }), false);
+  assert.equal(needsTitleRefresh({}, cached), false);
+});
+
+test('detecta un título editado aunque el slug y las fechas no cambien', () => {
+  const now = Date.parse('2026-10-10T12:00:00Z');
+  const topic = { id: 1408, slug: 'concierto', title: 'Concierto', visible: true, event_starts_at: '2026-10-11T00:00:00Z' };
+  assert.equal(computeDigest([topic], now), computeDigest([{ ...topic }], now));
+  assert.notEqual(computeDigest([topic], now), computeDigest([{ ...topic, title: '[Suspendido] Concierto' }], now));
 });
 
 test('reconstruye la proyección de un tema recuperado por ID', () => {
