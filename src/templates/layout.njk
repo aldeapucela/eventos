@@ -137,8 +137,10 @@
     <script src="/assets/js/matomo.js?v={{ assetVersion }}"></script>
     <script>
       if ('serviceWorker' in navigator) {
-        window.addEventListener('load', () => {
-          navigator.serviceWorker.register('/service-worker.js').catch(() => {});
+        // No esperar a imágenes ni recursos externos para habilitar la PWA.
+        window.__PWA_WORKER_REGISTRATION__ = navigator.serviceWorker.register('/service-worker.js');
+        window.__PWA_WORKER_REGISTRATION__.catch((error) => {
+          window.__PWA_WORKER_ERROR__ = `${error.name}: ${error.message}`;
         });
       }
     </script>

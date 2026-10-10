@@ -16,20 +16,38 @@ function updateDiagnostics(modal) {
     modal.querySelector('.install-app-modal-body')?.append(panel);
   }
   panel.textContent = JSON.stringify({
-    version: 'pwa-diagnostic-1',
+    version: 'pwa-diagnostic-2',
     browser: navigator.userAgent,
     nativeReady: Boolean(deferredInstallPrompt),
     earlyCapture: Boolean(window.__PWA_INSTALL_PROMPT__),
     installed: isInstalled(),
-    ...diagnostics
+    ...diagnostics,
+    worker: navigator.serviceWorker?.controller?.state || diagnostics.worker,
+    workerError: window.__PWA_WORKER_ERROR__ || '',
+    pageState: document.readyState
   }, null, 2);
 }
 
 if (diagnosticMode) {
-  navigator.serviceWorker?.getRegistration().then((registration) => {
-    diagnostics.worker = registration?.active?.state || 'sin registro activo';
+  const trackRegistration = (registration) => {
+    const refresh = () => {
+      const worker = registration?.active || registration?.waiting || registration?.installing;
+      diagnostics.worker = worker?.state || 'sin registro activo';
+      updateDiagnostics(getModal());
+    };
+    refresh();
+    registration?.addEventListener('updatefound', () => {
+      registration.installing?.addEventListener('statechange', refresh);
+      refresh();
+    });
+    registration?.installing?.addEventListener('statechange', refresh);
+  };
+  (window.__PWA_WORKER_REGISTRATION__ || navigator.serviceWorker?.getRegistration())?.then(trackRegistration)
+    .catch((error) => { diagnostics.worker = error.message; updateDiagnostics(getModal()); });
+  navigator.serviceWorker?.ready.then(trackRegistration);
+  navigator.serviceWorker?.addEventListener('controllerchange', () => {
     updateDiagnostics(getModal());
-  }).catch((error) => { diagnostics.worker = error.message; updateDiagnostics(getModal()); });
+  });
   fetch('/manifest.webmanifest', { cache: 'no-store' }).then(async (response) => {
     if (!response.ok) throw new Error(`HTTP ${response.status}`);
     const manifest = await response.json();
