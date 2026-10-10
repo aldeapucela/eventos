@@ -24,6 +24,16 @@
     background: #eee7f8;
   }
 
+  .install-app-pill-compact {
+    width: 2.9rem;
+    padding-inline: 0;
+    justify-content: center;
+  }
+
+  .install-app-pill-compact span {
+    display: none;
+  }
+
   .install-app-pill:focus-visible {
     outline: 3px solid rgba(111, 89, 168, 0.4);
     outline-offset: 3px;

@@ -1,7 +1,7 @@
 import { getMountedModal, mountModal } from './modals.js';
 
-const DISMISS_UNTIL_KEY = 'aldeapucela_install_app_dismissed_until';
-const DISMISS_DURATION_MS = 30 * 24 * 60 * 60 * 1000;
+const INTERACTED_KEY = 'aldeapucela_install_app_interacted';
+const LEGACY_DISMISS_KEY = 'aldeapucela_install_app_dismissed_until';
 const PROMOTION_SCROLL_THRESHOLD = 240;
 
 // El modal se inyecta al abrirlo (ver modals.js), así que sus nodos se resuelven
@@ -12,7 +12,16 @@ const previewMode = (() => {
   const mode = new URLSearchParams(window.location.search).get('pwa-preview');
   return isLocalPreview && (mode === 'android' || mode === 'ios') ? mode : '';
 })();
-let deferredInstallPrompt = null;
+let deferredInstallPrompt = window.__PWA_INSTALL_PROMPT__ || null;
+let nativeInstallSupported = Boolean(deferredInstallPrompt);
+let promptInProgress = false;
+let interacted = (() => {
+  try {
+    return Boolean(window.localStorage.getItem(INTERACTED_KEY) || window.localStorage.getItem(LEGACY_DISMISS_KEY));
+  } catch {
+    return false;
+  }
+})();
 
 const isIos = () => {
   if (previewMode) return previewMode === 'ios';
@@ -29,29 +38,24 @@ const isMobileDevice = () => {
 };
 
 const isInstalled = () => (
+  window.__PWA_INSTALLED__ === true ||
   window.matchMedia?.('(display-mode: standalone)').matches ||
   window.navigator.standalone === true
 );
 
-function isPromotionDismissed() {
-  try {
-    return Number(window.localStorage.getItem(DISMISS_UNTIL_KEY) || 0) > Date.now();
-  } catch {
-    return false;
-  }
-}
+const hasNativeInstallPrompt = () => previewMode ? previewMode === 'android' : Boolean(deferredInstallPrompt);
 
-const hasNativeInstallPrompt = () => Boolean(deferredInstallPrompt) || previewMode === 'android';
-
-function dismissPromotion() {
+function markInteracted() {
+  interacted = true;
   try {
-    window.localStorage.setItem(DISMISS_UNTIL_KEY, String(Date.now() + DISMISS_DURATION_MS));
+    window.localStorage.setItem(INTERACTED_KEY, '1');
+    window.localStorage.removeItem(LEGACY_DISMISS_KEY);
   } catch {}
   syncInstallUi();
 }
 
 function canOfferInstall() {
-  return isMobileDevice() && !isInstalled();
+  return (isMobileDevice() || nativeInstallSupported || hasNativeInstallPrompt()) && !isInstalled();
 }
 
 function hasScrolledEnough() {
@@ -94,10 +98,11 @@ function updateModalCopy() {
 
 function syncInstallUi() {
   const canOffer = canOfferInstall();
-  const shouldShow = canOffer && hasScrolledEnough() && !isPromotionDismissed();
-
   document.querySelectorAll('[data-install-app-open]').forEach((trigger) => {
-    trigger.classList.toggle('hidden', !shouldShow);
+    const floating = trigger.classList.contains('install-app-pill');
+    trigger.classList.toggle('hidden', !(canOffer && (!floating || hasScrolledEnough())));
+    trigger.classList.toggle('install-app-pill-compact', floating && interacted && !hasNativeInstallPrompt());
+    trigger.disabled = promptInProgress;
   });
   document.querySelectorAll('[data-install-app-label]').forEach((label) => {
     label.textContent = hasNativeInstallPrompt() ? 'Instalar app' : 'Añadir al inicio';
@@ -114,33 +119,41 @@ function openInstallModal() {
   modal.querySelector('[data-install-app-close]')?.focus({ preventScroll: true });
 }
 
-function closeInstallModal({ snooze = false } = {}) {
+function closeInstallModal() {
   const modal = getModal();
   if (!modal) return;
   modal.hidden = true;
   document.body.style.overflow = '';
-  if (snooze) dismissPromotion();
 }
 
 async function promptNativeInstall() {
-  if (!deferredInstallPrompt) return;
+  if (!deferredInstallPrompt || promptInProgress) return;
   const promptEvent = deferredInstallPrompt;
   deferredInstallPrompt = null;
+  window.__PWA_INSTALL_PROMPT__ = null;
+  promptInProgress = true;
   syncInstallUi();
-  await promptEvent.prompt();
-  const choice = await promptEvent.userChoice?.catch(() => null);
-  if (choice?.outcome === 'dismissed') dismissPromotion();
-  syncInstallUi();
+  try {
+    await promptEvent.prompt();
+    await promptEvent.userChoice;
+  } catch {
+    // Si el navegador retira el permiso, conserva el acceso a las instrucciones.
+    openInstallModal();
+  } finally {
+    promptInProgress = false;
+    syncInstallUi();
+  }
 }
 
 async function handleInstallAction() {
+  if (isInstalled() || promptInProgress) return;
+  markInteracted();
   // La vista local no debe abrir un instalador real del navegador anfitrión.
   if (previewMode) {
     if (previewMode === 'ios') openInstallModal();
     return;
   }
   if (deferredInstallPrompt) {
-    dismissPromotion();
     await promptNativeInstall();
     return;
   }
@@ -150,10 +163,13 @@ async function handleInstallAction() {
 window.addEventListener('beforeinstallprompt', (event) => {
   event.preventDefault();
   deferredInstallPrompt = event;
+  nativeInstallSupported = true;
+  window.__PWA_INSTALLED__ = false;
   syncInstallUi();
 });
 
 window.addEventListener('appinstalled', () => {
+  window.__PWA_INSTALLED__ = true;
   deferredInstallPrompt = null;
   closeInstallModal();
   syncInstallUi();
@@ -179,7 +195,7 @@ document.addEventListener('click', async (event) => {
   }
   if (event.target.closest('[data-install-app-close]')) {
     event.preventDefault();
-    closeInstallModal({ snooze: true });
+    closeInstallModal();
     return;
   }
   if (event.target.closest('[data-install-app-confirm]')) {
@@ -190,7 +206,7 @@ document.addEventListener('click', async (event) => {
 
 window.addEventListener('keydown', (event) => {
   const modal = getModal();
-  if (event.key === 'Escape' && modal && !modal.hidden) closeInstallModal({ snooze: true });
+  if (event.key === 'Escape' && modal && !modal.hidden) closeInstallModal();
 });
 
 // El botón [data-install-app-open] vive dentro del drawer, que se inyecta al

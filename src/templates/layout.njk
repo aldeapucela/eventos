@@ -8,6 +8,17 @@
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="default" />
     <meta name="apple-mobile-web-app-title" content="Eventos" />
+    <script>
+      // Conserva el evento aunque llegue antes de cargar el módulo de instalación.
+      window.addEventListener('beforeinstallprompt', function (event) {
+        event.preventDefault();
+        window.__PWA_INSTALL_PROMPT__ = event;
+      });
+      window.addEventListener('appinstalled', function () {
+        window.__PWA_INSTALL_PROMPT__ = null;
+        window.__PWA_INSTALLED__ = true;
+      });
+    </script>
     {% if googleSiteVerification %}<meta name="google-site-verification" content="{{ googleSiteVerification }}" />{% endif %}
     <title>{{ title or 'Aldea Pucela Eventos' }}</title>
     <link rel="icon" type="image/png" href="/assets/favicon.png" />
