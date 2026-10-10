@@ -55,7 +55,7 @@ function canOfferInstall() {
 }
 
 function hasScrolledEnough() {
-  return window.scrollY >= PROMOTION_SCROLL_THRESHOLD;
+  return Boolean(previewMode) || window.scrollY >= PROMOTION_SCROLL_THRESHOLD;
 }
 
 function updateModalCopy() {
@@ -134,12 +134,16 @@ async function promptNativeInstall() {
 }
 
 async function handleInstallAction() {
+  // La vista local no debe abrir un instalador real del navegador anfitrión.
+  if (previewMode) {
+    if (previewMode === 'ios') openInstallModal();
+    return;
+  }
   if (deferredInstallPrompt) {
     dismissPromotion();
     await promptNativeInstall();
     return;
   }
-  if (previewMode === 'android') return;
   openInstallModal();
 }
 

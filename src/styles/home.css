@@ -1,4 +1,44 @@
 @layer components {
+  .install-app-pill {
+    position: fixed;
+    right: 5rem;
+    bottom: 1.25rem;
+    z-index: 35;
+    display: inline-flex;
+    min-height: 2.9rem;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.625rem 1rem;
+    border: 1px solid rgba(111, 89, 168, 0.2);
+    border-radius: 9999px;
+    background: rgba(246, 242, 252, 0.96);
+    color: #5e4699;
+    font-size: 0.875rem;
+    font-weight: 600;
+    box-shadow: 0 6px 20px -12px rgba(50, 29, 94, 0.3);
+    backdrop-filter: blur(8px);
+    transition: background-color 180ms ease;
+  }
+
+  .install-app-pill:hover {
+    background: #eee7f8;
+  }
+
+  .install-app-pill:focus-visible {
+    outline: 3px solid rgba(111, 89, 168, 0.4);
+    outline-offset: 3px;
+  }
+
+  html.dark .install-app-pill {
+    background: rgba(42, 35, 57, 0.96);
+    border-color: rgba(153, 126, 212, 0.3);
+    color: #ddd2fb;
+  }
+
+  html.dark .install-app-pill:hover {
+    background: #362b48;
+  }
+
   .hero-grid {
     background:
       radial-gradient(circle at top right, rgba(127, 91, 180, 0.14), transparent 30%),

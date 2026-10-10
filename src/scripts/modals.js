@@ -367,6 +367,7 @@ ${categorySection}
       <p class="menu-drawer-section-title">EXPLORA</p>
       ${link('home', '/', 'fa-solid fa-house', 'Inicio')}
       ${link('popular', '/populares/', 'fa-solid fa-arrow-trend-up', 'Populares')}
+      ${link('saved', '/guardados/', 'fa-regular fa-bookmark', 'Mis guardados')}
       ${link('archive', '/archivo/', 'fa-solid fa-box-archive', 'Archivo')}
       ${filters}
       <p class="menu-drawer-section-title">DESCUBRE</p>
@@ -385,8 +386,7 @@ ${categorySection}
         <i class="menu-drawer-link-icon fa-brands fa-telegram" aria-hidden="true"></i>
         <span>Chat sobre eventos</span>
       </a>
-      <p class="menu-drawer-section-title">PERSONAL</p>
-      ${link('saved', '/guardados/', 'fa-regular fa-bookmark', 'Mis guardados')}
+      <p class="menu-drawer-section-title">SIGUE LA AGENDA</p>
       <button class="menu-drawer-link" type="button" data-subscribe-open="rss">
         <i class="menu-drawer-link-icon fa-solid fa-rss" aria-hidden="true"></i>
         <span>Suscribirse</span>

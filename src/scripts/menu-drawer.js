@@ -4,10 +4,9 @@
 import { activeNavFromPath, getMountedModal, mountModal } from './modals.js';
 
 export function setupMenuDrawer() {
-  // Los filtros del drawer solo tienen sentido donde hay listado filtrable
-  // (portada y páginas temporales, que son las que traen los chips de filtro).
-  // Antes lo decidía la plantilla con hideDrawerFilters.
-  const showFilters = Boolean(document.querySelector('[data-filter-modal-open], .mobile-chip-row'));
+  // En la portada los filtros ya están visibles; conserva los accesos del
+  // drawer en las demás páginas que tienen un listado filtrable.
+  const showFilters = window.location.pathname !== '/' && Boolean(document.querySelector('[data-filter-modal-open], .mobile-chip-row'));
 
   const open = () => {
     const drawer = mountModal('menuDrawer', { activeNav: activeNavFromPath(), showFilters });
