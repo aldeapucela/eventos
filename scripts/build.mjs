@@ -1364,7 +1364,7 @@ async function buildSite(events) {
       id: `${publicBaseUrl}/`
     }],
     background_color: '#f5f1ea',
-    theme_color: '#6f59a8',
+    theme_color: '#ffffff',
     icons: [
       {
         src: '/assets/pwa-icon-192.png',

@@ -4,7 +4,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="description" content="{{ meta.description or 'Agenda cultural de Aldea Pucela' }}" />
-    <meta name="theme-color" content="#6f59a8" />
+    <meta name="theme-color" content="#ffffff" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="default" />
     <meta name="apple-mobile-web-app-title" content="Eventos" />
@@ -60,6 +60,7 @@
             document.documentElement.classList.add('dark');
           }
           document.documentElement.style.colorScheme = theme;
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', theme === 'dark' ? '#111316' : '#ffffff');
         } catch (_) {}
       }());
     </script>

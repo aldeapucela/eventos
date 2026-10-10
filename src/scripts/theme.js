@@ -38,6 +38,7 @@ export function applyTheme(theme) {
   const root = document.documentElement;
   root.classList.toggle('dark', nextTheme === 'dark');
   root.style.colorScheme = nextTheme;
+  document.querySelector('meta[name="theme-color"]')?.setAttribute('content', nextTheme === 'dark' ? '#111316' : '#ffffff');
   updateThemeToggles(nextTheme);
 }
 
