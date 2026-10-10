@@ -73,6 +73,7 @@ const previewMode = (() => {
 let deferredInstallPrompt = window.__PWA_INSTALL_PROMPT__ || null;
 let nativeInstallSupported = Boolean(deferredInstallPrompt);
 let promptInProgress = false;
+let progressTimer = null;
 let relatedInstalled = false;
 let installCheckPending = typeof window.navigator.getInstalledRelatedApps === 'function';
 let interacted = (() => {
@@ -206,7 +207,31 @@ function closeInstallModal() {
   const modal = getModal();
   if (!modal) return;
   modal.hidden = true;
+  if (!getMountedModal('installProgress') || getMountedModal('installProgress').hidden) {
+    document.body.style.overflow = '';
+  }
+}
+
+function closeInstallProgress() {
+  window.clearTimeout(progressTimer);
+  progressTimer = null;
+  const overlay = getMountedModal('installProgress');
+  if (!overlay || overlay.hidden) return;
+  overlay.hidden = true;
   document.body.style.overflow = '';
+}
+
+function showInstallProgress() {
+  closeInstallModal();
+  closeInstallProgress();
+  const overlay = mountModal('installProgress');
+  if (!overlay) return;
+  overlay.hidden = false;
+  document.body.style.overflow = 'hidden';
+  overlay.querySelector('[data-install-progress-close]')?.focus({ preventScroll: true });
+  // Android puede emitir appinstalled antes de terminar de crear el WebAPK.
+  // Mantén la orientación visual durante 12 s sin afirmar que ya ha terminado.
+  progressTimer = window.setTimeout(closeInstallProgress, 12000);
 }
 
 async function promptNativeInstall() {
@@ -222,6 +247,7 @@ async function promptNativeInstall() {
     await promptEvent.prompt();
     const choice = await promptEvent.userChoice;
     diagnostics.outcome = choice?.outcome || '';
+    if (choice?.outcome === 'accepted') showInstallProgress();
   } catch (error) {
     diagnostics.error = `${error.name}: ${error.message}`;
     // Si el navegador retira el permiso, conserva el acceso a las instrucciones.
@@ -277,6 +303,11 @@ window.addEventListener('scroll', () => {
 }, { passive: true });
 
 document.addEventListener('click', async (event) => {
+  if (event.target.closest('[data-install-progress-close]')) {
+    event.preventDefault();
+    closeInstallProgress();
+    return;
+  }
   if (event.target.closest('[data-install-app-open]')) {
     event.preventDefault();
     await handleInstallAction();
@@ -294,6 +325,7 @@ document.addEventListener('click', async (event) => {
 });
 
 window.addEventListener('keydown', (event) => {
+  if (event.key === 'Escape') closeInstallProgress();
   const modal = getModal();
   if (event.key === 'Escape' && modal && !modal.hidden) closeInstallModal();
 });

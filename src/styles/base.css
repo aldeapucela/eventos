@@ -1351,6 +1351,75 @@
     @apply mt-5 grid gap-4;
   }
 
+  .install-progress {
+    position: fixed;
+    inset: 0;
+    z-index: 90;
+    display: grid;
+    place-items: center;
+    padding: 1.25rem;
+    background: rgba(15, 23, 42, 0.48);
+    backdrop-filter: blur(4px);
+  }
+
+  .install-progress[hidden] { display: none; }
+
+  .install-progress-panel {
+    position: relative;
+    width: min(100%, 22rem);
+    padding: 2.5rem 1.5rem 2rem;
+    border-radius: 1.5rem;
+    background: #fff;
+    color: #2f3b54;
+    text-align: center;
+  }
+
+  .install-progress-close {
+    position: absolute;
+    top: 0.75rem;
+    right: 0.75rem;
+    width: 2.75rem;
+    height: 2.75rem;
+    border-radius: 50%;
+    color: #64748b;
+  }
+
+  .install-progress-close:focus-visible {
+    outline: 3px solid #9b7ad6;
+  }
+
+  .install-progress-spinner {
+    display: block;
+    width: 2.5rem;
+    height: 2.5rem;
+    margin: 0 auto 1.25rem;
+    border: 3px solid rgba(111, 89, 168, 0.18);
+    border-top-color: #6f59a8;
+    border-radius: 50%;
+    animation: install-progress-spin 0.9s linear infinite;
+  }
+
+  .install-progress-title {
+    font-size: 1.25rem;
+    font-weight: 600;
+    line-height: 1.4;
+  }
+
+  .install-progress-copy {
+    margin-top: 0.625rem;
+    font-size: 0.875rem;
+    color: #64748b;
+  }
+
+  html.dark .install-progress-panel { background: #1a1d22; color: #f5f3ee; }
+  html.dark .install-progress-copy,
+  html.dark .install-progress-close { color: #b9b3aa; }
+
+  @keyframes install-progress-spin { to { transform: rotate(360deg); } }
+  @media (prefers-reduced-motion: reduce) {
+    .install-progress-spinner { animation: none; }
+  }
+
   .install-app-steps {
     @apply m-0 grid gap-3 pl-0 text-sm leading-6 text-slate-600;
     list-style: none;

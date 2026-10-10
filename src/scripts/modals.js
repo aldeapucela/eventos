@@ -42,6 +42,17 @@ export function activeNavFromPath(pathname = window.location.pathname) {
 }
 
 const TEMPLATES = {
+  installProgress: () => `
+<div class="install-progress" hidden>
+  <div class="install-progress-panel" role="dialog" aria-modal="true" aria-labelledby="install-progress-title">
+    <button class="install-progress-close" type="button" data-install-progress-close aria-label="Cerrar">
+      <i class="fa-solid fa-xmark" aria-hidden="true"></i>
+    </button>
+    <span class="install-progress-spinner" aria-hidden="true"></span>
+    <p id="install-progress-title" class="install-progress-title" role="status">Añadiendo a tu pantalla de inicio…</p>
+    <p class="install-progress-copy">Puede tardar unos segundos.</p>
+  </div>
+</div>`,
   calendar: () => `
 <div class="calendar-modal" data-calendar-modal hidden>
   <button class="calendar-modal-backdrop" type="button" data-calendar-close aria-label="Cerrar"></button>
