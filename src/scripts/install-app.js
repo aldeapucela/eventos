@@ -3,6 +3,44 @@ import { getMountedModal, mountModal } from './modals.js';
 const INTERACTED_KEY = 'aldeapucela_install_app_interacted';
 const LEGACY_DISMISS_KEY = 'aldeapucela_install_app_dismissed_until';
 const PROMOTION_SCROLL_THRESHOLD = 240;
+const diagnosticMode = new URLSearchParams(window.location.search).get('pwa-debug') === '1';
+const diagnostics = { nativeEvents: 0, promptCalls: 0, error: '', outcome: '', worker: 'comprobando', manifest: 'comprobando' };
+
+function updateDiagnostics(modal) {
+  if (!diagnosticMode || !modal) return;
+  let panel = modal.querySelector('[data-install-diagnostics]');
+  if (!panel) {
+    panel = document.createElement('pre');
+    panel.dataset.installDiagnostics = '';
+    panel.style.cssText = 'white-space:pre-wrap;overflow-wrap:anywhere;font:12px/1.4 monospace;margin-top:16px;max-height:35vh;overflow:auto;';
+    modal.querySelector('.install-app-modal-body')?.append(panel);
+  }
+  panel.textContent = JSON.stringify({
+    version: 'pwa-diagnostic-1',
+    browser: navigator.userAgent,
+    nativeReady: Boolean(deferredInstallPrompt),
+    earlyCapture: Boolean(window.__PWA_INSTALL_PROMPT__),
+    installed: isInstalled(),
+    ...diagnostics
+  }, null, 2);
+}
+
+if (diagnosticMode) {
+  navigator.serviceWorker?.getRegistration().then((registration) => {
+    diagnostics.worker = registration?.active?.state || 'sin registro activo';
+    updateDiagnostics(getModal());
+  }).catch((error) => { diagnostics.worker = error.message; updateDiagnostics(getModal()); });
+  fetch('/manifest.webmanifest', { cache: 'no-store' }).then(async (response) => {
+    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+    const manifest = await response.json();
+    const icons = await Promise.all((manifest.icons || []).map(async (icon) => {
+      const response = await fetch(icon.src, { cache: 'no-store' });
+      return `${icon.sizes}: HTTP ${response.status}`;
+    }));
+    diagnostics.manifest = `${manifest.display}; ${icons.join('; ')}`;
+    updateDiagnostics(getModal());
+  }).catch((error) => { diagnostics.manifest = error.message; updateDiagnostics(getModal()); });
+}
 
 // El modal se inyecta al abrirlo (ver modals.js), así que sus nodos se resuelven
 // cuando existen. Los <li> de pasos los pinta updateModalCopy() como antes.
@@ -69,6 +107,7 @@ function updateModalCopy() {
   const modalSteps = modal.querySelector('[data-install-app-steps]');
   const modalConfirmButton = modal.querySelector('[data-install-app-confirm]');
   if (!modalCopy || !modalSteps || !modalConfirmButton) return;
+  updateDiagnostics(modal);
   modalCopy.hidden = true;
   modalCopy.textContent = '';
 
@@ -132,11 +171,15 @@ async function promptNativeInstall() {
   deferredInstallPrompt = null;
   window.__PWA_INSTALL_PROMPT__ = null;
   promptInProgress = true;
+  diagnostics.promptCalls += 1;
+  diagnostics.userActivation = window.navigator.userActivation?.isActive ?? null;
   syncInstallUi();
   try {
     await promptEvent.prompt();
-    await promptEvent.userChoice;
-  } catch {
+    const choice = await promptEvent.userChoice;
+    diagnostics.outcome = choice?.outcome || '';
+  } catch (error) {
+    diagnostics.error = `${error.name}: ${error.message}`;
     // Si el navegador retira el permiso, conserva el acceso a las instrucciones.
     openInstallModal();
   } finally {
@@ -161,6 +204,7 @@ async function handleInstallAction() {
 }
 
 window.addEventListener('beforeinstallprompt', (event) => {
+  diagnostics.nativeEvents += 1;
   event.preventDefault();
   deferredInstallPrompt = event;
   nativeInstallSupported = true;
