@@ -86,9 +86,7 @@ async function renderDetailWeather() {
 
 function openLightbox() {
   if (!hero) return;
-  const backgroundImage = hero.style.backgroundImage;
-  const match = backgroundImage.match(/url\(["']?(.*?)["']?\)$/);
-  const src = match?.[1];
+  const src = hero.dataset.lightboxSrc;
   if (!src) return;
 
   const lightbox = mountModal('lightbox');

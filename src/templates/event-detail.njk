@@ -45,6 +45,7 @@
       class="detail-clean-hero detail-clean-hero-button"
       type="button"
       data-lightbox-open
+      data-lightbox-src="{{ event.image or (event.categoryLabel | eventPlaceholder) }}"
       aria-label="Ver imagen completa"
       style="background-image:{% if event.image %}url('{{ event.image }}'), {% endif %}url('{{ event.categoryLabel | eventPlaceholder }}')"
     ></button>
