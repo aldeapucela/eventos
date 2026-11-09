@@ -55,7 +55,8 @@ test('reconstruye la proyección de un tema recuperado por ID', () => {
     event_ends_at: '2026-09-13T14:00:00.000Z',
     visible: true,
     pinned: false,
-    featured_link: ''
+    featured_link: '',
+    tags: undefined
   });
 });
 

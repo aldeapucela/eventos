@@ -25,7 +25,8 @@ const NAV_BY_PREFIX = [
   ['/tipos', 'types'],
   ['/t/', 'types'],
   ['/guardados', 'saved'],
-  ['/archivo', 'archive']
+  ['/archivo', 'archive'],
+  ['/navidad', 'navidad']
 ];
 
 // Antes lo pasaba nunjucks como `activeNav`. Ahora se deriva de la URL: las
@@ -377,6 +378,7 @@ ${categorySection}
     <nav class="menu-drawer-nav" aria-label="Navegación">
       <p class="menu-drawer-section-title">EXPLORA</p>
       ${link('home', '/', 'fa-solid fa-house', 'Inicio')}
+      ${link('navidad', '/navidad/', 'fa-solid fa-snowflake', 'Navidad')}
       ${link('popular', '/populares/', 'fa-solid fa-arrow-trend-up', 'Populares')}
       ${link('saved', '/guardados/', 'fa-regular fa-bookmark', 'Mis guardados')}
       ${link('archive', '/archivo/', 'fa-solid fa-box-archive', 'Archivo')}

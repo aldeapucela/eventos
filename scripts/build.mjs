@@ -18,6 +18,7 @@ import { buildCollectionPageJsonLd, buildEventJsonLd, buildVenuePageJsonLd, seri
 import { getHorizonWindow, getOpenEndedWindow, getTimePages, isWeekendDayKey, resolveBuildNow, selectTimePageEvents } from '../src/data/time-windows.mjs';
 import { getCategoryPages, mappedCategoryLabels } from '../src/data/category-pages.mjs';
 import { getVenuePages } from '../src/data/venue-pages.mjs';
+import { fillLightCounts, selectNavidadEvents, summarizeLights, visibleSections } from '../src/data/navidad.mjs';
 import { canonicalizeCategory } from '../src/data/category-aliases.mjs';
 import { normalizeRefreshTopicIds, syncEvents, validateCategoryTopicsSnapshot } from './sync-lib.mjs';
 
@@ -71,6 +72,12 @@ const env = nunjucks.configure(path.join(root, 'src', 'templates'), {
 });
 
 env.addFilter('eventPlaceholder', eventPlaceholder);
+// '2026-11-09' → '9 de noviembre de 2026' (fecha de actualización de /navidad/).
+env.addFilter('navidadDate', (value) => {
+  const [year, month, day] = String(value || '').split('-').map(Number);
+  const months = ['enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio', 'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre'];
+  return year && month && day ? `${day} de ${months[month - 1]} de ${year}` : String(value || '');
+});
 
 async function ensureDirs() {
   await fs.mkdir(cssDir, { recursive: true });
@@ -132,6 +139,7 @@ async function copyJs() {
   await fs.copyFile(path.join(root, 'src', 'scripts', 'menu-drawer.js'), path.join(jsDir, 'menu-drawer.js'));
   await fs.copyFile(path.join(root, 'src', 'scripts', 'saved-events.js'), path.join(jsDir, 'saved-events.js'));
   await fs.copyFile(path.join(root, 'src', 'scripts', 'spaces.js'), path.join(jsDir, 'spaces.js'));
+  await fs.copyFile(path.join(root, 'src', 'scripts', 'navidad.js'), path.join(jsDir, 'navidad.js'));
   await fs.copyFile(path.join(root, 'src', 'scripts', 'theme.js'), path.join(jsDir, 'theme.js'));
   await fs.copyFile(path.join(root, 'src', 'scripts', 'matomo.js'), path.join(jsDir, 'matomo.js'));
   await fs.copyFile(path.join(root, 'src', 'scripts', 'event-metrics.js'), path.join(jsDir, 'event-metrics.js'));
@@ -672,6 +680,7 @@ async function computeAssetVersion() {
     path.join(root, 'src', 'scripts', 'subscribe.js'),
     path.join(root, 'src', 'scripts', 'menu-drawer.js'),
     path.join(root, 'src', 'scripts', 'spaces.js'),
+    path.join(root, 'src', 'scripts', 'navidad.js'),
     path.join(root, 'src', 'scripts', 'saved-events.js'),
     path.join(root, 'src', 'scripts', 'event-detail.js'),
     path.join(root, 'src', 'scripts', 'comments.js'),
@@ -1303,6 +1312,45 @@ async function buildSite(events) {
       ...sharedContext
     }));
   }
+  // /navidad/: guía de temporada. El contenido editorial vive en navidad.json y
+  // el mapa de luces en navidad-luces.geojson; los eventos son los del foro con
+  // la etiqueta configurada (más los IDs añadidos a mano), vigentes o próximos.
+  const navidad = JSON.parse(await fs.readFile(path.join(root, 'src', 'data', 'navidad.json'), 'utf8'));
+  const navidadLights = summarizeLights(JSON.parse(await fs.readFile(path.join(root, 'src', 'data', 'navidad-luces.geojson'), 'utf8')));
+  const { ongoing: navidadOngoing, listed: navidadListed } = selectTimePageEvents(selectNavidadEvents(events, navidad), categoryWindow, buildNow);
+  const navidadEvents = sortEvents([...navidadOngoing, ...navidadListed]).map(enrichEvent).map(withVenueKeys);
+  const navidadUrl = `${publicBaseUrl}/navidad/`;
+  await writeFile(path.join('navidad', 'index.html'), render('navidad.njk', {
+    title: `${navidad.title} | Aldea Pucela`,
+    meta: { description: navidad.description },
+    canonicalUrl: navidadUrl,
+    jsonLd: serializeJsonLd(buildCollectionPageJsonLd({
+      name: navidad.h1,
+      description: navidad.description,
+      url: navidadUrl,
+      items: navidadEvents.map((event) => ({ url: `${publicBaseUrl}/e/${event.id}/${event.slug}/`, name: event.title }))
+    })),
+    social: {
+      type: 'website',
+      title: `${navidad.title} | Aldea Pucela`,
+      description: navidad.description,
+      ...socialPreview,
+      url: navidadUrl
+    },
+    pageCss: 'home.css',
+    pageJs: 'home.js',
+    activeNav: 'navidad',
+    showFilters: false,
+    navidad,
+    navidadSections: visibleSections(navidad.sections),
+    navidadFaq: (navidad.faq || []).map((item) => ({ q: item.q, a: fillLightCounts(item.a, navidadLights) })),
+    lights: navidadLights,
+    navidadEvents,
+    includeSiteData: false,
+    ...sharedContext
+  }));
+  await fs.copyFile(path.join(root, 'src', 'data', 'navidad-luces.geojson'), path.join(dist, 'navidad', 'luces.geojson'));
+
   console.log(`build: pages ${elapsedMs('pages').toFixed(1)}ms`);
 
   mark('feeds');
@@ -1325,6 +1373,8 @@ async function buildSite(events) {
       { path: '/', lastmod: toLocalDateKey(buildNow) },
       { path: '/espacios/', lastmod: toLocalDateKey(buildNow) },
       { path: '/tipos/', lastmod: toLocalDateKey(buildNow) },
+      // lastmod real: la fecha de la última edición de navidad.json, no la del build.
+      { path: '/navidad/', lastmod: navidad.updated },
       ...getTimePages(buildNow).map((page) => ({ path: page.path, lastmod: toLocalDateKey(buildNow) })),
       ...indexableCategoryPages.map((page) => ({ path: page.path, lastmod: toLocalDateKey(buildNow) })),
       ...indexableVenuePages.map((page) => ({ path: page.path, lastmod: toLocalDateKey(buildNow) }))

@@ -1,0 +1,113 @@
+{
+  "_comentario": "Contenido de /navidad/. Se edita a mano. Una sección sin 'facts' ni 'note' no se muestra. status: ok (confirmado), tbc (por confirmar), free (gratis). Los eventos del foro con la etiqueta 'tag' salen solos; 'extraEventIds' añade otros por ID de tema.",
+  "edition": "2026",
+  "updated": "2026-11-09",
+  "tag": "navidad",
+  "extraEventIds": [1809, 2892, 2907, 2708, 2893, 2674, 2619, 3078, 2692],
+  "title": "Navidad en Valladolid 2026: luces, mercado, belén y cabalgata",
+  "h1": "Navidad en Valladolid 2026",
+  "description": "Guía vecinal de la Navidad 2026 en Valladolid: encendido de luces y mapa de calles iluminadas, mercado de la Plaza Mayor, belén de Las Francesas, pista de hielo, Navival, campanadas y cabalgata de Reyes.",
+  "intro": "Todo lo que pasa en la ciudad estas fiestas, en un solo sitio: cuándo se encienden las luces y por qué calles, el mercado de la Plaza Mayor, el belén, la pista de hielo, Navival, las campanadas y la cabalgata de Reyes. Lo mantienen vecinos voluntarios de Aldea Pucela.",
+  "keyDates": [
+    { "date": "26 nov", "text": "Encendido de luces y apertura del mercado", "anchor": "luces" },
+    { "date": "15 dic", "text": "Abre el belén monumental de Las Francesas", "anchor": "belen", "tbc": true },
+    { "date": "26 dic – 4 ene", "text": "Navival en la Feria de Valladolid", "anchor": "navival" },
+    { "date": "31 dic", "text": "Campanadas en la Plaza Mayor", "anchor": "campanadas" },
+    { "date": "5 ene", "text": "Cabalgata de Reyes", "anchor": "cabalgata" }
+  ],
+  "lights": {
+    "id": "luces",
+    "icon": "fa-solid fa-lightbulb",
+    "title": "Encendido de luces y mapa de calles iluminadas",
+    "season": "Navidad 2026/27",
+    "facts": [
+      { "label": "Encendido", "value": "Jueves 26 de noviembre de 2026", "status": "ok" },
+      { "label": "Hora", "value": "Por confirmar", "status": "tbc" }
+    ],
+    "note": "Mapa elaborado por la comunidad de Aldea Pucela a partir del recorrido de iluminación de 2026. ¿Falta una calle? Avísanos en el chat."
+  },
+  "sections": [
+    {
+      "id": "mercado",
+      "icon": "fa-solid fa-store",
+      "title": "Mercado artesano navideño",
+      "place": "Plaza Mayor",
+      "facts": [
+        { "label": "Fechas", "value": "Del 26 de noviembre de 2026 al 5 de enero de 2027", "status": "ok" },
+        { "label": "Horario", "value": "11:00–14:00 y 17:00–21:00" },
+        { "label": "Cerrado", "value": "25 de diciembre y 1 de enero" }
+      ],
+      "mapQuery": "Plaza Mayor, Valladolid"
+    },
+    {
+      "id": "belen",
+      "icon": "fa-solid fa-star",
+      "title": "Belén monumental",
+      "place": "Sala de Exposiciones de Las Francesas",
+      "facts": [
+        { "label": "Apertura", "value": "15 de diciembre de 2026", "status": "tbc" },
+        { "label": "Precio", "value": "Entrada gratuita", "status": "free" },
+        { "label": "Horario", "value": "Por confirmar" }
+      ],
+      "mapQuery": "Sala de Exposiciones de Las Francesas, Valladolid"
+    },
+    {
+      "id": "pista",
+      "icon": "fa-solid fa-person-skating",
+      "title": "Pista de hielo",
+      "place": "Acera de Recoletos",
+      "facts": [
+        { "label": "Fechas", "value": "Por confirmar", "status": "tbc" },
+        { "label": "Precio", "value": "Por confirmar. Como referencia, en 2025 costaba 8 € por 45 minutos, alquiler de patines incluido." }
+      ],
+      "mapQuery": "Acera de Recoletos, Valladolid"
+    },
+    {
+      "id": "navival",
+      "icon": "fa-solid fa-children",
+      "title": "Navival",
+      "place": "Feria de Valladolid · Ocio infantil y familiar",
+      "facts": [
+        { "label": "Fechas", "value": "Del 26 de diciembre de 2026 al 4 de enero de 2027", "status": "ok" },
+        { "label": "Horario y precios", "value": "Por confirmar" }
+      ],
+      "mapQuery": "Feria de Valladolid"
+    },
+    {
+      "id": "campanadas",
+      "icon": "fa-solid fa-champagne-glasses",
+      "title": "Campanadas de Fin de Año",
+      "place": "Plaza Mayor, frente al reloj de la Casa Consistorial",
+      "facts": [
+        { "label": "Cuándo", "value": "Jueves 31 de diciembre de 2026, desde las 23:50" }
+      ],
+      "links": [
+        { "label": "Ver la ficha del evento", "href": "/e/3078/fin-de-ano-actividad-cultural/", "icon": "fa-regular fa-calendar" }
+      ]
+    },
+    {
+      "id": "cabalgata",
+      "icon": "fa-solid fa-crown",
+      "title": "Cabalgata de Reyes",
+      "place": "Centro de Valladolid",
+      "facts": [
+        { "label": "Cuándo", "value": "Martes 5 de enero de 2027, por la tarde", "status": "ok" },
+        { "label": "Hora y recorrido", "value": "Por confirmar", "status": "tbc" }
+      ],
+      "note": "Cuando se publique el recorrido, lo añadiremos al mapa."
+    },
+    {
+      "id": "horarios",
+      "icon": "fa-solid fa-bus",
+      "title": "Horarios especiales",
+      "place": "Autobuses, comercios y servicios municipales en festivos",
+      "facts": []
+    }
+  ],
+  "faq": [
+    { "q": "¿Cuándo se encienden las luces de Navidad en Valladolid en 2026?", "a": "El jueves 26 de noviembre de 2026. Este año hay {streets} calles iluminadas, además de plazas como la Plaza Mayor y {trees} árboles y almendros repartidos por los barrios." },
+    { "q": "¿Cuál es el horario del mercado navideño de la Plaza Mayor?", "a": "De 11:00 a 14:00 y de 17:00 a 21:00, del 26 de noviembre al 5 de enero. Cierra el 25 de diciembre y el 1 de enero." },
+    { "q": "¿Cuánto cuesta la pista de hielo?", "a": "El precio de 2026 está por confirmar. En 2025 eran 8 € por 45 minutos, con el alquiler de patines incluido." },
+    { "q": "¿Cuándo es Navival 2026?", "a": "Del 26 de diciembre de 2026 al 4 de enero de 2027, en la Feria de Valladolid." }
+  ]
+}

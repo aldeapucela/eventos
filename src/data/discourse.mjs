@@ -138,6 +138,16 @@ export function firstPostUpdatedAt(detail) {
   return firstPost?.updated_at || firstPost?.created_at || '';
 }
 
+// Etiquetas del tema en minúsculas. Según la versión, Discourse las devuelve como
+// cadenas o como objetos {id, name, slug}.
+export function normalizeTopicTags(tags) {
+  if (!Array.isArray(tags)) return [];
+  return [...new Set(tags
+    .map((tag) => (typeof tag === 'string' ? tag : tag?.name || tag?.slug || ''))
+    .map((tag) => String(tag).trim().toLowerCase())
+    .filter(Boolean))];
+}
+
 export function normalizeDiscourseTopic(topic, detail) {
   const detailPost = detail?.post_stream?.posts?.[0];
   const event = detailPost?.event || {};
@@ -204,6 +214,7 @@ export function normalizeDiscourseTopic(topic, detail) {
     latitude,
     longitude,
     categoryLabel,
+    tags: normalizeTopicTags(topic.tags ?? detail?.tags),
     organizer,
     notes,
     price,

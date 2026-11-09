@@ -1,7 +1,7 @@
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { fetchCategoryTopics, fetchJson, fetchTopicDetail, firstPostUpdatedAt, FORUM_BASE, normalizeDetailToRecord, shouldSkipTopic, sleep, topicSignature } from '../src/data/discourse.mjs';
+import { fetchCategoryTopics, fetchJson, fetchTopicDetail, firstPostUpdatedAt, FORUM_BASE, normalizeDetailToRecord, normalizeTopicTags, shouldSkipTopic, sleep, topicSignature } from '../src/data/discourse.mjs';
 import { ensureCacheDirs, readIndex, writeCachedTopic, writeIndex } from '../src/data/store.mjs';
 import { decodeHtmlEntities } from '../src/data/format.mjs';
 
@@ -50,8 +50,15 @@ export function topicFromDetail(detail) {
     event_ends_at: detail?.event_ends_at,
     visible: detail?.visible !== false,
     pinned: Boolean(detail?.pinned || detail?.pinned_globally),
-    featured_link: detail?.featured_link || ''
+    featured_link: detail?.featured_link || '',
+    tags: detail?.tags
   };
+}
+
+// Etiquetar un tema en el foro no cambia topicSignature (ni last_posted_at), así
+// que las etiquetas se toman siempre del listado, también para registros en caché.
+export function withListingTags(record, topic) {
+  return Array.isArray(topic?.tags) ? { ...record, tags: normalizeTopicTags(topic.tags) } : record;
 }
 
 async function addForcedTopicsMissingFromCategory(topics, forcedRefreshIds) {
@@ -176,7 +183,7 @@ export async function syncEvents({ rebuild = false, refreshTopicIds = [], catego
       const cachedPath = path.join(root, 'cache', 'data', `${topic.id}.json`);
       const cachedData = JSON.parse(await fs.readFile(cachedPath, 'utf8'));
       if (!needsTitleRefresh(topic, cachedData)) {
-        normalized.push(cachedData);
+        normalized.push(withListingTags(cachedData, topic));
         nextIndex.topics[topic.id] = cached;
         continue;
       }
