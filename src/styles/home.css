@@ -935,3 +935,53 @@
       font-size: 0.875rem;
     }
   }
+
+/* /navidad/: guía de temporada (ver src/templates/navidad.njk). */
+@layer components {
+  .navidad-hero { position: relative; overflow: hidden; border-radius: 1.5rem; padding: 1.75rem 1.5rem; color: #fff; background: linear-gradient(135deg, #7f1d1d 0%, #b91c1c 55%, #065f46 140%); }
+  .navidad-hero::after { content: "✦  ✧   ✦    ✧  ✦"; position: absolute; top: 0.75rem; right: -0.5rem; font-size: 1.75rem; letter-spacing: 0.6rem; opacity: 0.25; }
+  .navidad-hero h1 { margin: 0 0 0.5rem; font-size: clamp(1.65rem, 5vw, 2.4rem); font-weight: 800; line-height: 1.15; }
+  .navidad-hero p { max-width: 62ch; margin: 0; line-height: 1.55; opacity: 0.92; }
+  .navidad-hero .navidad-updated { margin-top: 0.875rem; font-size: 0.8125rem; opacity: 0.8; }
+  .navidad-toc { display: flex; gap: 0.5rem; overflow-x: auto; padding-bottom: 0.375rem; scrollbar-width: none; }
+  .navidad-toc a { display: inline-flex; flex: 0 0 auto; align-items: center; gap: 0.375rem; border: 1px solid #e2e8f0; border-radius: 999px; background: #fff; padding: 0.5rem 0.875rem; font-size: 0.875rem; color: #0f172a; }
+  .navidad-toc a i, .navidad-card h2 i { color: #b91c1c; }
+  .navidad-keydates { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 0.625rem; }
+  .navidad-keydate { border: 1px solid #e2e8f0; border-radius: 1rem; background: #fff; padding: 0.75rem 0.875rem; }
+  .navidad-keydate b { display: block; font-size: 0.9375rem; color: #b91c1c; }
+  .navidad-keydate span { font-size: 0.875rem; color: #334155; }
+  .navidad-grid { display: grid; grid-template-columns: 1fr; gap: 1rem; }
+  .navidad-card { scroll-margin-top: 5.5rem; border: 1px solid #e2e8f0; border-radius: 1.25rem; background: #fff; padding: 1.25rem; }
+  .navidad-card h2 { display: flex; align-items: center; gap: 0.625rem; margin: 0 0 0.25rem; font-size: 1.25rem; font-weight: 700; color: #0f172a; }
+  .navidad-card h2 i { width: 1.375rem; text-align: center; }
+  .navidad-sub { margin: 0 0 0.875rem; font-size: 0.875rem; color: #64748b; }
+  .navidad-facts { display: grid; grid-template-columns: auto 1fr; gap: 0.375rem 0.875rem; margin: 0; font-size: 0.9375rem; }
+  .navidad-facts dt { color: #64748b; }
+  .navidad-facts dd { margin: 0; color: #0f172a; }
+  .navidad-badge { display: inline-block; margin-left: 0.25rem; border-radius: 999px; padding: 0.125rem 0.5625rem; font-size: 0.75rem; font-weight: 600; vertical-align: 2px; }
+  .navidad-badge-ok { background: #dcfce7; color: #166534; }
+  .navidad-badge-tbc { background: #fef3c7; color: #92400e; }
+  .navidad-badge-free { background: #e0f2fe; color: #075985; }
+  .navidad-note { margin: 0.75rem 0 0; font-size: 0.8125rem; color: #64748b; }
+  .navidad-actions { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 0.875rem; }
+  .navidad-btn { display: inline-flex; align-items: center; gap: 0.375rem; border: 1px solid #e2e8f0; border-radius: 999px; background: #f8fafc; padding: 0.4375rem 0.875rem; font-size: 0.875rem; color: #0f172a; }
+  .navidad-map { height: 380px; margin: 0.875rem 0; border: 1px solid #e2e8f0; border-radius: 1rem; }
+  .navidad-card details summary { margin-top: 0.375rem; cursor: pointer; font-size: 0.9375rem; font-weight: 600; color: #0f172a; }
+  .navidad-cols { columns: 2 160px; column-gap: 1.5rem; margin: 0.375rem 0 0; padding-left: 1.125rem; list-style: disc; font-size: 0.875rem; color: #334155; }
+  .navidad-faq details { border-top: 1px solid #e2e8f0; padding: 0.75rem 0; }
+  .navidad-faq details p { margin: 0.5rem 0 0; line-height: 1.55; color: #334155; }
+  .navidad-cta { text-align: center; }
+  .navidad-cta h2, .navidad-cta .navidad-actions { justify-content: center; }
+
+  @media (min-width: 900px) {
+    .navidad-grid { grid-template-columns: 1fr 1fr; }
+    .navidad-wide { grid-column: 1 / -1; }
+  }
+
+  html.dark .navidad-toc a, html.dark .navidad-keydate, html.dark .navidad-card { border-color: #31353d; background: #1a1d22; color: #f5f3ee; }
+  html.dark .navidad-card h2, html.dark .navidad-facts dd, html.dark .navidad-card details summary { color: #fafaf7; }
+  html.dark .navidad-keydate span, html.dark .navidad-cols, html.dark .navidad-faq details p { color: #d4d0c7; }
+  html.dark .navidad-toc a i, html.dark .navidad-card h2 i, html.dark .navidad-keydate b { color: #f87171; }
+  html.dark .navidad-btn { border-color: #3b4049; background: #22262c; color: #f5f3ee; }
+  html.dark .navidad-faq details, html.dark .navidad-map { border-color: #31353d; }
+}

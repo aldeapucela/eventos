@@ -1,0 +1,126 @@
+{% extends "layout.njk" %}
+
+{% macro facts(items) %}
+<dl class="navidad-facts">
+  {%- for fact in items %}
+  <dt>{{ fact.label }}</dt>
+  <dd>{{ fact.value }}{% if fact.status == 'ok' %} <span class="navidad-badge navidad-badge-ok">Confirmado</span>{% elif fact.status == 'tbc' %} <span class="navidad-badge navidad-badge-tbc">Por confirmar</span>{% elif fact.status == 'free' %} <span class="navidad-badge navidad-badge-free">Gratis</span>{% endif %}</dd>
+  {%- endfor %}
+</dl>
+{% endmacro %}
+
+{% block extraHead %}
+<link
+  rel="stylesheet"
+  href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+  integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+  crossorigin=""
+/>
+{% endblock %}
+
+{% block header %}
+{% include "partials/topbar.njk" %}
+{% endblock %}
+
+{% block body %}
+<main class="page-shell py-5 sm:py-8 lg:py-10">
+  <div class="space-y-6">
+    <section class="navidad-hero">
+      <h1>{{ navidad.h1 }}</h1>
+      <p>{{ navidad.intro }}</p>
+      <p class="navidad-updated"><i class="fa-regular fa-clock" aria-hidden="true"></i> Actualizado el {{ navidad.updated | navidadDate }} · Lo marcado como <b>por confirmar</b> se actualizará en cuanto haya fecha oficial.</p>
+    </section>
+
+    <nav class="navidad-toc" aria-label="Secciones de la guía">
+      <a href="#{{ navidad.lights.id }}"><i class="{{ navidad.lights.icon }}" aria-hidden="true"></i>Luces</a>
+      {%- for section in navidadSections %}
+      <a href="#{{ section.id }}"><i class="{{ section.icon }}" aria-hidden="true"></i>{{ section.title }}</a>
+      {%- endfor %}
+      {% if navidadEvents.length %}<a href="#eventos"><i class="fa-regular fa-calendar" aria-hidden="true"></i>Eventos</a>{% endif %}
+    </nav>
+
+    <section class="space-y-3">
+      <div class="section-mobile-head"><h2 class="section-mobile-title">Fechas clave</h2></div>
+      <div class="navidad-keydates">
+        {%- for item in navidad.keyDates %}
+        <a class="navidad-keydate" href="#{{ item.anchor }}"><b>{{ item.date }}{% if item.tbc %}*{% endif %}</b><span>{{ item.text }}</span></a>
+        {%- endfor %}
+      </div>
+      <p class="navidad-note">* Por confirmar.</p>
+    </section>
+
+    <div class="navidad-grid">
+      <section class="navidad-card navidad-wide" id="{{ navidad.lights.id }}">
+        <h2><i class="{{ navidad.lights.icon }}" aria-hidden="true"></i>{{ navidad.lights.title }}</h2>
+        <p class="navidad-sub">{{ navidad.lights.season }} · {{ lights.streets.length }} calles, {{ lights.squares.length }} plazas y {{ lights.trees.length }} árboles y almendros iluminados</p>
+        {{ facts(navidad.lights.facts) }}
+        <div class="navidad-map" data-navidad-map="/navidad/luces.geojson" role="img" aria-label="Mapa de las calles con luces de Navidad en Valladolid"></div>
+        <details>
+          <summary>Calles con luces ({{ lights.streets.length }})</summary>
+          <ul class="navidad-cols">{% for name in lights.streets %}<li>{{ name }}</li>{% endfor %}</ul>
+        </details>
+        <details>
+          <summary>Plazas, árboles y almendros ({{ lights.squares.length + lights.trees.length }})</summary>
+          <ul class="navidad-cols">{% for name in lights.squares %}<li>{{ name }}</li>{% endfor %}{% for name in lights.trees %}<li>{{ name }}</li>{% endfor %}</ul>
+        </details>
+        {% if navidad.lights.note %}<p class="navidad-note">{{ navidad.lights.note }}</p>{% endif %}
+      </section>
+
+      {%- for section in navidadSections %}
+      <section class="navidad-card" id="{{ section.id }}">
+        <h2><i class="{{ section.icon }}" aria-hidden="true"></i>{{ section.title }}</h2>
+        {% if section.place %}<p class="navidad-sub">{{ section.place }}</p>{% endif %}
+        {% if section.facts and section.facts.length %}{{ facts(section.facts) }}{% endif %}
+        {% if section.note %}<p class="navidad-note">{{ section.note }}</p>{% endif %}
+        {% if section.mapQuery or section.links %}
+        <div class="navidad-actions">
+          {% if section.mapQuery %}<a class="navidad-btn" href="#" data-location-open data-location="{{ section.mapQuery }}"><i class="fa-solid fa-route" aria-hidden="true"></i>Cómo llegar</a>{% endif %}
+          {%- for link in section.links %}
+          <a class="navidad-btn" href="{{ link.href }}"><i class="{{ link.icon }}" aria-hidden="true"></i>{{ link.label }}</a>
+          {%- endfor %}
+        </div>
+        {% endif %}
+      </section>
+      {%- endfor %}
+    </div>
+
+    {% if navidadEvents.length %}
+    <section class="space-y-3" id="eventos">
+      <div class="section-mobile-head"><h2 class="section-mobile-title">Eventos de Navidad en la agenda</h2></div>
+      <div class="event-row-list">
+        {%- for event in navidadEvents %}
+        {% include "partials/event-compact.njk" %}
+        {%- endfor %}
+      </div>
+    </section>
+    {% endif %}
+
+    {% if navidadFaq.length %}
+    <section class="navidad-card navidad-faq" id="preguntas">
+      <h2><i class="fa-regular fa-circle-question" aria-hidden="true"></i>Preguntas frecuentes</h2>
+      {%- for item in navidadFaq %}
+      <details{% if loop.first %} open{% endif %}><summary>{{ item.q }}</summary><p>{{ item.a }}</p></details>
+      {%- endfor %}
+    </section>
+    {% endif %}
+
+    <section class="navidad-card navidad-cta">
+      <h2><i class="fa-solid fa-people-group" aria-hidden="true"></i>¿Falta algo?</h2>
+      <p class="navidad-sub">Esta guía la completan vecinos. Si organizas algo navideño o ves un dato que falta, cuéntanoslo.</p>
+      <div class="navidad-actions">
+        <button class="navidad-btn" type="button" data-add-event-open><i class="fa-solid fa-calendar-plus" aria-hidden="true"></i>Enviar un evento</button>
+        <a class="navidad-btn" href="https://t.me/aldeapucela/244" target="_blank" rel="noopener noreferrer"><i class="fa-brands fa-telegram" aria-hidden="true"></i>Chat de eventos</a>
+      </div>
+    </section>
+  </div>
+</main>
+{% endblock %}
+
+{% block extraScripts %}
+<script
+  src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+  integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+  crossorigin=""
+></script>
+<script type="module" src="/assets/js/navidad.js?v={{ assetVersion }}"></script>
+{% endblock %}
